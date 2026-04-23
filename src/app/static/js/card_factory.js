@@ -64,10 +64,10 @@ function create_information_container(name, id, title, text) {
 }
 
 function create_hidden_page(parent, name, launch_options) {
-    const container = document.createElement("div")
+    let container = document.createElement("div")
     container.className = "full-size"
 
-    const form = document.createElement("form")
+    let form = document.createElement("form")
     form.setAttribute("for", name)
     form.id = `${name}-form`
     form.className = "server-form full-size"
@@ -77,23 +77,31 @@ function create_hidden_page(parent, name, launch_options) {
         
         document.getElementById(`${name}-image`).style.borderColor = "var(--waiting)"
 
-        const formData = new FormData(e.target);
+        let formData = new FormData(e.target);
         formData.set("name", name)
+        formData.set("state", e.submitter.name)
 
-        const response = await fetch("/backend/start_up", {
+        fetch("/backend/change_server", {
             method: "POST",
             body:formData
         });
     })
 
-    const button = document.createElement("button")
-    button.type = "submit"
-    button.innerText = "Start Server"
-    button.name = `${name}`
-    button.className = "round-border shadow"
+    let stop_button = document.createElement("button")
+    stop_button.type = "submit"
+    stop_button.innerText = "Stop Server"
+    stop_button.name = "stop"
+    stop_button.className = "stop_button round-border shadow"
+
+    let start_button = document.createElement("button")
+    start_button.type = "submit"
+    start_button.innerText = "Start Server"
+    start_button.name = "start"
+    start_button.className = "round-border shadow"
 
     let button_container = document.createElement("div")
-    button_container.appendChild(button)
+    button_container.appendChild(start_button)
+    button_container.appendChild(stop_button)
     button_container.className = "button-container"
 
 

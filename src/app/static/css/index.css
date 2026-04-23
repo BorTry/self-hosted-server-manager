@@ -194,14 +194,21 @@ body {
 
 .button-container {
     grid-row-start: 2;
-    justify-content: center;
-    display: flex;
+    margin-left: 13%;
+    display: grid;
+    grid-template-columns: repeat(2, 0.4fr);
+    grid-template-rows: 0.5fr;
+    gap: 2rem;
 }
 
 .button-container button {
-    width: 50%;
+    width: 100%;
     padding: 0.5rem 0.8rem;
     margin-top: 0px;
+}
+
+.stop_button {
+    background: var(--offline) !important;
 }
 
 /* =============== Server form =============== */

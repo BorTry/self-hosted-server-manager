@@ -58,9 +58,13 @@ def backend_all_running_servers():
 
 
 
-@app.route("/backend/start_up", methods=["POST"])
+@app.route("/backend/change_server", methods=["POST"])
 def backend_start_up():
     if (IS_IN_CONTAINER):
-        SOCKET_THREAD.send(request.form.get("name"), code=Server_codes.START_SERVER)
+        req_dict = request.form.to_dict()
+        
+        code = Server_codes.START_SERVER if req_dict.pop("state") == "start" else Server_codes.STOP_SERVER
+
+        SOCKET_THREAD.send(req_dict, code)
         return jsonify(message=":)"), 200
     return jsonify(message=None), 404

@@ -27,7 +27,7 @@ DOCKER_THREAD = ez_thread(
     terminate_signal=thread_terminate_event,
     name="docker_thread",
     pipe=thread_pipe_2,
-    sleep_time=1.0
+    sleep_time=0.5
 ) # Talks to the docker engine
 
 PORT = 2024

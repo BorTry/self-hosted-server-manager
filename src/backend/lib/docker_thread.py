@@ -19,8 +19,12 @@ def docker_func(thread:ez_thread):
     data_packet = thread.recv()
 
     if (not data_packet): return
-    # use the data to try to start up a server
-    start_server(data_packet["data"])
+    # use the data to try to start or stop a server
+    match (data_packet["code"]):
+        case Server_codes.START_SERVER:
+            start_server(data_packet["data"]["name"])
+        case Server_codes.STOP_SERVER:
+            stop_server(data_packet["data"]["name"])
 
 # send over data to the com thread
 def docker_init(thread:ez_thread):

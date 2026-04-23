@@ -1,8 +1,10 @@
 from json import load
-import docker
+from docker import from_env, errors
+from os import cpu_count
 
-CLIENT = docker.from_env()
+CLIENT = from_env()
 SERVER_JSON = None
+CORE_COUNT = cpu_count()
 
 with open("./servers.json", "r") as file:
     SERVER_JSON = load(file)
@@ -11,26 +13,26 @@ def docker_running():
     try:
         CLIENT.ping()
         return True
-    except docker.errors.DockerException:
+    except errors.DockerException:
         return False
     
-def convert_container_name(container_name):
+def convert_container_name(container_name:str):
     return container_name.replace("docker_server-", "").split("-")[0]
 
-def convert_server_name(server_name):
+def convert_server_name(server_name:str):
     return f'docker_server-{SERVER_JSON["server_names_to_container"][server_name]}-1'
 
-def get_container(container_name, all=False):
+def get_container(container_name:str, all=False):
     if (not CLIENT.containers.list(filters={"name":container_name}, all=all)):
         print(f"container {container_name} does not exist")
         return False
 
     return CLIENT.containers.get(container_name)
 
-def get_container_count(all=False):
+def get_container_count(all:bool=False):
     return len(CLIENT.containers.list(all=all))
 
-def get_container_names(all=False):
+def get_container_names(all:bool=False):
     fin_arr = []
     containers = CLIENT.containers.list(all=all)
 
@@ -40,7 +42,7 @@ def get_container_names(all=False):
 
     return fin_arr
 
-def filter_container_names(container_names):
+def filter_container_names(container_names:str):
     fin_arr = []
     # Filters out the actual name of the containers, for predefined names / prettier names :)
     for con_name in container_names:
@@ -58,7 +60,11 @@ def get_resource_use_for_containers(server_names:tuple[str]):
     fin_arr = []
 
     for server_name in server_names:
-        stats = get_container_stats(server_name)
+        container = get_container(convert_server_name(server_name))
+
+        if (not container): continue
+
+        stats = get_container_stats(container)
         
         if (not stats): continue
         
@@ -72,10 +78,7 @@ def get_resource_use_for_containers(server_names:tuple[str]):
 
     return fin_arr
 
-def get_container_stats(server_name):
-    container_name = convert_server_name(server_name)
-    container = get_container(container_name)
-
+def get_container_stats(container):
     if (not container): return False
 
     stats = container.stats(stream=False)
@@ -86,18 +89,13 @@ def get_container_stats(server_name):
 
 def get_cpu_percentage(stats):
     try:
-        # Calculate deltas between current and previous stats
-        cpu_delta = stats["cpu_stats"]["cpu_usage"]["total_usage"] - \
-                    stats["precpu_stats"]["cpu_usage"]["total_usage"]
-        system_delta = stats["cpu_stats"]["system_cpu_usage"] - \
-                    stats["precpu_stats"]["system_cpu_usage"]
-        
-        # Get number of CPU cores to normalize percentage (for values > 100%)
-        online_cpus = stats["cpu_stats"].get("online_cpus", 
-                    len(stats["cpu_stats"]["cpu_usage"].get("percpu_usage", [])))
-    
+        # Calculate deltas between current and previous stats 
+        cpu_delta = stats["cpu_stats"]["cpu_usage"]["total_usage"] - stats["precpu_stats"]["cpu_usage"]["total_usage"]
+        system_delta = stats["cpu_stats"]["system_cpu_usage"] - stats["precpu_stats"]["system_cpu_usage"]
+
         if system_delta > 0.0 and cpu_delta > 0.0:
-            return round((cpu_delta / system_delta) * online_cpus * 100.0)
+            print(round((cpu_delta / system_delta) * 100.0))
+            return round((cpu_delta / system_delta) * 100.0)
         return 0.0
     except:
         return 0
@@ -132,7 +130,7 @@ def start_frontend():
     frontend = CLIENT.containers.get("docker_server-frontend-1")
     frontend.start()
 
-def stop_server(server_name):
+def stop_server(server_name:str):
     container_name = convert_server_name(server_name)
     container = get_container(container_name)
 
@@ -141,7 +139,7 @@ def stop_server(server_name):
     container = CLIENT.containers.get(container_name)
     container.stop()
 
-def start_server(server_name):
+def start_server(server_name:str):
     container_name = convert_server_name(server_name)
     container = get_container(container_name, True)
 

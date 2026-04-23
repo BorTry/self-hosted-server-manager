@@ -52,7 +52,7 @@ def socket_func(thread:sock_thread):
         case Server_codes.ALL_SERVERS:
             return_data = server_data[Server_codes.ALL_SERVERS]
 
-        case Server_codes.START_SERVER:
+        case Server_codes.START_SERVER|Server_codes.STOP_SERVER:
             INCOMING_DATA = data_packet
         case _:
             thread.print(f"There are no functions for code {data_packet['code']}")
