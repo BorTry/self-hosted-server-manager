@@ -7,4 +7,3 @@ class Server_codes:
 
     START_SERVER = 10
     STOP_SERVER = 11
-    GET_SERVER_USAGE = 12
