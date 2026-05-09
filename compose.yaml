@@ -13,7 +13,7 @@ services:
       resources:
         limits:
           memory: 6G
-          cpus: "6.0"
+          cpus: 6.0
     tty: true
     command: "java -Xmx6G -jar fabric-server-mc.1.21.11-loader.0.18.4-launcher.1.1.1.jar nogui"
 
@@ -41,6 +41,11 @@ services:
       dockerfile: Dockerfile.factorio
     user: "factorio:factorio"
     command: "/opt/factorio/bin/x64/factorio --start-server opt/saves/my-save.zip"
+    deploy:
+      resources:
+        limits:
+          memory: 4G
+          cpus: "4.0"
     ports:
       - "34197:34197/udp"
     tty: true
