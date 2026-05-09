@@ -1,5 +1,5 @@
 from src.lib.sock_thread import sock_thread
-from lib.socket_functions import socket_func, socket_init
+from src.app.lib.socket_functions import socket_func, socket_init
 
 ADDRESS = "0.0.0.0"
 TARGET_ADDRESS = "host.docker.internal"
@@ -14,4 +14,7 @@ SOCKET_THREAD = sock_thread(
     sleeptime=2,
 )
 
-ALL_SERVERS = None
+SOCKET_THREAD.run()
+
+ALL_SERVERS = SOCKET_THREAD.return_val
+SOCKET_THREAD.return_val = None

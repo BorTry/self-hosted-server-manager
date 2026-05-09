@@ -7,7 +7,7 @@ setInterval(async function() {
 
 // find out which servers can be ran
 async function build_server_list() {
-    let data = await fetch("/backend/all_servers", {
+    let data = await fetch("/api/container/all", {
         method: "GET"
     })
     .then( response => {
@@ -33,7 +33,7 @@ async function build_server_list() {
 
 // find out which servers are running
 async function change_live_servers() {
-    let data = await fetch("/backend/all_running_servers", {
+    let data = await fetch("/api/container/all/running", {
         method: "GET"
     })
     .then( response => {

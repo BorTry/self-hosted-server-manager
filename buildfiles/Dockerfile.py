@@ -1,2 +1,7 @@
-from alpine
-run apk update; apk upgrade; apk add --no-cache python3 py3-pip py3-flask
+FROM ubuntu:latest
+
+RUN apt update; apt -y install python3 python3-pip python3-venv
+RUN python3 -m venv /opt/venv && . /opt/venv/bin/activate && pip install flask flask-smorest; deactivate
+
+ENV VIRTUAL_ENV="/opt/venv"
+ENV PATH="$PATH:/opt/venv"

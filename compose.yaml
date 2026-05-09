@@ -77,18 +77,17 @@ services:
     tty: true
 
   frontend:
-    volumes: ["./src/app:/app", "./src/lib:/app/src/lib", "./resources:/app/resources"]
-    working_dir: /app
+    volumes: ["./src/app:/src/app", "./src/lib:/src/lib", "./resources:/resources"]
     networks:
       - frontend
     ports: 
-     - 3000:8043/tcp
+     - 5000:8043/tcp
      - 2024:2024/udp
     build:
       context: ./buildfiles
       dockerfile: Dockerfile.py
     tty: true
-    command: "flask --app app run --host=0.0.0.0 --port=8043 &; ../bin/sh"
+    command: ["bash", "-c", "source ../opt/venv/bin/activate; pwd; flask --app src.app.app run --host=0.0.0.0 --port 8043"]
 
 volumes:
   socket_connection:
