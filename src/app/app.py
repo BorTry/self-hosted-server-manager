@@ -1,24 +1,10 @@
 from flask import Flask, render_template, jsonify, request
 
-from src.lib.sock_thread import sock_thread
 from src.lib.server_codes import *
-from lib.socket_functions import socket_func, socket_init
-
+from src.app.constants import SOCKET_THREAD, ALL_SERVERS
 # ======================= Socket code =======================
 
 IS_IN_CONTAINER = True
-ADDRESS = "0.0.0.0"
-TARGET_ADDRESS = "host.docker.internal"
-PORT = 2024
-
-SOCKET_THREAD = sock_thread(
-    target=socket_func,
-    init=socket_init,
-    address=(ADDRESS, PORT),
-    target_address=(TARGET_ADDRESS, PORT),
-    name="socket_thread",
-    sleeptime=2,
-)
 
 SOCKET_THREAD.run()
 
@@ -55,8 +41,6 @@ def backend_all_running_servers():
         data = get_running_servers()
         return jsonify(message=data), 200
     return jsonify(message=None), 404
-
-
 
 @app.route("/backend/start_up", methods=["POST"])
 def backend_start_up():

@@ -77,7 +77,7 @@ services:
     networks:
       - frontend
     ports: 
-     - 5000:8043/tcp
+     - 3000:8043/tcp
      - 2024:2024/udp
     build:
       context: ./buildfiles
