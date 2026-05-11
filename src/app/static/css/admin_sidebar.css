@@ -1,0 +1,50 @@
+:root {
+    --side-bar-width: 190px;
+    --side-bar-closed-width: 20px;
+}
+
+#sidebar-container {
+    width: var(--side-bar-width);
+    margin: 0;
+    display: flex;
+    padding-left: 2rem;
+    align-items: left;
+}
+
+#sidebar-container:hover {
+    transform: translate(0);
+    transition: 1s;
+}
+
+#sidebar-container:not(:hover) {
+    transform: translate(calc(var(--side-bar-closed-width) - var(--side-bar-width)));
+    transition: 1s;
+}
+
+#sidebar-container:on {
+    transform: translate(calc(var(--side-bar-closed-width) - var(--side-bar-width)));
+    transition: 1s;
+}
+
+#sidebar {
+    color: whitesmoke;
+    height: fit-content;
+    width: 100%;
+}
+
+#sidebar-list {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1rem;
+}
+
+.sidebar-list-item {
+    display: grid;
+    width: 96%;
+    gap: 2px;
+}
+
+.highlighted {
+    font-weight: bold;
+    color: rgb(200, 204, 214);
+}

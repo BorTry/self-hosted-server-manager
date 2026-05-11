@@ -1,22 +1,36 @@
-#main-content {
+body {
+    overflow-x: hidden;
+}
+
+a {
+    text-decoration: none;
+    color: inherit; 
+}
+
+.main-body {
+    grid-template-columns: 1fr;
+}
+
+#main-content-container {
     display: flex;
     width: 100vw;
-    height: 100vh;
 }
 
-#sidebar-container {
-    width: 10vw;
-    transform: translate(-8vw);
-    transition: 1s;
-    margin: 0;
-}
-
-#sidebar-container:hover {
-    transform: translate(0);
-    width: 10vw;
-    transition: 1s;
+#main-content {
+    display: grid;
+    gap: 2rem;
+    margin-right: 0;
+    margin-left: 0;
+    width: 100%;
 }
 
 .content-container {
-
+    background:
+        radial-gradient(
+            at top,
+            var(--item-list), transparent
+        ),
+        var(--main);
+    height: 20vh;
+    width: calc(100% - var(--side-bar-width));
 }

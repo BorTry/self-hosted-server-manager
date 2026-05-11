@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <link rel="stylesheet" href="{{ url_for('static', filename='css/standard.css') }}">
+        <link rel="stylesheet" href="{{ url_for('static', filename='css/admin_sidebar.css') }}">
+        <link rel="stylesheet" href="{{ url_for('static', filename='css/admin_page.css') }}">
+    </head>
+    <body>
+        <div id="main-content-container">
+            <div id="sidebar-container" class="main-body shadow">
+                <div id="sidebar" class="sticky">
+                    <h2>Menu</h2>
+                    <div id="sidebar-list">
+                        <a href="/admin/overview"><div class="sidebar-list-item">Overview</div></a>
+                        <a href="/admin/manage_server"><div class="sidebar-list-item">Manage servers</div></a>
+                        <div class="sidebar-list-item highlighted">Traffic<div class="divider"></div></div>
+                        <a href="/admin/uptime"><div class="sidebar-list-item">Uptime</div></a>
+                        <a href="/admin/logout"><div class="sidebar-list-item">logout</div></a>
+                    </div>
+                </div>
+            </div>
+            <div id="main-content" class="main-body transparent-background center-content">
+                <div class="content-container shadow round-border"></div>
+                <div class="content-container shadow round-border"></div>
+                <div class="content-container shadow round-border"></div>
+                <div class="content-container shadow round-border"></div>
+                <div class="content-container shadow round-border"></div>
+                <div class="content-container shadow round-border"></div>
+            </div>
+        </div>
+    </body>
+</html>

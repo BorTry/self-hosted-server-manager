@@ -11,6 +11,7 @@ app.config["OPENAPI_VERSION"] = "3.0.3"
 
 api = Api(app)
 
+app.config['SECRET_KEY'] = 'super-secret-key'
 # register the different blueprints
 api.register_blueprint(site_blp)
 api.register_blueprint(api_blp)

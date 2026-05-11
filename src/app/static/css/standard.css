@@ -71,6 +71,15 @@ body {
     margin: 0;
 }
 
+.sticky {
+    position: sticky;
+    top: 0;
+}
+
+.bold {
+    font-weight: bold;
+}
+
 /* =============== Main bodies =============== */
 
 .main-body {
