@@ -136,7 +136,6 @@ def start_frontend():
         raise Exception("Front end container does not exist")
     
     frontend = CLIENT.containers.get("frontend_server")
-    print(frontend)
     frontend.start()
 
 def stop_server(server_name:str):

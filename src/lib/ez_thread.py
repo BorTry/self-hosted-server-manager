@@ -49,6 +49,7 @@ class ez_thread:
 
     def terminate(self):
         # Check if the pipe is still open
+        self.print("Stopping")
         if (self.pipe and not self.pipe.closed):
             self.pipe.close()
 

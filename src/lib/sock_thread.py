@@ -77,7 +77,6 @@ class sock_thread(ez_thread):
         super().terminate()
 
         if (self.socket.fileno() != -1):
-            print(self.socket.fileno())
             self.socket.close()
 
     def get_new_instance(self):

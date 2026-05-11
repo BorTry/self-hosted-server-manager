@@ -44,6 +44,7 @@ SOCKET_THREAD = sock_thread(
 # The docker thread must be started before the com thread
 
 def start_servers():
+    print("============== Starting servers ==============")
     global DOCKER_THREAD, COMMMUNICATION_THREAD, SOCKET_THREAD, thread_terminate_event
 
     DOCKER_THREAD.run()
@@ -53,6 +54,7 @@ def start_servers():
     start_frontend()
 
 def stop_servers():
+    print("============== Stopping servers ==============")
     global DOCKER_THREAD, COMMMUNICATION_THREAD, SOCKET_THREAD, thread_terminate_event
 
     thread_terminate_event.set()
@@ -67,8 +69,6 @@ def restart_servers():
     global DOCKER_THREAD, COMMMUNICATION_THREAD, SOCKET_THREAD, thread_terminate_event
 
     stop_servers()
-
-    sleep(1)
 
     if thread_terminate_event.is_set():
         thread_terminate_event.clear()

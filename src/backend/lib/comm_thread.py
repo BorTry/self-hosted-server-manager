@@ -41,7 +41,6 @@ def socket_func(thread:sock_thread):
 
     with DATA_LOCK:
         if (not SERVER_DATA): 
-            print(SERVER_DATA)
             return
         server_data = SERVER_DATA.copy()
 
