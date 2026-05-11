@@ -40,17 +40,21 @@ def socket_func(thread:sock_thread):
     if (not data_packet): return
 
     with DATA_LOCK:
+        if (not SERVER_DATA): 
+            print(SERVER_DATA)
+            return
         server_data = SERVER_DATA.copy()
 
     return_data = None
 
+
     match(data_packet["code"]):
         case Server_codes.SERVER_COUNT:
-            return_data = len(server_data[Server_codes.RUNNING_SERVERS])
+            return_data = len(server_data[Server_codes.RUNNING_SERVERS]) # Send how many server are currently running
         case Server_codes.RUNNING_SERVERS:
-            return_data = server_data[Server_codes.RUNNING_SERVERS]
+            return_data = server_data[Server_codes.RUNNING_SERVERS] # Send a list of all running servers
         case Server_codes.ALL_SERVERS:
-            return_data = server_data[Server_codes.ALL_SERVERS]
+            return_data = server_data[Server_codes.ALL_SERVERS] # Send a list of all available server
 
         case Server_codes.START_SERVER|Server_codes.STOP_SERVER:
             INCOMING_DATA = data_packet

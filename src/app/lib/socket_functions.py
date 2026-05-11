@@ -12,4 +12,6 @@ def socket_func(thread:sock_thread):
 def socket_init(thread:sock_thread):
     data = thread.send_recv(Server_codes.ALL_SERVERS, "")
 
+    if (not data): return
+
     thread.return_val = data["data"]

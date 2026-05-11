@@ -1,7 +1,7 @@
 from src.lib.ez_thread import ez_thread
 from socket import socket, AF_INET, SOCK_DGRAM
 from json import load, dumps, loads
-from os import path
+from os import path, unlink
 
 from typing import Callable, Any
 from threading import Event
@@ -17,18 +17,27 @@ with open(CONFIG_FILE_PATH, "r") as file:
     CONFIG_JSON = load(file)
 
 if (CONFIG_JSON["os"] == "Linux"):
+    # If the backend server is running on a linux machine, use the more efficient AF_UNIX protocol 
     from socket import AF_UNIX
     CONNECTION_TYPE[0] = AF_UNIX
     SOCK_PATH = "./resources/sock"
 
+    # Check to see if the socket file exists
+    try:
+        unlink(SOCK_PATH)
+    except OSError:
+        if path.exists(SOCK_PATH):
+            raise RuntimeError("Socket Unix file exists when it shouldn't, see if a file with name 'sock' is in ./resources")
+
 class sock_thread(ez_thread):
-    __slots__ = ("target_address", "socket")
+    __slots__ = ("address", "target_address", "socket")
 
     def __init__(self, target:Callable=None, init:Callable=None, address:tuple[str, int]=None, target_address:tuple[str, int]=None, terminate_signal:Event=None, name:str="thread", sleeptime:float=0.0):
         if (not address):
             raise Exception("Socket thread needs an address to bind to")
 
         self.target_address = target_address # Only given if a socket thread needs to send and wait for an answer
+        self.address = address
 
         self.socket = socket(*CONNECTION_TYPE)
         self.socket.bind(SOCK_PATH or address)
@@ -63,6 +72,16 @@ class sock_thread(ez_thread):
         new_data, _ = self.recv()
 
         return new_data
+
+    def terminate(self):
+        super().terminate()
+
+        if (self.socket.fileno() != -1):
+            print(self.socket.fileno())
+            self.socket.close()
+
+    def get_new_instance(self):
+        return sock_thread(self.target, self.init, self.address, self.target_address, self.terminate_signal, self.name, self.sleep_time)
 
 def encode(data:Any):
     return dumps(data).encode("utf-8")

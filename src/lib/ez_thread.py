@@ -7,7 +7,7 @@ from typing import Callable, Any
 from multiprocessing.connection import Connection
 
 class ez_thread:
-    __slots__ = ("name", "stdout", "sleep_time", "thread", "terminate_signal", "return_val", "pipe", "init")
+    __slots__ = ("name", "target", "stdout", "sleep_time", "thread", "terminate_signal", "return_val", "pipe", "init")
 
     def __init__(self, target:Callable=None, init:Callable=None, terminate_signal:Event=None, name="thread", pipe:Connection=None, sleep_time:float=0.1):
         self.name = name
@@ -17,6 +17,7 @@ class ez_thread:
         if not target:
             raise Exception("target function must be defined")
 
+        self.target = target
         self.thread = Thread(target=thread_wrapper(self, target), name=name)
         self.terminate_signal = terminate_signal or Event()
         self.return_val = None
@@ -29,11 +30,14 @@ class ez_thread:
         print(self.name, "->", *msg, file=stdout)
 
     def recv(self, timeout:bool=True):
-        if (timeout and not self.data_in_pipe()): return
+        if (self.is_pipe_closed() or (timeout and not self.data_in_pipe())): return
 
         val = self.pipe.recv()
 
         return val
+    
+    def is_pipe_closed(self):
+        return self.pipe.closed
 
     def send(self, val:Any):
         if (self.pipe.closed): return
@@ -63,6 +67,9 @@ class ez_thread:
         self.print(f"{self.name} has been initialized")
 
         self.thread.start()
+
+    def get_new_instance(self, pipe:Connection=None):
+        return ez_thread(self.target, self.init, self.terminate_signal, self.name, pipe, self.sleep_time)
 
 def thread_wrapper(self:ez_thread, target:Callable):
     def wrap():

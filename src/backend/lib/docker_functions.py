@@ -24,7 +24,7 @@ def convert_server_name(server_name:str):
 
 def get_container(container_name:str, all=False):
     if (not CLIENT.containers.list(filters={"name":container_name}, all=all)):
-        print(f"container {container_name} does not exist")
+        print(f"container {container_name} does not exist, or is not running")
         return False
 
     return CLIENT.containers.get(container_name)
@@ -111,6 +111,14 @@ def get_container_ramusage(stats):
     except:
         return 0
 
+def wait_for_shutdown(container_name):
+    container = get_container(container_name)
+
+    if not container:
+        return
+    
+    container.wait()
+
 # ============================ Container manipulation ============================
 
 def stop_frontend(): 
@@ -120,6 +128,7 @@ def stop_frontend():
     
     frontend = CLIENT.containers.get("frontend_server")
     frontend.stop()
+    frontend.wait()
 
 def start_frontend(): 
     # check to see if the docker container exists at all
@@ -127,6 +136,7 @@ def start_frontend():
         raise Exception("Front end container does not exist")
     
     frontend = CLIENT.containers.get("frontend_server")
+    print(frontend)
     frontend.start()
 
 def stop_server(server_name:str):

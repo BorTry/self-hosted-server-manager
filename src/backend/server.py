@@ -1,5 +1,6 @@
 from threading import Event
 from multiprocessing import Pipe
+from time import sleep
 
 from src.backend.lib.init import init
 init()
@@ -42,25 +43,17 @@ SOCKET_THREAD = sock_thread(
 
 # The docker thread must be started before the com thread
 
-def main():
-    if (not docker_running()):
-        raise Exception("Docker is not running")
-    
+def start_servers():
+    global DOCKER_THREAD, COMMMUNICATION_THREAD, SOCKET_THREAD, thread_terminate_event
+
     DOCKER_THREAD.run()
     COMMMUNICATION_THREAD.run()
     SOCKET_THREAD.run()
 
     start_frontend()
 
-    while True:
-        try:
-            user_in = input("Select Action: \n")
-
-            if (user_in == "quit" or user_in == "q"):
-                break
-
-        except Exception as e:
-            print(e)
+def stop_servers():
+    global DOCKER_THREAD, COMMMUNICATION_THREAD, SOCKET_THREAD, thread_terminate_event
 
     thread_terminate_event.set()
 
@@ -69,6 +62,46 @@ def main():
     DOCKER_THREAD.terminate()
     COMMMUNICATION_THREAD.terminate()
     SOCKET_THREAD.terminate()
+
+def restart_servers():
+    global DOCKER_THREAD, COMMMUNICATION_THREAD, SOCKET_THREAD, thread_terminate_event
+
+    stop_servers()
+
+    sleep(1)
+
+    if thread_terminate_event.is_set():
+        thread_terminate_event.clear()
+
+    # Create a new pipe for communication
+    thread_pipe_1, thread_pipe_2 = Pipe(duplex=True)
+
+    # Get new instances of each thread
+    DOCKER_THREAD = DOCKER_THREAD.get_new_instance(thread_pipe_2)
+    COMMMUNICATION_THREAD = COMMMUNICATION_THREAD.get_new_instance(thread_pipe_1)
+    SOCKET_THREAD = SOCKET_THREAD.get_new_instance()
+
+    start_servers()
+
+def main():
+    if (not docker_running()):
+        raise Exception("Docker is not running")
+    
+    start_servers()
+
+    while True:
+        try:
+            user_in = input("Select Action: \n")
+
+            if (user_in == "quit" or user_in == "q"):
+                break
+            elif (user_in == "restart" or user_in == "r"):
+                restart_servers()
+
+        except Exception as e:
+            print(e)
+
+    stop_servers()
 
 if __name__ == "__main__":
     main()
