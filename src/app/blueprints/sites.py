@@ -25,12 +25,12 @@ class admin_login(MethodView):
     
     @blp.response(200)
     @blp.response(405)
-    @blp.arguments(LoginSchema, location="form")
+    @blp.arguments(LoginSchema, location="form") # TODO: Add protection against brute force attacks
     def post(self, form):
         username = form["username"]
         password = form["password"]
 
         if (password != CREDENTIALS["admin_password"] or username != CREDENTIALS["admin_username"]): return make_response(405)
 
-        html = render_template("admin_panel.html")
+        html = render_template("admin_page.html")
         return make_response(html, 200)

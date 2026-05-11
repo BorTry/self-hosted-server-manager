@@ -1,0 +1,22 @@
+#main-content {
+    display: flex;
+    width: 100vw;
+    height: 100vh;
+}
+
+#sidebar-container {
+    width: 10vw;
+    transform: translate(-8vw);
+    transition: 1s;
+    margin: 0;
+}
+
+#sidebar-container:hover {
+    transform: translate(0);
+    width: 10vw;
+    transition: 1s;
+}
+
+.content-container {
+
+}
