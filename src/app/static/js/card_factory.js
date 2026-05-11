@@ -30,13 +30,23 @@ function create_information_page(parent, name) {
     const container = document.createElement("div")
     container.className = "server-info-container full-size"
 
+    const title_container = document.createElement("div")
+    title_container.className = "center-content"
+
     const title = document.createElement("h1")
     title.innerText = name
     title.className = "title"
 
-    container.appendChild(title)
-    container.appendChild(create_information_container(name, "player-count", "Player count", "0/20"))
+    const divider = document.createElement("div")
+    divider.className = "divider"
+    
+    title_container.appendChild(title)
+    title_container.appendChild(divider)
 
+    container.appendChild(title_container)
+
+    container.appendChild(create_information_container(name, "player-count", "Player count", "0/20"))
+    
     let gauge_container = document.createElement("div")
     gauge_container.className = "gauge-list"
     gauge_container.appendChild(create_gauge(`cpu-gauge-${name}`, "Cpu"))
@@ -76,12 +86,11 @@ function create_hidden_page(parent, name, launch_options) {
         e.preventDefault();
         
         document.getElementById(`${name}-image`).style.borderColor = "var(--waiting)"
-
+        let change = e.submitter.name
+        
         let formData = new FormData(e.target);
-        formData.set("name", name)
-        formData.set("state", e.submitter.name)
 
-        fetch("/backend/change_server", {
+        fetch("api/container/"+name+"/"+e.submitter.name, {
             method: "POST",
             body:formData
         });
@@ -103,7 +112,6 @@ function create_hidden_page(parent, name, launch_options) {
     button_container.appendChild(start_button)
     button_container.appendChild(stop_button)
     button_container.className = "button-container"
-
 
     container.appendChild(form)
 

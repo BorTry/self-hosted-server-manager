@@ -7,8 +7,8 @@ from src.backend.lib.docker_functions import *
 
 CONTAINERS = [None] * 10
 
-# running servers
 def docker_func(thread:ez_thread):
+    # get all running servers
     all_containers = filter_container_names(get_container_names())
     resources_used = get_resource_use_for_containers(all_containers)
 

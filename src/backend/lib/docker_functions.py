@@ -17,10 +17,10 @@ def docker_running():
         return False
     
 def convert_container_name(container_name:str):
-    return container_name.replace("docker_server-", "").split("-")[0]
+    return container_name.replace("_server", "")
 
 def convert_server_name(server_name:str):
-    return f'docker_server-{SERVER_JSON["server_names_to_container"][server_name]}-1'
+    return f'{SERVER_JSON["server_names_to_container"][server_name]}_server'
 
 def get_container(container_name:str, all=False):
     if (not CLIENT.containers.list(filters={"name":container_name}, all=all)):
@@ -94,7 +94,6 @@ def get_cpu_percentage(stats):
         system_delta = stats["cpu_stats"]["system_cpu_usage"] - stats["precpu_stats"]["system_cpu_usage"]
 
         if system_delta > 0.0 and cpu_delta > 0.0:
-            print(round((cpu_delta / system_delta) * 100.0))
             return round((cpu_delta / system_delta) * 100.0)
         return 0.0
     except:
@@ -116,18 +115,18 @@ def get_container_ramusage(stats):
 
 def stop_frontend(): 
     # check to see if the docker container exists at all
-    if (not len(CLIENT.containers.list(filters={"name": "docker_server-frontend-1"}))):
+    if (not len(CLIENT.containers.list(filters={"name": "frontend_server"}))):
         raise Exception("Front end container is not running")
     
-    frontend = CLIENT.containers.get("docker_server-frontend-1")
+    frontend = CLIENT.containers.get("frontend_server")
     frontend.stop()
 
 def start_frontend(): 
     # check to see if the docker container exists at all
-    if (not len(CLIENT.containers.list(filters={"name": "docker_server-frontend-1"}, all=True))):
+    if (not len(CLIENT.containers.list(filters={"name": "frontend_server"}, all=True))):
         raise Exception("Front end container does not exist")
     
-    frontend = CLIENT.containers.get("docker_server-frontend-1")
+    frontend = CLIENT.containers.get("frontend_server")
     frontend.start()
 
 def stop_server(server_name:str):

@@ -1,3 +1,5 @@
 {
-    "os": "Windows"
+    "os": "Windows",
+    "admin_username": "YOUR_USERNAME",
+    "admin_password": "YOUR_PASSWORD"
 }

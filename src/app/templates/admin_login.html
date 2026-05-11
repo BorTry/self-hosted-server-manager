@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <link rel="stylesheet" href="{{ url_for('static', filename='css/standard.css') }}">
+        <link rel="stylesheet" href="{{ url_for('static', filename='css/admin_login.css') }}">
+    </head>
+    <body>
+        <div id="body" class="main-body round-border shadow">
+            <div id="title-container">
+                <h1 class="title">Login</h1>
+                <div class="divider"></div>
+            </div>
+            <div id="form-container">
+                <form class="center-content" method="post" autocomplete="off">
+                    <input type="text" name="username" id="username" placeholder="Username" class="shadow" required></input>
+                    <input type="text" name="password" id="password" placeholder="Password" class="shadow" required></input>
+                    <div class="submit-container">
+                        <button type="submit" class="shadow">Login</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </body>
+</html>

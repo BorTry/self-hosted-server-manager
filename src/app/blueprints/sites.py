@@ -1,8 +1,15 @@
 from flask_smorest import Blueprint
 from flask.views import MethodView
 from flask import render_template, make_response
+from marshmallow import Schema, fields
+
+from src.app.constants import CREDENTIALS
 
 blp = Blueprint("Sites", __name__)
+
+class LoginSchema(Schema):
+    username=fields.String()
+    password=fields.String()
 
 @blp.route("/")
 class front_page(MethodView):
@@ -10,14 +17,20 @@ class front_page(MethodView):
         html = render_template("index.html")
         return make_response(html, 200)
 
-@blp.route("/login/admin")
+@blp.route("/admin")
 class admin_login(MethodView):
     def get(self):
         html = render_template("admin_login.html")
         return make_response(html, 200)
+    
+    @blp.response(200)
+    @blp.response(405)
+    @blp.arguments(LoginSchema, location="form")
+    def post(self, form):
+        username = form["username"]
+        password = form["password"]
 
-@blp.route("/admin")
-class admin_panel(MethodView):
-    def get(self):
-        # Get the password and username from the backend, return the rendered page only if it matches
-        pass
+        if (password != CREDENTIALS["admin_password"] or username != CREDENTIALS["admin_username"]): return make_response(405)
+
+        html = render_template("admin_panel.html")
+        return make_response(html, 200)

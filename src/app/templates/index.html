@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html>
     <head>
+        <link rel="stylesheet" href="{{ url_for('static', filename='css/standard.css') }}">
         <link rel="stylesheet" href="{{ url_for('static', filename='css/index.css') }}">
         <script src="{{ url_for('static', filename='js/gauge.js') }}" defer></script>
         <script src="{{ url_for('static', filename='js/card_factory.js') }}" defer></script>
@@ -10,16 +11,13 @@
         <div id="header" class="main-body shadow round-border">
 
         </div>
-        <div id="body" class="main-body">
+        <div id="body" class="main-body transparent-background">
             <div id="server-list">
                 <!-- Builds during run time -->
             </div>
         </div>
         <div id="footer" class="main-body round-border shadow">
-            <form action="/submit" method="post" id="ooga">
-                <button type="submit">SUG baller</button>
-            </form>
-            <p>Deg</p>
+
         </div>
     </body>
     <footer>

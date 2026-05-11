@@ -1,5 +1,19 @@
+from json import load
+from os import path
+
 from src.lib.sock_thread import sock_thread
 from src.app.lib.socket_functions import socket_func, socket_init
+
+CONFIG_FILE = path.abspath("./resources/config.json")
+
+CREDENTIALS = None
+
+with open(CONFIG_FILE, "r") as file:
+    config_dict = load(file)
+    CREDENTIALS = {
+        "admin_password" : config_dict["admin_password"],
+        "admin_username" : config_dict["admin_username"]
+    }
 
 ADDRESS = "0.0.0.0"
 TARGET_ADDRESS = "host.docker.internal"
