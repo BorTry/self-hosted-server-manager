@@ -2,10 +2,10 @@ from textual.app import App
 from textual.containers import Grid
 from textual.widgets import Button, Footer
 
-from tui.widgets.container import CustomContainer, CustomScrollContainer
-from tui.widgets.mini_widget import MiniWidget
-from tui.widgets.log_panel import LogPanel
-from tui.widgets.docker_container import DockerContainer
+from src.tui.widgets.container import CustomContainer, CustomScrollContainer
+from src.tui.widgets.mini_widget import MiniWidget
+from src.tui.widgets.log_panel import LogPanel
+from src.tui.widgets.docker_container import DockerContainer
 
 from os import system, environ
 
@@ -47,9 +47,9 @@ class actions(App):
             Thread_container = CustomContainer(
                 "Threads",
                 (1, 4),
-                MiniWidget("Docker"),
-                MiniWidget("Communication"),
-                MiniWidget("Socket"),
+                MiniWidget("Docker", classes="Content_container Thread_container"),
+                MiniWidget("Communication", classes="Content_container Thread_container"),
+                MiniWidget("Socket", classes="Content_container Thread_container"),
                 layout="vertical",
             )
 
@@ -83,6 +83,7 @@ class actions(App):
             self.curr_it += 0.05
             if self.curr_it >= 1:
                 self.curr_it = 0
+            row.update_status(self.curr_it > 0.5)
 
 if __name__ == "__main__":
     app = actions()
@@ -96,13 +97,13 @@ if __name__ == "__main__":
             if (app.is_running):
                 app.call_from_thread(app.logs.write, f'ooga {iter}')
                 iter += 1
-            sleep(1)
+            sleep(0.1)
 
     t = Thread(target=ooga) 
-    #t.start()
+    t.start()
 
     app.run()
 
     b = True
 
-    #t.join()
+    t.join()

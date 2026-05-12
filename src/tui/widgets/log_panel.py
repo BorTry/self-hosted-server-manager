@@ -1,6 +1,7 @@
 from textual.widgets import Log
 from collections import deque
-from tui.widgets.container import ScrollableContainer
+
+from src.tui.widgets.container import ScrollableContainer
 
 class LogPanel(ScrollableContainer):
     def __init__(self, **kwargs):

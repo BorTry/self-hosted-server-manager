@@ -1,14 +1,32 @@
-MiniWidget {
-    height: 3fr;
+.Content_container {
     width: 100%;
     padding: 1 2;
     border: solid rgb(1, 185, 1);
 }
 
-Button {
+.Thread_container {
+    height: 3fr;
+}
+
+.Status_text {
+    width: auto;
+    height: auto;
+}
+
+.ActionButtons {
     height: 1fr;
     width: 0.5fr;
     margin-left: 2;
+}
+
+.Docker_button {
+    width: 20%;
+    min-width: 10;
+    margin-left: 2;
+}
+
+Log {
+    overflow-x: hidden;
 }
 
 CustomContainer {
@@ -22,7 +40,7 @@ CustomScrollContainer {
 }
 
 DockerContainer {
-    height: 10;
+    height: auto;
 }
 
 MiniProgressBar {
