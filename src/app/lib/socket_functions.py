@@ -1,7 +1,7 @@
-from src.lib.sock_thread import sock_thread
+from src.lib.threads_socket_wrapper import threads_socket_wrapper
 from src.lib.server_codes import Server_codes
 
-def socket_func(thread:sock_thread):
+def socket_func(thread:threads_socket_wrapper):
     data = thread.send_recv(Server_codes.RUNNING_SERVERS, "")
 
     if (not data): 
@@ -9,7 +9,7 @@ def socket_func(thread:sock_thread):
     else:
         thread.return_val = data["data"]
 
-def socket_init(thread:sock_thread):
+def socket_init(thread:threads_socket_wrapper):
     data = thread.send_recv(Server_codes.ALL_SERVERS, "")
 
     if (not data): return
