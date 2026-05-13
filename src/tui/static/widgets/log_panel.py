@@ -1,7 +1,7 @@
 from textual.widgets import Log
 from collections import deque
 
-from src.tui.widgets.container import ScrollableContainer
+from .container import ScrollableContainer
 
 class LogPanel(ScrollableContainer):
     def __init__(self, **kwargs):
@@ -16,7 +16,7 @@ class LogPanel(ScrollableContainer):
         self.lines.append(text)
 
         self.log_el.clear()
-        self.log_el.write_lines(list(self.lines), True)
+        self.log_el.write_lines(list(self.lines))
 
     def clear(self):
         self.log_el.clear()

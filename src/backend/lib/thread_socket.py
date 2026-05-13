@@ -30,5 +30,6 @@ def socket_func(thread:threads_socket_wrapper):
 
     elif (incoming_data):
         thread.print("appending request")
+        
         with thread.data_handler as data:
             data["requests"].append(incoming_data)

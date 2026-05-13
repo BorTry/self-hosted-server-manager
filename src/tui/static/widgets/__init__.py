@@ -10,4 +10,3 @@ from .container import CustomContainer, CustomScrollContainer
 from .mini_widget import MiniWidget
 from .log_panel import LogPanel
 from .docker_container import DockerContainer
-

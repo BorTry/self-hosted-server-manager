@@ -1,19 +1,19 @@
+from textual import on
 from textual.app import App
 from textual.containers import Grid
 from textual.widgets import Button, Footer
 
-from src.tui.widgets import CustomContainer, CustomScrollContainer, MiniWidget, LogPanel, DockerContainer
+from src.tui.static.widgets import CustomContainer, CustomScrollContainer, MiniWidget, LogPanel, DockerContainer
 from src.lib import threading_data_handler, Server_codes
 
 from os import system, environ
-from json import dumps
 
 #system('mode con: cols=200 lines=36')
 
 environ["TEXTUAL_FPS"] = "10"
 
 class TextualApp(App):
-    CSS_PATH = "tcss/app.css"
+    CSS_PATH = "static/tcss/app.css"
 
     BINDINGS = [
         ("q", "quit", "Quit"),
@@ -75,17 +75,35 @@ class TextualApp(App):
             yield self.Buttons_container
 
         yield Footer()
+    
+    @on(Button.Pressed)
+    def handle_press(self, event:Button.Pressed):
+        name, action_name = event.button.id.split("-")
+        
+        if action_name == "restart":
+            self.logs.write("No restart yet")
+            return
+        
+        code = Server_codes.START_SERVER if action_name == "start" else Server_codes.STOP_SERVER
+
+        data_packet = {
+            "code": code,
+            "data": {"name": name.replace("_", " ")}
+        }
+
+        with self.data_handler as data:
+            data["requests"].append(data_packet)
 
     def on_mount(self):
-        self.set_interval(1, self.parse_container_info)
-
-        # update all docker containers
-        for rows in self.Docker_container.children:
-            rows.update_progress_bars(0, 0)
-            rows.update_status(False)
+        self.set_interval(0.5, self.parse_container_info)
 
     def parse_container_info(self):
         if not self.data_handler: return
+
+        # update all containers to be in their default state
+        for rows in self.Docker_container.children:
+            rows.update_progress_bars(0, 0)
+            rows.update_status(False)
 
         containers = None
         # Get all the container information in the data
@@ -98,6 +116,7 @@ class TextualApp(App):
         for container in containers:
             textual_container = self.Docker_container.query_one(f'#{parse_name(container["name"])}')
             textual_container.update_progress_bars(container["cpu"]/100, container["ram"]/100)
+            textual_container.update_status(True)
 
     def _parse_container_names(self):
         # Get the name of all available server

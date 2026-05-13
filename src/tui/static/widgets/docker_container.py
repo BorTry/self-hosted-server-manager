@@ -1,5 +1,5 @@
-from src.tui.widgets.mini_progress import MiniProgressBar
-from src.tui.widgets.mini_widget import MiniWidget
+from .mini_progress import MiniProgressBar
+from .mini_widget import MiniWidget
 
 from textual.containers import Horizontal, Vertical
 from textual.widgets import Button
@@ -12,6 +12,8 @@ class DockerContainer(MiniWidget):
         self.status = MiniWidget("", "Offline", classes="Status_text")
 
     def compose(self):
+        id_name = self.border_title
+
         with Horizontal() as hor:
             hor.styles.height = "auto"
 
@@ -28,9 +30,9 @@ class DockerContainer(MiniWidget):
             hor.styles.height = "auto"
             hor.styles.align_horizontal = "center"
 
-            yield Button("Start", classes="Docker_button")
-            yield Button("Stop", classes="Docker_button")
-            yield Button("Restart", classes="Docker_button")
+            yield Button("Start", classes="Docker_button", id=f'{self.border_title}-start')
+            yield Button("Stop", classes="Docker_button", id=f'{self.border_title}-stop')
+            yield Button("Restart", classes="Docker_button", id=f'{self.border_title}-restart')
 
     def update_progress_bars(self, cpu_val:int, ram_val:int):
         self.cpu_bar.update_progress(cpu_val)
