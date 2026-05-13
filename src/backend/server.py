@@ -1,15 +1,8 @@
 from threading import Event
-from multiprocessing import Pipe
-from src.backend.lib.init import init
+from src.backend.lib import socket_func, docker_func, docker_init, stop_frontend, start_frontend, docker_running, init
+from src.lib import thread_wrapper, threads_socket_wrapper, threading_data_handler
+
 init()
-
-from src.lib.threads_wrapper import thread_wrapper
-from src.lib.threads_socket_wrapper import threads_socket_wrapper
-from src.lib.threading_data_handler import threading_data_handler
-
-from src.backend.lib.thread_socket import socket_func
-from src.backend.lib.thread_docker import docker_func, docker_init
-from src.backend.lib.docker_functions import stop_frontend, start_frontend, docker_running
 
 DATA = threading_data_handler({
         "data":[],

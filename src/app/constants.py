@@ -1,7 +1,7 @@
 from json import load
 from os import path
 
-from src.lib.threads_socket_wrapper import threads_socket_wrapper
+from src.lib import threads_socket_wrapper
 from src.app.lib.socket_functions import socket_func, socket_init
 
 CONFIG_FILE = path.abspath("./resources/config.json")

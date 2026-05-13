@@ -1,4 +1,4 @@
-from src.lib.threads_socket_wrapper import threads_socket_wrapper
+from src.lib import threads_socket_wrapper
 from src.lib.server_codes import Server_codes
 
 def socket_func(thread:threads_socket_wrapper):
