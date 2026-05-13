@@ -1,6 +1,9 @@
 from threading import Event
+from time import sleep
+
 from src.backend.lib import socket_func, docker_func, docker_init, stop_frontend, start_frontend, docker_running, init
-from src.lib import thread_wrapper, threads_socket_wrapper, threading_data_handler
+from src.lib import thread_wrapper, threads_socket_wrapper, threading_data_handler, Server_codes
+from src.tui import TextualApp
 
 init()
 
@@ -73,6 +76,14 @@ def main():
 
     start_servers()
 
+    sleep(2)
+
+    try:
+        app = TextualApp(data_handler=DATA)
+        app.run()
+    except Exception as e:
+        print(e)
+        
     while True:
         try:
             user_in = input("Select Action: \n")

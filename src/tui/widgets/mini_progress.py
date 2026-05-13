@@ -1,7 +1,7 @@
 from textual.widgets import Static
 
 class MiniProgressBar(Static):
-    PROGRESS_STYLE = ("█", " ")
+    PROGRESS_STYLE = ("█", "░")
     BAR_COLORS = (
         (lambda x: x < .5, "green"),
         (lambda x: x < .8, "yellow"),
