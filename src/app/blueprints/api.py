@@ -3,7 +3,7 @@ from flask.views import MethodView
 from marshmallow import Schema, fields
 from flask import jsonify
 
-from src.app.constants import SOCKET_THREAD, ALL_SERVERS
+from src.app.lib.constants import SOCKET_THREAD, ALL_SERVERS
 from src.lib.server_codes import Server_codes
 
 def get_running_servers():

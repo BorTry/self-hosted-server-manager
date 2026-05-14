@@ -3,7 +3,7 @@ from flask.views import MethodView
 from flask import render_template, make_response, session, redirect
 from marshmallow import Schema, fields
 
-from src.app.constants import CREDENTIALS
+from src.app.lib.constants import CREDENTIALS
 
 blp = Blueprint("Sites", __name__)
 
