@@ -2,6 +2,8 @@ from json import load, dumps
 from platform import system
 from os import path
 
+from .constants import CONSTANTS
+
 CONFIG_FILE_PATH = path.abspath("./resources/config.json")
 SERVER_JSON_FILE_PATH = "./servers.json"
 
@@ -39,6 +41,9 @@ def fill_config():
         raise Exception("Something went wrong while opening config file")
 
     json_obj["os"] = system()
+
+    CONSTANTS.START_IN_TUI = json_obj["start_in_tui"]
+    CONSTANTS.OS = json_obj["os"]
 
     with open(CONFIG_FILE_PATH, "w") as file:
         file.write(dumps(json_obj, indent=4))

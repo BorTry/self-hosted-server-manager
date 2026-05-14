@@ -1,8 +1,7 @@
 from threading import Event
-from time import sleep
 
-from src.backend.lib import socket_func, docker_func, docker_init, stop_frontend, start_frontend, docker_running, init
-from src.lib import thread_wrapper, threads_socket_wrapper, threading_data_handler, Server_codes
+from src.backend.lib import socket_func, docker_func, docker_init, stop_frontend, start_frontend, docker_running, init, CONSTANTS
+from src.lib import thread_wrapper, threads_socket_wrapper, threading_data_handler
 from src.tui import TextualApp
 
 init()
@@ -23,7 +22,7 @@ DOCKER_THREAD = thread_wrapper(
     sleep_time=0.5
 ) # Talks to the docker engine
 
-PORT = 2024
+PORT = 3024
 ADDRESS = "0.0.0.0"
 
 SOCKET_THREAD = threads_socket_wrapper(
@@ -31,13 +30,11 @@ SOCKET_THREAD = threads_socket_wrapper(
     address=(ADDRESS, PORT),
     terminate_signal=thread_terminate_event,
     data_handler=DATA,
-    name="socket_thread"
+    name="main_socket_thread"
 ) # Talks to the frontend
 
-# The docker thread must be started before the com thread
-
 def start_servers():
-    print("============== Starting servers ==============")
+    print("\n============== Starting servers ==============\n\n")
     global DOCKER_THREAD, SOCKET_THREAD, thread_terminate_event
 
     DOCKER_THREAD.run()
@@ -46,7 +43,7 @@ def start_servers():
     start_frontend()
 
 def stop_servers():
-    print("============== Stopping servers ==============")
+    print("\n============== Stopping servers ==============\n\n")
     global DOCKER_THREAD, SOCKET_THREAD, thread_terminate_event
 
     thread_terminate_event.set()
@@ -75,23 +72,30 @@ def main():
         raise Exception("Docker is not running")
 
     start_servers()
+    
+    if (CONSTANTS.START_IN_TUI):
+        try:
+            app = TextualApp(data_handler=DATA)
+            app.run()
+        except Exception as e:
+            print(e)
 
-    sleep(2)
-
-    try:
-        app = TextualApp(data_handler=DATA)
-        app.run()
-    except Exception as e:
-        print(e)
-        
     while True:
         try:
-            user_in = input("Select Action: \n")
+            user_in = input("\n=================== Select Action ===================\n\n")
 
             if (user_in == "quit" or user_in == "q"):
                 break
             elif (user_in == "restart" or user_in == "r"):
                 restart_servers()
+            elif (user_in == "tui" or user_in == "t"):
+                try:
+                    app = TextualApp(data_handler=DATA)
+                    app.run()
+                except Exception as e:
+                    print(e)
+            else: 
+                print(f'There is no option for {user_in}. Use h for commands')
 
         except Exception as e:
             print(e)

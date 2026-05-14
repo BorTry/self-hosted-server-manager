@@ -1,6 +1,11 @@
 from json import load
 from docker import from_env, errors
 from os import cpu_count
+from time import sleep
+
+
+from .constants import CONSTANTS
+from multiprocessing import Process
 
 CLIENT = from_env()
 SERVER_JSON = None
@@ -121,7 +126,13 @@ def wait_for_shutdown(container_name):
 
 # ============================ Container manipulation ============================
 
-def stop_frontend(): 
+def stop_frontend(process:Process=None): 
+    if (not process and CONSTANTS.OS == "Darwin"): return
+    if (process or CONSTANTS.OS == "Darwin"):
+        process.close()
+        process.join()
+        return False
+    
     # check to see if the docker container exists at all
     if (not len(CLIENT.containers.list(filters={"name": "frontend_server"}))):
         raise Exception("Front end container is not running")

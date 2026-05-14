@@ -50,8 +50,8 @@ class TextualApp(App):
                 "Threads",
                 (1, 4),
                 MiniWidget("Docker", classes="Content_container Thread_container"),
-                MiniWidget("Communication", classes="Content_container Thread_container"),
                 MiniWidget("Socket", classes="Content_container Thread_container"),
+                MiniWidget("Frontend", classes="Content_container Thread_container"),
                 layout="vertical",
             )
 

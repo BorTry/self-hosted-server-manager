@@ -1,5 +1,6 @@
 {
     "os": "Windows",
     "admin_username": "a",
-    "admin_password": "b"
+    "admin_password": "b",
+    "start_in_tui": false
 }
