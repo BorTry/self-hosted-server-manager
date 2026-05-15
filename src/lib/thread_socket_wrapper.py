@@ -1,4 +1,3 @@
-from src.lib.threads_wrapper import thread_wrapper
 from socket import socket, AF_INET, SOCK_DGRAM
 from json import load, dumps, loads
 from os import path, unlink
@@ -6,7 +5,8 @@ from os import path, unlink
 from typing import Callable, Any
 from threading import Event
 
-from src.lib.threading_data_handler import threading_data_handler
+from .thread_wrapper import thread_wrapper
+from .thread_data_handler import thread_data_handler
 
 BUFFER_SIZE = 1024
 CONNECTION_TYPE = [AF_INET, SOCK_DGRAM]
@@ -31,10 +31,10 @@ if (CONFIG_JSON["os"] == "Linux"):
         if path.exists(SOCK_PATH):
             raise RuntimeError("Socket Unix file exists when it shouldn't, see if a file with name 'sock' is in ./resources")
 
-class threads_socket_wrapper(thread_wrapper):
+class thread_socket_wrapper(thread_wrapper):
     __slots__ = ("address", "target_address", "socket")
 
-    def __init__(self, target:Callable=None, init:Callable=None, address:tuple[str, int]=None, target_address:tuple[str, int]=None, data_handler:threading_data_handler=None, terminate_signal:Event=None, name:str="thread", sleeptime:float=0.0):
+    def __init__(self, target:Callable=None, init:Callable=None, address:tuple[str, int]=None, target_address:tuple[str, int]=None, data_handler:thread_data_handler=None, terminate_signal:Event=None, name:str="thread", sleeptime:float=0.0):
         if (not address):
             raise Exception("Socket thread needs an address to bind to")
 
@@ -82,7 +82,7 @@ class threads_socket_wrapper(thread_wrapper):
             self.socket.close()
 
     def get_new_instance(self):
-        return threads_socket_wrapper(self.target, self.init, self.address, self.target_address, self.terminate_signal, self.name, self.sleep_time)
+        return thread_socket_wrapper(self.target, self.init, self.address, self.target_address, self.terminate_signal, self.name, self.sleep_time)
 
 def encode(data:Any):
     return dumps(data).encode("utf-8")

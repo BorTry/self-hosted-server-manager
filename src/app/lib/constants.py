@@ -1,7 +1,7 @@
 from json import load
 from os import path
 
-from src.lib import threads_socket_wrapper
+from src.lib import thread_socket_wrapper
 from src.app.lib.socket_functions import socket_func, socket_init
 
 CONFIG_FILE = path.abspath("./resources/config.json")
@@ -21,7 +21,7 @@ OWN_PORT = 2024
 TARGET_ADDRESS = "host.docker.internal"
 TARGET_PORT = 3024
 
-SOCKET_THREAD = threads_socket_wrapper(
+SOCKET_THREAD = thread_socket_wrapper(
     target=socket_func,
     init=socket_init,
     address=(ADDRESS, OWN_PORT),

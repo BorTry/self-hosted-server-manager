@@ -3,8 +3,7 @@ from docker import from_env, errors
 from os import cpu_count
 from time import sleep
 
-
-from .constants import CONSTANTS
+from src.lib.constants import CONSTANTS
 from multiprocessing import Process
 
 CLIENT = from_env()
@@ -165,4 +164,15 @@ def start_server(server_name:str):
     if (not container): return
 
     container = CLIENT.containers.get(container_name)
+    container.start()
+
+def restart_server(server_name:str):
+    container_name = convert_server_name(server_name)
+    container = get_container(container_name)
+
+    if (not container): return
+
+    container = CLIENT.containers.get(container_name)
+    container.stop()
+    container.wait()
     container.start()

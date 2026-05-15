@@ -1,7 +1,6 @@
-from src.lib.threads_socket_wrapper import threads_socket_wrapper
-from src.lib.server_codes import Server_codes
+from src.lib import thread_socket_wrapper, Server_codes
 
-def socket_func(thread:threads_socket_wrapper):
+def socket_func(thread:thread_socket_wrapper):
     data_packet, from_address = thread.recv()
 
     if (not data_packet): return

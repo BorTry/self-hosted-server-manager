@@ -1,12 +1,12 @@
 from threading import Event
 
-from src.backend.lib import socket_func, docker_func, docker_init, stop_frontend, start_frontend, docker_running, init, CONSTANTS
-from src.lib import thread_wrapper, threads_socket_wrapper, threading_data_handler
+from src.backend.lib import socket_func, docker_func, docker_init, stop_frontend, start_frontend, docker_running, init
+from src.lib import thread_wrapper, thread_socket_wrapper, thread_data_handler, CONSTANTS
 from src.tui import TextualApp
 
 init()
 
-DATA = threading_data_handler({
+DATA = thread_data_handler({
         "data":[],
         "requests": []
     })
@@ -25,7 +25,7 @@ DOCKER_THREAD = thread_wrapper(
 PORT = 3024
 ADDRESS = "0.0.0.0"
 
-SOCKET_THREAD = threads_socket_wrapper(
+SOCKET_THREAD = thread_socket_wrapper(
     target=socket_func,
     address=(ADDRESS, PORT),
     terminate_signal=thread_terminate_event,

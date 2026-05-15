@@ -5,11 +5,13 @@ from textual.containers import Horizontal, Vertical
 from textual.widgets import Button
 
 class DockerContainer(MiniWidget):
-    def __init__(self, border_title, **kwargs):
+    def __init__(self, border_title, add_buttons=True, **kwargs):
         super().__init__(border_title, classes="Content_container", **kwargs)
         self.cpu_bar = MiniProgressBar("CPU", id=f'{border_title}_CPU', classes="ResourceBar")
         self.ram_bar = MiniProgressBar("RAM", id=f'{border_title}_RAM', classes="ResourceBar")
         self.status = MiniWidget("", "Offline", classes="Status_text")
+
+        self.add_buttons = add_buttons
 
     def compose(self):
         id_name = self.border_title
@@ -26,13 +28,14 @@ class DockerContainer(MiniWidget):
             yield self.cpu_bar
             yield self.ram_bar
 
-        with Horizontal() as hor:
-            hor.styles.height = "auto"
-            hor.styles.align_horizontal = "center"
+        if (self.add_buttons):
+            with Horizontal() as hor:
+                hor.styles.height = "auto"
+                hor.styles.align_horizontal = "center"
 
-            yield Button("Start", classes="Docker_button", id=f'{self.border_title}-start')
-            yield Button("Stop", classes="Docker_button", id=f'{self.border_title}-stop')
-            yield Button("Restart", classes="Docker_button", id=f'{self.border_title}-restart')
+                yield Button("Start", classes="Docker_button", id=f'{self.border_title}-start')
+                yield Button("Stop", classes="Docker_button", id=f'{self.border_title}-stop')
+                yield Button("Restart", classes="Docker_button", id=f'{self.border_title}-restart')
 
     def update_progress_bars(self, cpu_val:int, ram_val:int):
         self.cpu_bar.update_progress(cpu_val)

@@ -1,8 +1,7 @@
 """
 Run function for the docker thread
 """
-from src.lib.threads_wrapper import thread_wrapper
-from src.lib.server_codes import Server_codes
+from src.lib import thread_wrapper, Server_codes
 from src.backend.lib.docker_functions import *
 
 CONTAINERS = [None] * 10
@@ -29,6 +28,8 @@ def docker_func(thread:thread_wrapper):
                 start_server(data_packet["data"]["name"])
             case Server_codes.STOP_SERVER:
                 stop_server(data_packet["data"]["name"])
+            case Server_codes.RESTART_SERVER:
+                restart_server(data_packet["data"]["name"])
 
     with thread.data_handler as data:
         data["requests"] = []

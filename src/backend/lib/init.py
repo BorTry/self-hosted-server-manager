@@ -2,7 +2,7 @@ from json import load, dumps
 from platform import system
 from os import path
 
-from .constants import CONSTANTS
+from src.lib import CONSTANTS
 
 CONFIG_FILE_PATH = path.abspath("./resources/config.json")
 SERVER_JSON_FILE_PATH = "./servers.json"

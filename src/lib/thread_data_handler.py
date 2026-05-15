@@ -1,7 +1,7 @@
 from multiprocessing import Lock
 from typing import Any
 
-class threading_data_handler:
+class thread_data_handler:
     """
     simple data handler. ensures locking and unlocking of a resource so it can be used by several threads
 

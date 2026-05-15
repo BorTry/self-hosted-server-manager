@@ -4,7 +4,7 @@ from textual.containers import Grid
 from textual.widgets import Button, Footer
 
 from src.tui.static.widgets import CustomContainer, CustomScrollContainer, MiniWidget, LogPanel, DockerContainer
-from src.lib import threading_data_handler, Server_codes
+from src.lib import thread_data_handler, Server_codes
 
 from os import system, environ
 
@@ -19,7 +19,7 @@ class TextualApp(App):
         ("q", "quit", "Quit"),
     ]
 
-    def __init__(self, data_handler:threading_data_handler=None):
+    def __init__(self, data_handler:thread_data_handler=None):
         super().__init__()
         self.data_handler = data_handler
 
@@ -31,6 +31,7 @@ class TextualApp(App):
         self.Thread_container = None
         self.Docker_container = None
         self.Buttons_container = None
+        self.Front_end_container = None
 
         self._parse_container_names()
 
@@ -48,12 +49,12 @@ class TextualApp(App):
 
             self.Thread_container = CustomContainer(
                 "Threads",
-                (1, 4),
+                (1, 3),
                 MiniWidget("Docker", classes="Content_container Thread_container"),
                 MiniWidget("Socket", classes="Content_container Thread_container"),
-                MiniWidget("Frontend", classes="Content_container Thread_container"),
                 layout="vertical",
             )
+            
 
             self.Docker_container =  CustomScrollContainer(
                 "Docker Containers",
@@ -62,6 +63,12 @@ class TextualApp(App):
                 *self.docker_containers
             )
 
+            self.Front_end_container = CustomContainer(
+                "Frontend", 
+                (1, 1),
+                DockerContainer("Frontend", add_buttons=False, id="Frontend"),
+            )
+            
             self.Buttons_container = CustomContainer(
                 "Actions", 
                 (1, 1), 
@@ -72,6 +79,7 @@ class TextualApp(App):
             yield self.Log_container
             yield self.Thread_container
             yield self.Docker_container
+            yield self.Front_end_container
             yield self.Buttons_container
 
         yield Footer()
@@ -80,11 +88,13 @@ class TextualApp(App):
     def handle_press(self, event:Button.Pressed):
         name, action_name = event.button.id.split("-")
         
+        code = Server_codes.START_SERVER 
+
+        if action_name == "stop":
+            code = Server_codes.STOP_SERVER
+
         if action_name == "restart":
-            self.logs.write("No restart yet")
-            return
-        
-        code = Server_codes.START_SERVER if action_name == "start" else Server_codes.STOP_SERVER
+            code = Server_codes.RESTART_SERVER 
 
         data_packet = {
             "code": code,
