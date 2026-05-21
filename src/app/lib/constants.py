@@ -1,20 +1,5 @@
-from json import load
-from os import path
-
 from src.lib import thread_socket_wrapper
 from src.app.lib.socket_functions import socket_func, socket_init
-
-CONFIG_FILE = path.abspath("./resources/config.json")
-
-CREDENTIALS = None
-
-with open(CONFIG_FILE, "r") as file:
-    config_dict = load(file)
-    CREDENTIALS = {
-        "admin_password" : config_dict["admin_password"],
-        "admin_username" : config_dict["admin_username"]
-    }
-    OS = config_dict["os"]
 
 ADDRESS = "0.0.0.0"
 OWN_PORT = 2024

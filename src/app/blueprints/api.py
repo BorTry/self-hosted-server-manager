@@ -4,7 +4,7 @@ from marshmallow import Schema, fields
 from flask import jsonify
 
 from src.app.lib.constants import SOCKET_THREAD, ALL_SERVERS
-from src.lib.server_codes import Server_codes
+from src.lib import Server_codes
 
 def get_running_servers():
     return SOCKET_THREAD.return_val

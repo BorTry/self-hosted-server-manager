@@ -1,5 +1,5 @@
 from src.lib import thread_socket_wrapper
-from src.lib.server_codes import Server_codes
+from src.lib import Server_codes
 
 def socket_func(thread:thread_socket_wrapper):
     data = thread.send_recv(Server_codes.RUNNING_SERVERS, "")

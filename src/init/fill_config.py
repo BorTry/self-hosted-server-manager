@@ -22,6 +22,8 @@ def fill_config():
 
     CONSTANTS.START_IN_TUI = json_obj["start_in_tui"]
     CONSTANTS.OS = json_obj["os"]
+    CONSTANTS.CREDENTIALS["username"] = json_obj["admin_username"]
+    CONSTANTS.CREDENTIALS["password"] = json_obj["admin_password"]
 
     with open(CONSTANTS.CONFIG_FILE_PATH, "w") as file:
         file.write(dumps(json_obj, indent=4))

@@ -8,3 +8,9 @@ class Server_codes:
     START_SERVER = 10
     STOP_SERVER = 11
     RESTART_SERVER = 12
+
+    CHECK_CREDENTIALS = 20
+    CREDENTIALS_OK = 21
+
+    OK = 30
+    BAD = 40
