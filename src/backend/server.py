@@ -1,17 +1,20 @@
 from threading import Event
 
-from src.backend.lib import socket_func, docker_func, docker_init, stop_frontend, start_frontend, docker_running, init
+from src.backend.lib import socket_func, docker_func, docker_init, stop_frontend, start_frontend, docker_running
 from src.lib import thread_wrapper, thread_socket_wrapper, thread_data_handler, CONSTANTS
 from src.tui import TextualApp
+from src.init import init
 
 init()
 
 DATA = thread_data_handler({
-        "data":[],
+        "data":[None for _ in range(10)],
         "requests": []
     })
 
 thread_terminate_event = Event()
+
+TUI = TextualApp(data_handler=DATA)
 
 DOCKER_THREAD = thread_wrapper(
     target=docker_func,
@@ -73,10 +76,9 @@ def main():
 
     start_servers()
     
-    if (CONSTANTS.START_IN_TUI):
+    if CONSTANTS.START_IN_TUI:
         try:
-            app = TextualApp(data_handler=DATA)
-            app.run()
+            TUI.run()
         except Exception as e:
             print(e)
 
@@ -90,8 +92,8 @@ def main():
                 restart_servers()
             elif (user_in == "tui" or user_in == "t"):
                 try:
-                    app = TextualApp(data_handler=DATA)
-                    app.run()
+                    TUI = TextualApp(data_handler=DATA)
+                    TUI.run()
                 except Exception as e:
                     print(e)
             else: 

@@ -18,8 +18,6 @@ def docker_func(thread:thread_wrapper):
         data["data"] = CONTAINERS
         requests = data["requests"]
 
-    #thread.print(requests)
-
     if (not len(requests)): return
     # use the data to try to start or stop a server
     for data_packet in requests:

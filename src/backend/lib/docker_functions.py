@@ -1,12 +1,8 @@
 from json import load
-from docker import from_env, errors
 from os import cpu_count
-from time import sleep
+from python_on_whales import docker, DockerException
 
-from src.lib.constants import CONSTANTS
-from multiprocessing import Process
-
-CLIENT = from_env()
+CLIENT = docker
 SERVER_JSON = None
 CORE_COUNT = cpu_count()
 
@@ -15,9 +11,9 @@ with open("./servers.json", "r") as file:
 
 def docker_running():
     try:
-        CLIENT.ping()
+        CLIENT.system.info()
         return True
-    except errors.DockerException:
+    except DockerException:
         return False
     
 def convert_container_name(container_name:str):
@@ -27,18 +23,19 @@ def convert_server_name(server_name:str):
     return f'{SERVER_JSON["server_names_to_container"][server_name]}_server'
 
 def get_container(container_name:str, all=False):
-    if (not CLIENT.containers.list(filters={"name":container_name}, all=all)):
+    container = CLIENT.ps(filters={"name":container_name}, all=all)
+    if (not container):
         print(f"container {container_name} does not exist, or is not running")
         return False
 
-    return CLIENT.containers.get(container_name)
+    return container
 
 def get_container_count(all:bool=False):
-    return len(CLIENT.containers.list(all=all))
+    return len(CLIENT.ps(all=all))
 
 def get_container_names(all:bool=False):
     fin_arr = []
-    containers = CLIENT.containers.list(all=all)
+    containers = CLIENT.ps(all=all)
 
     # Filter out the names
     for con in containers:
@@ -125,28 +122,20 @@ def wait_for_shutdown(container_name):
 
 # ============================ Container manipulation ============================
 
-def stop_frontend(process:Process=None): 
-    if (not process and CONSTANTS.OS == "Darwin"): return
-    if (process or CONSTANTS.OS == "Darwin"):
-        process.close()
-        process.join()
-        return False
-    
+def stop_frontend(): 
     # check to see if the docker container exists at all
-    if (not len(CLIENT.containers.list(filters={"name": "frontend_server"}))):
+    if (not len(CLIENT.ps(filters={"name": "frontend_server"}))):
         raise Exception("Front end container is not running")
     
-    frontend = CLIENT.containers.get("frontend_server")
-    frontend.stop()
-    frontend.wait()
+    CLIENT.stop("frontend_server")
+    CLIENT.wait("frontend_server")
 
 def start_frontend(): 
     # check to see if the docker container exists at all
-    if (not len(CLIENT.containers.list(filters={"name": "frontend_server"}, all=True))):
+    if (not len(CLIENT.ps(filters={"name": "frontend_server"}, all=True))):
         raise Exception("Front end container does not exist")
     
-    frontend = CLIENT.containers.get("frontend_server")
-    frontend.start()
+    CLIENT.start("frontend_server")
 
 def stop_server(server_name:str):
     container_name = convert_server_name(server_name)
@@ -154,8 +143,7 @@ def stop_server(server_name:str):
 
     if (not container): return
 
-    container = CLIENT.containers.get(container_name)
-    container.stop()
+    CLIENT.stop(container_name)
 
 def start_server(server_name:str):
     container_name = convert_server_name(server_name)
@@ -163,8 +151,7 @@ def start_server(server_name:str):
 
     if (not container): return
 
-    container = CLIENT.containers.get(container_name)
-    container.start()
+    CLIENT.start(container_name)
 
 def restart_server(server_name:str):
     container_name = convert_server_name(server_name)
@@ -172,7 +159,4 @@ def restart_server(server_name:str):
 
     if (not container): return
 
-    container = CLIENT.containers.get(container_name)
-    container.stop()
-    container.wait()
-    container.start()
+    CLIENT.restart(container_name)
