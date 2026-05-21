@@ -2,7 +2,6 @@ from json import load
 from os import cpu_count
 from python_on_whales import docker, DockerException
 
-CLIENT = docker
 SERVER_JSON = None
 CORE_COUNT = cpu_count()
 
@@ -11,7 +10,7 @@ with open("./servers.json", "r") as file:
 
 def docker_running():
     try:
-        CLIENT.system.info()
+        docker.system.info()
         return True
     except DockerException:
         return False
@@ -23,7 +22,7 @@ def convert_server_name(server_name:str):
     return f'{SERVER_JSON["server_names_to_container"][server_name]}_server'
 
 def get_container(container_name:str, all=False):
-    container = CLIENT.ps(filters={"name":container_name}, all=all)
+    container = docker.ps(filters={"name":container_name}, all=all)
     if (not container):
         print(f"container {container_name} does not exist, or is not running")
         return False
@@ -31,11 +30,11 @@ def get_container(container_name:str, all=False):
     return container
 
 def get_container_count(all:bool=False):
-    return len(CLIENT.ps(all=all))
+    return len(docker.ps(all=all))
 
 def get_container_names(all:bool=False):
     fin_arr = []
-    containers = CLIENT.ps(all=all)
+    containers = docker.ps(all=all)
 
     # Filter out the names
     for con in containers:
@@ -48,23 +47,43 @@ def get_container_names(all:bool=False):
 def get_resource_use_for_containers():
     fin_arr = []
 
-    all_containers = CLIENT.stats()
+    all_containers = docker.ps()
+    all_stats = docker.stats()
 
-    for server in all_containers:
+    memory_usage = {}
+
+    # map the memory usage to each container name
+    for server in all_stats:
         c_name = convert_container_name(server.container_name)
         if (not (c_name in SERVER_JSON["container_to_server_names"])): continue
 
-        print(server)
+        memory_usage[c_name] = server.memory_percentage
+
+    for server in all_containers:
+        c_name = convert_container_name(server.name)
+        if (not (c_name in SERVER_JSON["container_to_server_names"])): continue
 
         fin_arr.append(
             {
                 "name": SERVER_JSON["container_to_server_names"][c_name],
-                "ram": server.memory_percentage,
-                "cpu": server.cpu_percentage
+                "ram": memory_usage[c_name],
+                "cpu": get_cpu(server)
             }
         )
 
     return fin_arr
+
+def get_cpu(container) -> float | None:
+    if container.host_config.nano_cpus:
+        return container.host_config.nano_cpus / 1_000_000_000
+
+    if container.host_config.cpu_quota and container.host_config.cpu_period:
+        return container.host_config.cpu_quota / container.host_config.cpu_period
+
+    if container.host_config.cpuset_cpus:
+        return len(container.host_config.cpuset_cpus.split(","))
+
+    return None
 
 def wait_for_shutdown(container_name):
     container = get_container(container_name)
@@ -78,18 +97,18 @@ def wait_for_shutdown(container_name):
 
 def stop_frontend(): 
     # check to see if the docker container exists at all
-    if (not len(CLIENT.ps(filters={"name": "frontend_server"}))):
+    if (not len(docker.ps(filters={"name": "frontend_server"}))):
         raise Exception("Front end container is not running")
     
-    CLIENT.stop("frontend_server")
-    CLIENT.wait("frontend_server")
+    docker.stop("frontend_server")
+    docker.wait("frontend_server")
 
 def start_frontend(): 
     # check to see if the docker container exists at all
-    if (not len(CLIENT.ps(filters={"name": "frontend_server"}, all=True))):
+    if (not len(docker.ps(filters={"name": "frontend_server"}, all=True))):
         raise Exception("Front end container does not exist")
     
-    CLIENT.start("frontend_server")
+    docker.start("frontend_server")
 
 def stop_server(server_name:str):
     container_name = convert_server_name(server_name)
@@ -97,7 +116,7 @@ def stop_server(server_name:str):
 
     if (not container): return
 
-    CLIENT.stop(container_name)
+    docker.stop(container_name)
 
 def start_server(server_name:str):
     container_name = convert_server_name(server_name)
@@ -105,7 +124,7 @@ def start_server(server_name:str):
 
     if (not container): return
 
-    CLIENT.start(container_name)
+    docker.start(container_name)
 
 def restart_server(server_name:str):
     container_name = convert_server_name(server_name)
@@ -113,4 +132,4 @@ def restart_server(server_name:str):
 
     if (not container): return
 
-    CLIENT.restart(container_name)
+    docker.restart(container_name)

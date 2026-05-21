@@ -28,7 +28,7 @@ def socket_func(thread:thread_socket_wrapper):
         thread.send(return_data, target=from_address)
 
     elif (incoming_data):
-        thread.print("appending request")
+        thread.print("appending request ->", f'{incoming_data}')
         
         with thread.data_handler as data:
             data["requests"].append(incoming_data)
