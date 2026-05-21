@@ -1,22 +1,40 @@
 from textual.widgets import Log
-from collections import deque
 
 from .container import ScrollableContainer
+from src.lib import get_logger
+
+MAX_LENGTH = 300
 
 class LogPanel(ScrollableContainer):
     def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-
-    def __init__(self):
         self.log_el = Log()
-        self.lines = deque(maxlen=100)
-        super().__init__(self.log_el)
+        self.logger = get_logger("Logpanel", self.write)
+        self.lines = self.logger.get_history()
+        self.length = 0
 
-    def write(self, text:str):
-        self.lines.append(text)
+        super().__init__(self.log_el, **kwargs)
 
-        self.log_el.clear()
-        self.log_el.write_lines(list(self.lines))
+    def on_mount(self):
+        for line in self.lines:
+            self.write(line)
+
+    def write(self, *text:list[str]):
+        if not self.is_running: return
+
+        if self.length >= MAX_LENGTH:
+            self.lines = self.logger.get_history()
+
+            for line in self.lines:
+                self.write(line)
+            self.length = 0
+
+        string = ""
+
+        for entry in text:
+            string += f'{entry} '
+
+        self.log_el.write_line(f'{string}\n')
+        self.length += 1
 
     def clear(self):
         self.log_el.clear()

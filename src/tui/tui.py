@@ -6,9 +6,7 @@ from textual.widgets import Button, Footer
 from src.tui.static.widgets import CustomContainer, CustomScrollContainer, MiniWidget, LogPanel, DockerContainer
 from src.lib import thread_data_handler, Server_codes
 
-from os import system, environ
-
-#system('mode con: cols=200 lines=36')
+from os import environ
 
 environ["TEXTUAL_FPS"] = "10"
 
@@ -20,12 +18,13 @@ class TextualApp(App):
     ]
 
     def __init__(self, data_handler:thread_data_handler=None):
+        self.logs = LogPanel()
+
         super().__init__()
+
         self.data_handler = data_handler
 
         self.docker_containers = []
-        self.logs = LogPanel()
-
         
         self.Log_container = None
         self.Thread_container = None
@@ -49,7 +48,7 @@ class TextualApp(App):
 
             self.Thread_container = CustomContainer(
                 "Threads",
-                (1, 3),
+                (1, 2),
                 MiniWidget("Docker", classes="Content_container Thread_container"),
                 MiniWidget("Socket", classes="Content_container Thread_container"),
                 layout="vertical",
@@ -65,7 +64,7 @@ class TextualApp(App):
 
             self.Front_end_container = CustomContainer(
                 "Frontend", 
-                (1, 1),
+                (1, 2),
                 DockerContainer("Frontend", add_buttons=False, id="Frontend"),
             )
             
@@ -106,6 +105,7 @@ class TextualApp(App):
 
     def on_mount(self):
         self.set_interval(0.5, self.parse_container_info)
+       # self.set_interval(0.5, lambda _: self.logs.logger.log("hello"))
 
     def parse_container_info(self):
         if not self.data_handler: return
@@ -145,7 +145,3 @@ class TextualApp(App):
 
 def parse_name(name:str):
     return name.replace(" ", "_")
-
-if __name__ == "__main__":
-    app = TextualApp()
-    app.run()
