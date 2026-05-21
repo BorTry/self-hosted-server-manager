@@ -43,74 +43,28 @@ def get_container_names(all:bool=False):
 
     return fin_arr
 
-def filter_container_names(container_names:str):
-    fin_arr = []
-    # Filters out the actual name of the containers, for predefined names / prettier names :)
-    for con_name in container_names:
-        cut_down_name = convert_container_name(con_name)
-
-        if not (cut_down_name in SERVER_JSON["container_to_server_names"]):
-            continue
-
-        fin_arr.append(SERVER_JSON["container_to_server_names"][cut_down_name])
-    return fin_arr
-
 # ============================ Container stats ============================
 
-def get_resource_use_for_containers(server_names:tuple[str]):
+def get_resource_use_for_containers():
     fin_arr = []
 
-    for server_name in server_names:
-        container = get_container(convert_server_name(server_name))
+    all_containers = CLIENT.stats()
 
-        if (not container): continue
+    for server in all_containers:
+        c_name = convert_container_name(server.container_name)
+        if (not (c_name in SERVER_JSON["container_to_server_names"])): continue
 
-        stats = get_container_stats(container)
-        
-        if (not stats): continue
-        
+        print(server)
+
         fin_arr.append(
             {
-                "name": server_name,
-                "ram": get_container_ramusage(stats),
-                "cpu": get_cpu_percentage(stats)
+                "name": SERVER_JSON["container_to_server_names"][c_name],
+                "ram": server.memory_percentage,
+                "cpu": server.cpu_percentage
             }
         )
 
     return fin_arr
-
-def get_container_stats(container):
-    if (not container): return False
-
-    stats = container.stats(stream=False)
-
-    if (not ("memory_stats" in stats) or not ("cpu_stats" in stats)): return False
-
-    return stats
-
-def get_cpu_percentage(stats):
-    try:
-        # Calculate deltas between current and previous stats 
-        cpu_delta = stats["cpu_stats"]["cpu_usage"]["total_usage"] - stats["precpu_stats"]["cpu_usage"]["total_usage"]
-        system_delta = stats["cpu_stats"]["system_cpu_usage"] - stats["precpu_stats"]["system_cpu_usage"]
-
-        if system_delta > 0.0 and cpu_delta > 0.0:
-            return round((cpu_delta / system_delta) * 100.0)
-        return 0.0
-    except:
-        return 0
-
-def get_container_ramusage(stats):
-    try:
-        mem_usage = stats["memory_stats"]["usage"]
-        # Subtract cache to get precise active memory (varies by cgroup version)
-        cache = stats["memory_stats"]["stats"].get("inactive_file", 0) 
-        used_memory = mem_usage - cache
-        limit = stats["memory_stats"]["limit"]
-
-        return round((used_memory / limit) * 100) # out of 100
-    except:
-        return 0
 
 def wait_for_shutdown(container_name):
     container = get_container(container_name)

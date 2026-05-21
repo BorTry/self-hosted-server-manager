@@ -17,7 +17,7 @@ class logger:
         self.log_callback = cb
 
     def log(self, *msg:str) -> None:
-        print(msg, file=self.stdout)
+        print(*msg, file=self.stdout)
 
         self.history.append(msg)
 

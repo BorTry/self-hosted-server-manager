@@ -18,7 +18,7 @@ class LogPanel(ScrollableContainer):
         for line in self.lines:
             self.write(line)
 
-    def write(self, *text:list[str]):
+    def write(self, text:list[str]):
         if not self.is_running: return
 
         if self.length >= MAX_LENGTH:

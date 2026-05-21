@@ -8,8 +8,7 @@ CONTAINERS = [None] * 10
 
 def docker_func(thread:thread_wrapper):
     # get all running servers
-    all_containers = filter_container_names(get_container_names())
-    resources_used = get_resource_use_for_containers(all_containers)
+    resources_used = get_resource_use_for_containers()
 
     CONTAINERS[Server_codes.RUNNING_SERVERS] = resources_used
     requests = []
