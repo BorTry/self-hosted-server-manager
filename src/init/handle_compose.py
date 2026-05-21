@@ -1,8 +1,7 @@
-from os import path
 from hashlib import sha256
 from functools import partial
 from python_on_whales import DockerClient, DockerException
-
+from yaml import safe_load
 
 CHUNK_SIZE = 4096
 COMPOSE_FILE_PATH = "./compose.yaml"
@@ -26,3 +25,42 @@ def docker_compose():
     except DockerException as e:
         print(f'Exited compose with error {e}')
         return False
+    
+def format_compose_file():
+    data = None
+    with open("compose.yaml", "r") as f:
+        data = safe_load(f)
+        services = data.get('services', {})
+
+        for service in services:
+            if service == "frontend": continue
+
+            services[service]["volumes"] = [f'../server_data/{service}:/data']
+            services[service]["working_dir"] = "/data"
+
+    with open("compose.yaml", "w") as f:
+        f.write(_convert_obj_to_str(data)[0])
+
+    return True
+
+def _convert_obj_to_str(obj, depth=0):
+    if (not (type(obj) is dict)): 
+        if (not (type(obj) is list)): return f'{obj}' + "\n", False
+
+        string = "\n"
+
+        for value in obj:
+            string += "  "*depth + f'- {value}' + "\n" 
+        return string, False
+
+    string = ''
+
+    for values in obj:
+        formatted_str, is_dict = _convert_obj_to_str(obj[values], depth+1)
+
+        string += "  "*depth + f'{values}: {"\n" if is_dict else ""}{formatted_str}'
+
+    if depth == 2 or depth == 1:
+        string += "\n"
+
+    return string, True

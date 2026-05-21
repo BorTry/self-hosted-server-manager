@@ -61,7 +61,7 @@ def get_resource_use_for_containers():
 
     for server in all_containers:
         c_name = convert_container_name(server.name)
-        if (not (c_name in SERVER_JSON["container_to_server_names"])): continue
+        if (not (c_name in SERVER_JSON["container_to_server_names"]) or not (c_name in memory_usage)): continue
 
         fin_arr.append(
             {

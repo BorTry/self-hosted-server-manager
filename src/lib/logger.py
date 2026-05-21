@@ -16,13 +16,16 @@ class logger:
     def change_log_cb(self, cb:callable):
         self.log_callback = cb
 
-    def log(self, *msg:str) -> None:
-        print(*msg, file=self.stdout)
-
+    def log_only(self, *msg:str):
         self.history.append(msg)
 
         if self.log_callback:
             self.log_callback(msg)
+
+    def log(self, *msg:str) -> None:
+        print(*msg, file=self.stdout)
+
+        self.log_only(*msg)
 
     def get_history(self):
         return self.history

@@ -2,7 +2,7 @@ from json import load, dumps
 from platform import system
 
 from src.lib import CONSTANTS
-from .handle_compose import hash_compose_file, docker_compose
+from .handle_compose import hash_compose_file, docker_compose, format_compose_file
 
 def fill_config():
     json_obj = None
@@ -17,11 +17,12 @@ def fill_config():
 
     new_compose_hash = hash_compose_file()
 
-    if new_compose_hash != json_obj["compose_hash"] and docker_compose():
-        json_obj["compose_hash"] = new_compose_hash
+    if new_compose_hash != json_obj["compose_hash"] and format_compose_file() and docker_compose():
+        json_obj["compose_hash"] = hash_compose_file()
 
     CONSTANTS.START_IN_TUI = json_obj["start_in_tui"]
     CONSTANTS.OS = json_obj["os"]
+
     CONSTANTS.CREDENTIALS["username"] = json_obj["admin_username"]
     CONSTANTS.CREDENTIALS["password"] = json_obj["admin_password"]
 
