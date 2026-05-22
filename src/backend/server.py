@@ -2,8 +2,8 @@ from threading import Event
 
 from src.backend.lib import socket_func, docker_func, docker_init, stop_frontend, start_frontend, docker_running
 from src.lib import thread_wrapper, thread_socket_wrapper, thread_data_handler, CONSTANTS
-from src.tui import TextualApp
-from src.init import init
+from src.lib.tui import TextualApp
+from src.lib.init import init
 
 init()
 

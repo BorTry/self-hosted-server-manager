@@ -80,7 +80,7 @@ class admin_page(MethodView):
         username = session["username"]
         password = session["password"]
 
-        packet = SOCKET_THREAD.send_recv(Server_codes.CHECK_CREDENTIALS, {"username":username, "password": password})
+        packet = SOCKET_THREAD.send_recv(Server_codes.CHECK_REPEATED_CREDENTIALS, {"username":username, "password": password})
 
         if (packet["code"] != Server_codes.CREDENTIALS_OK): return make_response("You dont have access", 405)
 

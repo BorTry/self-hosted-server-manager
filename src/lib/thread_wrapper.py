@@ -29,6 +29,9 @@ class thread_wrapper:
     def print(self, *msg:tuple[str]):
         self.logger.log(self.name, "->", *msg)
 
+    def log(self, *msg:tuple[str]):
+        self.logger.log_only(self.name, "->", *msg)
+
     def terminate(self):
         self.print("Stopping")
 

@@ -3,7 +3,7 @@ from textual.app import App
 from textual.containers import Grid
 from textual.widgets import Button, Footer
 
-from src.tui.static.widgets import CustomContainer, CustomScrollContainer, MiniWidget, LogPanel, DockerContainer
+from .static.widgets import CustomContainer, CustomScrollContainer, MiniWidget, LogPanel, DockerContainer
 from src.lib import thread_data_handler, Server_codes
 
 from os import environ

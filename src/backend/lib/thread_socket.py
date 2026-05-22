@@ -32,6 +32,12 @@ def socket_func(thread:thread_socket_wrapper):
                 code = Server_codes.CREDENTIALS_OK
             thread.print(f'User "{data["username"]}" with password "{data["password"]}" is trying to log in.')
 
+        case Server_codes.CHECK_REPEATED_CREDENTIALS:
+            return_data = True
+            code = Server_codes.BAD
+            if data["username"] == CONSTANTS.CREDENTIALS["username"] and data["password"] == CONSTANTS.CREDENTIALS["password"]:
+                code = Server_codes.CREDENTIALS_OK
+
         case _:
             thread.print(f"There are no functions for code {data_packet['code']}")
 
