@@ -1,0 +1,55 @@
+name: frontend
+
+services:
+  frontend: 
+    container_name: frontend_server
+    depends_on: 
+      db:
+        condition: service_healthy
+    volumes: 
+      - ../../src/app:/src/app
+      - ../../src/lib:/src/lib
+      - ../../src/db:/src/db
+    environment:
+      DATABASE_URL: postgresql+psycopg://${DB_USER}:${DB_PASSWORD}@db:5432/${DB_NAME}
+    networks: 
+      - frontend
+    ports: 
+      - 5000:8043/tcp
+      - 2024:2024/udp
+    build: 
+      context: ../buildfiles
+      dockerfile: Dockerfile.frontend
+    tty: True
+    command: 
+      - bash
+      - -c
+      - source ../opt/venv/bin/activate; flask --app src.app.app run --host=0.0.0.0 --port 8043
+
+  db:
+    container_name: frontend_database
+    image: postgres:17-alpine
+    restart: always
+    environment:
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_DB: ${DB_NAME}
+    ports:
+      - 5432:5432
+    networks:
+      - frontend
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ../database-sql/init.sql:/docker-entrypoint-initdb.d/init.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER} -d ${DB_NAME}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+networks: 
+  frontend: 
+    driver: bridge
+
+volumes:
+  postgres_data:

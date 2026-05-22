@@ -4,7 +4,8 @@ from python_on_whales import DockerClient, DockerException
 from yaml import safe_load
 
 CHUNK_SIZE = 4096
-COMPOSE_FILE_PATH = "./compose.yaml"
+COMPOSE_FILE_PATH = "./resources/compose_files/docker-game-compose.yaml"
+MASTER_COMPOSE_FILE_PATH = "./compose.yaml"
 
 def hash_compose_file() -> str:
     sha_hash = sha256()
@@ -17,7 +18,7 @@ def hash_compose_file() -> str:
 
 def docker_compose():
     try:
-        docker = DockerClient(compose_files=("./compose.yaml"))
+        docker = DockerClient(compose_files=(MASTER_COMPOSE_FILE_PATH))
 
         docker.compose.up(build=True, start=False)
         return True
@@ -28,17 +29,17 @@ def docker_compose():
     
 def format_compose_file():
     data = None
-    with open("compose.yaml", "r") as f:
+    with open(COMPOSE_FILE_PATH, "r") as f:
         data = safe_load(f)
         services = data.get('services', {})
 
         for service in services:
             if service == "frontend": continue
 
-            services[service]["volumes"] = [f'../server_data/{service}:/data']
+            services[service]["volumes"] = ["${SERVER_DATA_PATH}/"+f'{service}:/data']
             services[service]["working_dir"] = "/data"
 
-    with open("compose.yaml", "w") as f:
+    with open(COMPOSE_FILE_PATH, "w") as f:
         f.write(_convert_obj_to_str(data)[0])
 
     return True

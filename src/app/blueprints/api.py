@@ -3,8 +3,9 @@ from flask.views import MethodView
 from marshmallow import Schema, fields
 from flask import jsonify
 
-from src.app.lib.constants import SOCKET_THREAD, ALL_SERVERS
+from src.app.lib import SOCKET_THREAD, ALL_SERVERS
 from src.lib import Server_codes
+from ..lib.limiter import limiter
 
 def get_running_servers():
     return SOCKET_THREAD.return_val
@@ -35,6 +36,7 @@ class Start_Containers(MethodView):
     @blp.response(204)
     @blp.response(404)
     @blp.arguments(ContainerStartSchema)
+    @limiter.limit("5 per minute")
     def post(self, form, name):
         packet = {
             "name":name, 
@@ -50,6 +52,7 @@ class Stop_Containers(MethodView):
     @blp.response(204)
     @blp.response(404)
     @blp.arguments(ContainerStartSchema)
+    @limiter.limit("5 per minute")
     def post(self, form, name):    
         packet = {
             "name":name, 
@@ -61,11 +64,11 @@ class Stop_Containers(MethodView):
         # Stop a server
         # Talk to the backend to stop it
 
-
 @blp.route("container/all")
 class AllContainers(MethodView):
     @blp.response(204, ContainerResponseSchema)
     @blp.response(404, Schema)
+    @limiter.exempt
     def get(self):
         # Get all running servers
         return jsonify(message=ALL_SERVERS)
@@ -75,6 +78,7 @@ class AllContainers(MethodView):
 class AllContainers(MethodView):
     @blp.response(204, ContainerResponseSchema)
     @blp.response(404, Schema)
+    @limiter.exempt
     def get(self):
         # Get all running servers
         return jsonify(message=get_running_servers())

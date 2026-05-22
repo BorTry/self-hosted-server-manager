@@ -102,12 +102,14 @@ def stop_frontend():
     
     docker.stop("frontend_server")
     docker.wait("frontend_server")
+    docker.stop("frontend_database")
 
 def start_frontend(): 
     # check to see if the docker container exists at all
     if (not len(docker.ps(filters={"name": "frontend_server"}, all=True))):
         raise Exception("Front end container does not exist")
     
+    docker.start("frontend_database")
     docker.start("frontend_server")
 
 def stop_server(server_name:str):

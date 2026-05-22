@@ -1,0 +1,101 @@
+name: game_servers
+services: 
+  minecraft: 
+    container_name: minecraft_server
+    ports: 
+      - 25565:80
+    volumes: 
+      - ${SERVER_DATA_PATH}/minecraft:/data
+    working_dir: /data
+    build: 
+      context: ../buildfiles
+      dockerfile: Dockerfile.minecraft
+    deploy: 
+      resources: 
+        limits: 
+          memory: 6G
+          cpus: 6.0
+    tty: True
+    command: java -Xmx6G -jar fabric-server-mc.1.21.11-loader.0.18.4-launcher.1.1.1.jar nogui
+
+  modded_minecraft: 
+    container_name: modded_minecraft_server
+    ports: 
+      - 25566:80
+    build: 
+      context: ../buildfiles
+      dockerfile: Dockerfile.minecraft
+    deploy: 
+      resources: 
+        limits: 
+          memory: 6G
+          cpus: 6.0
+    tty: True
+    volumes: 
+      - ${SERVER_DATA_PATH}/modded_minecraft:/data
+    working_dir: /data
+
+  space_engineers: 
+    container_name: space_engineers_server
+    image: alpine
+    tty: True
+    volumes: 
+      - ${SERVER_DATA_PATH}/space_engineers:/data
+    working_dir: /data
+
+  factorio: 
+    container_name: factorio_server
+    build: 
+      context: ../buildfiles
+      dockerfile: Dockerfile.factorio
+    user: factorio:factorio
+    command: /opt/factorio/bin/x64/factorio --start-server opt/saves/my-save.zip
+    deploy: 
+      resources: 
+        limits: 
+          memory: 4G
+          cpus: 4.0
+    ports: 
+      - 34197:34197/udp
+    tty: True
+    volumes: 
+      - ${SERVER_DATA_PATH}/factorio:/data
+    working_dir: /data
+
+  factorio_space_age: 
+    container_name: factorio_space_age_server
+    build: 
+      context: ../buildfiles
+      dockerfile: Dockerfile.factorio
+    ports: 
+      - 34198:34197/udp
+    tty: True
+    volumes: 
+      - ${SERVER_DATA_PATH}/factorio_space_age:/data
+    working_dir: /data
+
+  satisfactory: 
+    container_name: satisfactory_server
+    image: alpine
+    tty: True
+    volumes: 
+      - ${SERVER_DATA_PATH}/satisfactory:/data
+    working_dir: /data
+
+  astroneers: 
+    container_name: astroneers_server
+    image: alpine
+    tty: True
+    volumes: 
+      - ${SERVER_DATA_PATH}/astroneers:/data
+    working_dir: /data
+
+  screeps: 
+    container_name: screeps_server
+    image: alpine
+    tty: True
+    volumes: 
+      - ${SERVER_DATA_PATH}/screeps:/data
+    working_dir: /data
+
+
