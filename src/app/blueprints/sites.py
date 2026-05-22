@@ -2,11 +2,11 @@ from flask_smorest import Blueprint
 from flask.views import MethodView
 from flask import render_template, make_response, session, redirect, request
 from marshmallow import Schema, fields
-from sqlalchemy import select, exists
+from sqlalchemy import select
 
 from src.app.lib import SOCKET_THREAD
 from src.lib import Server_codes
-from ..lib.limiter import limiter
+from ..lib import limiter, get_user_ip
 
 from src.db.db import SessionLocal
 from src.db.mappings import connections, login_attempts
@@ -44,11 +44,11 @@ class admin_login(MethodView):
         packet = SOCKET_THREAD.send_recv(Server_codes.CHECK_CREDENTIALS, {"username":form["username"], "password": form["password"]})
 
         with SessionLocal() as s:
-            query = select(connections).where(connections.ip == request.remote_addr)
+            query = select(connections).where(connections.ip == get_user_ip())
             connection_entry = s.scalars(query).first()
 
             if not connection_entry:
-                connection_entry = connections(ip=request.remote_addr)
+                connection_entry = connections(ip=get_user_ip())
                 print("Creating new database entry")
                 s.add(connection_entry)
                 s.commit()
