@@ -1,4 +1,4 @@
-name: game_servers
+name: servers
 services: 
   minecraft: 
     container_name: minecraft_server

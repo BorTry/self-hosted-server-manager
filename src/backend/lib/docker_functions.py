@@ -75,7 +75,7 @@ def get_resource_use_for_containers():
 
     return fin_arr
 
-def get_cpu(container) -> float | None:
+def get_cpu(container) -> float:
     if container.host_config.nano_cpus:
         return container.host_config.nano_cpus / 1_000_000_000
 
@@ -85,7 +85,7 @@ def get_cpu(container) -> float | None:
     if container.host_config.cpuset_cpus:
         return len(container.host_config.cpuset_cpus.split(","))
 
-    return None
+    return 1.0
 
 def wait_for_shutdown(container_name):
     container = get_container(container_name)

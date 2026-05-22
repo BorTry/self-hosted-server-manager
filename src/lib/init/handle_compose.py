@@ -4,22 +4,37 @@ from python_on_whales import DockerClient, DockerException
 from yaml import safe_load
 
 CHUNK_SIZE = 4096
-COMPOSE_FILE_PATH = "./resources/compose_files/docker-game-compose.yaml"
-MASTER_COMPOSE_FILE_PATH = "./compose.yaml"
+SERVERS_COMPOSE_FILE_PATH = "./resources/compose_files/docker-game-compose.yaml"
+FRONTEND_COMPOSE_FILE_PATH = "./resources/compose_files/docker-frontend-compose.yaml"
+
+#MASTER_COMPOSE_FILE_PATH = "./compose.yaml"
 
 def hash_compose_file() -> str:
     sha_hash = sha256()
+    final_hash = ""
 
-    with open(COMPOSE_FILE_PATH, "rb") as file:
+    with open(SERVERS_COMPOSE_FILE_PATH, "rb") as file:
+        for chunk in iter(partial(file.read, CHUNK_SIZE), b""):
+            sha_hash.update(chunk)
+    
+    final_hash += sha_hash.hexdigest()
+
+    with open(FRONTEND_COMPOSE_FILE_PATH, "rb") as file:
         for chunk in iter(partial(file.read, CHUNK_SIZE), b""):
             sha_hash.update(chunk)
 
-    return sha_hash.hexdigest()
+    final_hash += sha_hash.hexdigest()
+
+    return final_hash
 
 def docker_compose():
     try:
-        docker = DockerClient(compose_files=(MASTER_COMPOSE_FILE_PATH))
+        docker = DockerClient(compose_files=(SERVERS_COMPOSE_FILE_PATH))
+        docker.compose.down()
+        docker.compose.up(build=True, start=False)
 
+        docker = DockerClient(compose_files=(FRONTEND_COMPOSE_FILE_PATH))
+        docker.compose.down()
         docker.compose.up(build=True, start=False)
         return True
     
@@ -29,7 +44,7 @@ def docker_compose():
     
 def format_compose_file():
     data = None
-    with open(COMPOSE_FILE_PATH, "r") as f:
+    with open(SERVERS_COMPOSE_FILE_PATH, "r") as f:
         data = safe_load(f)
         services = data.get('services', {})
 
@@ -39,7 +54,7 @@ def format_compose_file():
             services[service]["volumes"] = ["${SERVER_DATA_PATH}/"+f'{service}:/data']
             services[service]["working_dir"] = "/data"
 
-    with open(COMPOSE_FILE_PATH, "w") as f:
+    with open(SERVERS_COMPOSE_FILE_PATH, "w") as f:
         f.write(_convert_obj_to_str(data)[0])
 
     return True
