@@ -1,7 +1,6 @@
 BEGIN;
 
-DROP TABLE connections;
-DROP TABLE login_attempts;
+DROP TABLE IF EXISTS connections, login_attempts;
 
 CREATE TABLE connections (
     id INTEGER 

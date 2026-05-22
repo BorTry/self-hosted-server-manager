@@ -42,51 +42,16 @@ class admin_login(MethodView):
     
     @blp.response(200)
     @blp.response(405)
-    @blp.arguments(LoginSchema, location="form") # TODO: Add protection against brute force attacks
+    @blp.arguments(LoginSchema, location="form")
     #@limiter.limit("5 per minute")
     def post(self, form):
         # verify the user with the backend
         packet = SOCKET_THREAD.send_recv(Server_codes.CHECK_CREDENTIALS, {"username":form["username"], "password": form["password"]})
 
-        request_ip = get_user_ip()
-        cutoff = datetime.now() - timedelta(minutes=ATTEMPT_TIME_DELTA)
-        ip_query = select(connections).where(connections.ip == request_ip)
-
-        with SessionLocal() as s:
-            connection_entry = s.scalars(ip_query).first()
-
-            if not connection_entry:
-                connection_entry = connections(ip=request_ip)
-                print("Creating new database entry")
-                s.add(connection_entry)
-                s.commit()
-            else:
-                if (connection_entry.blacklisted):
-                    return make_response("You dont have access", 405)
-
-                # check the amount of recent login attempts that failed
-                login_attempts_query = select(login_attempts).where(
-                    login_attempts.connection_id == connection_entry.id, 
-                    login_attempts.failed_login == True,
-                    login_attempts.time >= cutoff
-                )
-                attempts = s.scalars(login_attempts_query).all()
-
-                if (len(attempts) >= MAX_ATTEMPTS):
-                    connection_entry.blacklisted = True
-                    s.commit()
-                    print(f'Blacklisting ip: {request_ip}')
-                    return make_response("You dont have access", 405)
-
-            new_login_entry = login_attempts(connection_id=connection_entry.id)
-            s.add(new_login_entry)
-
-            if (packet["code"] != Server_codes.CREDENTIALS_OK): 
-                s.commit()
-                return make_response("You dont have access", 405)
-            
-            new_login_entry.failed_login = False
-            s.commit()
+        if (not verify_login(packet)):
+            session.pop("username", None)
+            session.pop("password", None)
+            return  make_response("You dont have access", 405)
 
         session["username"] = form["username"]
         session["password"] = form["password"]
@@ -107,14 +72,71 @@ class admin_page(MethodView):
 
         packet = SOCKET_THREAD.send_recv(Server_codes.CHECK_REPEATED_CREDENTIALS, {"username":username, "password": password})
 
-        if (packet["code"] != Server_codes.CREDENTIALS_OK): return make_response("You dont have access", 405)
+        if (not verify_login(packet)):
+            session.pop("username", None)
+            session.pop("password", None)
+            return make_response("You dont have access", 405)
 
         if site == "logout":
-            username = None
-            password = None
+            session.pop("username", None)
+            session.pop("password", None)
 
             return redirect("/")
-        
+
         else:
             html = render_template(f'admin/{site}.html')
             return make_response(html, 200)
+        
+
+def get_ip_entry(s):
+    request_ip = get_user_ip()
+    ip_query = select(connections).where(connections.ip == request_ip)
+
+    connection_entry = s.scalars(ip_query).first()
+
+    if not connection_entry:
+        connection_entry = connections(ip=request_ip)
+        print("Creating new database entry")
+        s.add(connection_entry)
+        s.commit()
+
+    return connection_entry
+
+def get_login_attemps(entry, s):
+    cutoff = datetime.now() - timedelta(minutes=ATTEMPT_TIME_DELTA)
+
+    # check the amount of recent login attempts that failed
+    login_attempts_query = select(login_attempts).where(
+        login_attempts.connection_id == entry.id, 
+        login_attempts.failed_login == True,
+        login_attempts.time >= cutoff
+    )
+    return s.scalars(login_attempts_query).all()
+
+def verify_login(packet):
+    with SessionLocal() as s:
+        connection_entry = get_ip_entry(s)
+        
+        if (connection_entry.blacklisted):
+            return False
+
+        attempts = get_login_attemps(connection_entry, s)
+
+        if (len(attempts) >= MAX_ATTEMPTS):
+            connection_entry.blacklisted = True
+            s.commit()
+
+            print(f'Blacklisting ip: {get_user_ip()}')
+            return False
+
+        new_login_entry = login_attempts(connection_id=connection_entry.id)
+        s.add(new_login_entry)
+        s.commit()
+
+        if (packet["code"] != Server_codes.CREDENTIALS_OK): 
+            return False
+        
+        new_login_entry.failed_login = False
+        s.commit()
+
+        return True
