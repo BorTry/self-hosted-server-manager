@@ -51,6 +51,7 @@ def get_resource_use_for_containers():
     all_stats = docker.stats()
 
     memory_usage = {}
+    cpu_usage = {}
 
     # map the memory usage to each container name
     for server in all_stats:
@@ -58,6 +59,7 @@ def get_resource_use_for_containers():
         if (not (c_name in SERVER_JSON["container_to_server_names"])): continue
 
         memory_usage[c_name] = server.memory_percentage
+        cpu_usage[c_name] = server.cpu_percentage
 
     for server in all_containers:
         c_name = convert_container_name(server.name)
@@ -67,7 +69,7 @@ def get_resource_use_for_containers():
             {
                 "name": SERVER_JSON["container_to_server_names"][c_name],
                 "ram": memory_usage[c_name],
-                "cpu": get_cpu(server)
+                "cpu": cpu_usage[c_name] / get_cpu(server)
             }
         )
 

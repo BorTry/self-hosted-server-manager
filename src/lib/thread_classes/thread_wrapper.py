@@ -4,7 +4,7 @@ from time import sleep
 from typing import Callable
 
 from .thread_data_handler import thread_data_handler
-from .logger import get_logger
+from ..logger import get_logger
 
 class thread_wrapper:
     __slots__ = ("name", "logger", "target", "stdout", "sleep_time", "thread", "terminate_signal", "return_val", "data_handler", "init")
