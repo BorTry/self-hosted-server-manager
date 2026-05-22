@@ -1,7 +1,0 @@
-FROM ubuntu
-RUN apt-get update; \
-apt-get install -y xz-utils wget; \
-wget -P tmp/ https://factorio.com/get-download/stable/headless/linux64; \
-tar -xf tmp/linux64 -C opt/; \
-/opt/factorio/bin/x64/factorio --create opt/saves/my-save.zip; \
-useradd factorio; chown -R factorio:factorio /opt;
