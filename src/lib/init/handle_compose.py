@@ -36,6 +36,7 @@ def docker_compose():
         docker = DockerClient(compose_files=(FRONTEND_COMPOSE_FILE_PATH))
         docker.compose.down()
         docker.compose.up(build=True, start=False)
+        docker.wait("frontend_database")
         return True
     
     except DockerException as e:

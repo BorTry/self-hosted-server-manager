@@ -43,7 +43,7 @@ class admin_login(MethodView):
     @blp.response(200)
     @blp.response(405)
     @blp.arguments(LoginSchema, location="form")
-    #@limiter.limit("5 per minute")
+    @limiter.limit("5 per minute")
     def post(self, form):
         # verify the user with the backend
         packet = SOCKET_THREAD.send_recv(Server_codes.CHECK_CREDENTIALS, {"username":form["username"], "password": form["password"]})

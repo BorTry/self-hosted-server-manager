@@ -50,26 +50,31 @@ def get_resource_use_for_containers():
     all_containers = docker.ps()
     all_stats = docker.stats()
 
-    memory_usage = {}
-    cpu_usage = {}
+    resource_usage = {}
 
     # map the memory usage to each container name
     for server in all_stats:
         c_name = convert_container_name(server.container_name)
         if (not (c_name in SERVER_JSON["container_to_server_names"])): continue
 
-        memory_usage[c_name] = server.memory_percentage
-        cpu_usage[c_name] = server.cpu_percentage
+        resource_usage[c_name] = {
+            "ram": server.memory_percentage,
+            "cpu": server.cpu_percentage,
+            "upload": server.net_upload,
+            "download": server.net_download
+        }
 
     for server in all_containers:
         c_name = convert_container_name(server.name)
-        if (not (c_name in SERVER_JSON["container_to_server_names"]) or not (c_name in memory_usage)): continue
+        if (not (c_name in SERVER_JSON["container_to_server_names"]) or not (c_name in resource_usage)): continue
 
         fin_arr.append(
             {
                 "name": SERVER_JSON["container_to_server_names"][c_name],
-                "ram": memory_usage[c_name],
-                "cpu": cpu_usage[c_name] / get_cpu(server)
+                "ram": resource_usage[c_name]["ram"],
+                "cpu": resource_usage[c_name]["cpu"] / get_cpu(server),
+                "upload": resource_usage[c_name]["upload"],
+                "download": resource_usage[c_name]["download"]
             }
         )
 

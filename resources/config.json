@@ -2,5 +2,8 @@
     "os": "Windows",
     "admin_username": "a",
     "admin_password": "b",
-    "start_in_tui": false
+    "start_in_tui": false,
+    "compose_hash": "0050f6347eca71b2c30279e55d9c6425c443dcd6626e1a5eecf51091dfe83f807b0bdaa127c50e530d72a25888450fab9b0f2e4c1e3e7abab4b27ae7f4cfc779",
+    "performance_save_rate": 0.25,
+    "_comment": "How many minutes are between each performance metrics database write"
 }

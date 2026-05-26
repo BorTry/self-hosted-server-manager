@@ -1,6 +1,8 @@
 from src.lib import thread_socket_wrapper
 from src.app.lib.socket_functions import socket_func, socket_init
 
+from time import sleep
+
 ADDRESS = "0.0.0.0"
 OWN_PORT = 2024
 TARGET_ADDRESS = "host.docker.internal"
@@ -20,5 +22,8 @@ try:
 except OSError as e:
     print(e)
 
+while (not SOCKET_THREAD.return_val):
+    sleep(0.5)
+    
 ALL_SERVERS = SOCKET_THREAD.return_val
 SOCKET_THREAD.return_val = None

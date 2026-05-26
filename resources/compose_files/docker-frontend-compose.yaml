@@ -40,7 +40,7 @@ services:
       - frontend
     volumes:
       - postgres_data:/var/lib/postgresql/data
-      - ../database-sql/init.sql:/docker-entrypoint-initdb.d/init.sql
+      - ../database-sql:/docker-entrypoint-initdb.d
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${DB_USER} -d ${DB_NAME}"]
       interval: 5s

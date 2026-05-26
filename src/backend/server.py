@@ -40,10 +40,11 @@ def start_servers():
     print("\n============== Starting servers ==============\n\n")
     global DOCKER_THREAD, SOCKET_THREAD, thread_terminate_event
 
+    start_frontend()
+    
     DOCKER_THREAD.run()
     SOCKET_THREAD.run()
 
-    start_frontend()
 
 def stop_servers():
     print("\n============== Stopping servers ==============\n\n")
