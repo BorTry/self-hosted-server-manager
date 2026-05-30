@@ -12,8 +12,8 @@ CREATE TABLE container (
 CREATE TABLE metric_timestamp (
     id              INTEGER         GENERATED ALWAYS AS IDENTITY 
                                     PRIMARY KEY,
-    time            TIMESTAMP       NOT NULL 
-                                    DEFAULT CURRENT_TIMESTAMP
+    time            TIMESTAMPTZ     NOT NULL 
+                                    DEFAULT now()
 );
 
 CREATE TABLE performance_metric (

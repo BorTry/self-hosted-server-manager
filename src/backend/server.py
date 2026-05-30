@@ -33,7 +33,8 @@ SOCKET_THREAD = thread_socket_wrapper(
     address=(ADDRESS, PORT),
     terminate_signal=thread_terminate_event,
     data_handler=DATA,
-    name="main_socket_thread"
+    name="main_socket_thread",
+    sleeptime=0.1
 ) # Talks to the frontend
 
 def start_servers():
@@ -52,10 +53,11 @@ def stop_servers():
 
     thread_terminate_event.set()
 
-    stop_frontend()
 
     DOCKER_THREAD.terminate()
     SOCKET_THREAD.terminate()
+
+    stop_frontend()
 
 def restart_servers():
     global DOCKER_THREAD, SOCKET_THREAD, thread_terminate_event

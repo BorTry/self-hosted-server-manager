@@ -5,23 +5,25 @@ from src.db.mappings import metric_timestamp, traffic_metric, performance_metric
 from src.db.db import SessionLocal
 from sqlalchemy import select
 
+from datetime import timedelta, datetime
+
 CONTAINERS = [None] * 10
 
-iteration = 0
 save_interval = 0
+last_save = None
 
 def docker_func(thread:thread_wrapper):
-    global save_interval, iteration
-    iteration += 1
+    global save_interval, last_save
     # get all running servers
     resources_used = get_resource_use_for_containers()
 
     CONTAINERS[Server_codes.RUNNING_SERVERS] = resources_used
     requests = []
+    now = datetime.now()
 
-    if save_interval <= iteration and len(resources_used):
+    if (not last_save or (now - last_save).seconds > save_interval.seconds) and len(resources_used):
         add_resources_to_db(resources_used)
-        iteration = 0
+        last_save = now
 
     with thread.data_handler as data:
         data["data"] = CONTAINERS
@@ -44,8 +46,8 @@ def docker_func(thread:thread_wrapper):
 # send over data to the com thread
 def docker_init(thread:thread_wrapper):
     global save_interval
-
-    save_interval = (60 / thread.sleep_time) * CONSTANTS.METRICS_INTERVAL # TODO: switch to using datetime instead
+    
+    save_interval = timedelta(seconds=CONSTANTS.METRICS_INTERVAL)
 
     CONTAINERS[Server_codes.ALL_SERVERS] = {
         "servers": SERVER_JSON["server_names"],

@@ -22,7 +22,7 @@ def fill_config():
 
     CONSTANTS.START_IN_TUI = json_obj["start_in_tui"]
     CONSTANTS.OS = json_obj["os"]
-    CONSTANTS.METRICS_INTERVAL = json_obj["performance_save_rate"]
+    CONSTANTS.METRICS_INTERVAL = json_obj["metric_save_interval"]
 
     CONSTANTS.CREDENTIALS["username"] = json_obj["admin_username"]
     CONSTANTS.CREDENTIALS["password"] = json_obj["admin_password"]
