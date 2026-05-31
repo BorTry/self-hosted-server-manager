@@ -18,7 +18,7 @@ body {
     font-family: "Verdana", Times, serif;
     margin: 0px;
     justify-items: center;
-    background: 
+    background:
         radial-gradient(
             ellipse at top,
             var(--secondary) 5%,
@@ -84,8 +84,8 @@ body {
 
 .main-body {
     width: 80%;
-    margin: 40px 40px 40px 40px;
-    padding: 10px;
+    margin: 3% 9%;
+    padding: 1%;
     background-color: var(--body);
     display: grid;
     justify-items: center;

@@ -51,11 +51,28 @@ function setup_server_containers(server_name) {
         let graph_container = document.createElement("div")
         graph_container.className = "graph-container"
 
+        let graph_title_container = document.createElement("div")
+        graph_title_container.className = "graph-title-container"
+        
+        let graph_title_inner_container = document.createElement("div")
+
+        let graph_title = document.createElement("p")
+        graph_title.textContent = server_name + " " + graph_name
+        
+        let graph_line = document.createElement("div")
+        graph_line.className = "divider"
+        
+        graph_title_inner_container.appendChild(graph_title)
+        graph_title_inner_container.appendChild(graph_line)
+
+        graph_title_container.appendChild(graph_title_inner_container)
+        
         let graph = document.createElement("canvas")
         graph.id = server_name + "_" + graph_name
         graph.className = "graph"
         syncCanvasSize(graph)
 
+        graph_container.appendChild(graph_title_container)
         graph_container.appendChild(graph)
         outer_container.appendChild(graph_container)
     }

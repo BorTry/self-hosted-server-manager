@@ -37,3 +37,28 @@
     position: relative;
     z-index: 3;
 }
+
+.graph-container {
+    flex-wrap: wrap;
+}
+
+.graph-title-container {
+    width: 80%;
+    position: relative;
+    display: flex;
+    justify-content: left;
+    z-index: 4;
+}
+
+.graph-title-container > div {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    width: calc-size(fit-content, size + 30px);
+    padding-left: 2vw;
+}
+
+.graph-title-container > div > p {
+    margin-bottom: 4px;
+    color: whitesmoke;
+}
