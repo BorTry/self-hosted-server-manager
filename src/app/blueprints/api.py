@@ -96,30 +96,35 @@ class AllContainerMetrics(MethodView):
         curr_date = datetime.now(timezone.utc) - timedelta(hours=2)
 
         with SessionLocal() as session:
-            query = select(performance_metric.ram, performance_metric.cpu, metric_timestamp.time, container.name) \
-                .select_from(performance_metric) \
-                .join(container) \
-                .join(metric_timestamp) \
-                .where(metric_timestamp.time >= curr_date) \
-                .order_by(container.name.asc(), metric_timestamp.time.desc()) \
-                .limit(100)
+            for server_name in ALL_SERVERS["servers"]:
+                query = select(performance_metric.ram, performance_metric.cpu, metric_timestamp.time, container.name) \
+                    .select_from(performance_metric) \
+                    .join(container) \
+                    .join(metric_timestamp) \
+                    .where(
+                        metric_timestamp.time >= curr_date,
+                        container.name == server_name) \
+                    .order_by(container.name.asc(), metric_timestamp.time.desc()) \
+                    .limit(50)
 
-            rows = session.execute(query).mappings().all()
+                rows = session.execute(query).mappings().all()
+                ordered_rows[server_name] = rows
 
-        for row in rows:
-            if (not row["name"] in ordered_rows):
-                ordered_rows[row["name"]] = []
+        for row_name in ordered_rows:
+            tmp = []
+            for sub_row in ordered_rows[row_name]:
+                tmp.append({
+                    "ram": sub_row["ram"],
+                    "cpu": sub_row["cpu"],
+                    "time": sub_row["time"]
+                })
 
-            ordered_rows[row["name"]].append({
-                "ram": row["ram"],
-                "cpu": row["cpu"],
-                "time": row["time"]
-            })
+            ordered_rows[row_name] = tmp
 
         for row_name in ordered_rows:
             ordered_rows[row_name].sort(key=lambda x: x["time"])
 
-        ordered_rows["time_between"] = "15"
+        ordered_rows["time_between"] = "4"
 
         return ordered_rows
 

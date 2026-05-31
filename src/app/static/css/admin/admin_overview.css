@@ -1,0 +1,39 @@
+.content-container {
+    background: var(--main);
+}
+
+.container-image {
+    height: inherit;
+    width: 150%;
+    overflow: hidden;
+    position: relative;
+    border-radius: 8px 0px 0px 8px;
+}
+
+.container-image .image-gradient {
+    width: 100%;
+    height: inherit;
+    background: 
+        linear-gradient(
+            to left,
+            var(--main),
+            transparent 60%
+        );
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 3;
+}
+
+.container-image img {
+    width: 100%;
+    height: inherit;
+    object-fit: cover;
+    position: relative;
+    z-index: 2;
+}
+
+.graph {
+    position: relative;
+    z-index: 3;
+}

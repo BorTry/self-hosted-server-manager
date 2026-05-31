@@ -3,7 +3,7 @@ const GRAPH_FLOOR = 0
 const TODAY = Date.now()
 const STROKE_COLOR = "#24b811"
 
-function syncCanvasSize(canvas) {
+export function syncCanvasSize(canvas) {
     const rect = canvas.getBoundingClientRect();
     const dpr = window.devicePixelRatio || 1;
 

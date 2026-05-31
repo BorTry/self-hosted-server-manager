@@ -1,6 +1,7 @@
 // get all running available servers 
 // create the "cards" for each
 import setup_graph_updates from "./configure_graphs.mjs"
+import {syncCanvasSize} from "../../modules/graph.mjs"
 
 const CONTAINER_LIST = document.getElementById("main-content")
 const GRAPH_TYPES = ["cpu", "ram"]
@@ -32,17 +33,28 @@ function setup_server_containers(server_name) {
     outer_container.className = "content-container shadow round-border"
     outer_container.id = server_name
     
-    let ooga = document.createElement("div")
-    outer_container.appendChild(ooga)
+    let image_container = document.createElement("div")
+    image_container.className = "container-image"
+
+    let gradient = document.createElement("div")
+    gradient.className = "image-gradient"
+    image_container.appendChild(gradient)
+
+    let img = document.createElement("img")
+    img.src = `/static/images/${server_name}.jpg`
+    
+    image_container.appendChild(img)
+
+    outer_container.appendChild(image_container)
 
     for (let graph_name of GRAPH_TYPES) {
-
         let graph_container = document.createElement("div")
         graph_container.className = "graph-container"
 
         let graph = document.createElement("canvas")
         graph.id = server_name + "_" + graph_name
         graph.className = "graph"
+        syncCanvasSize(graph)
 
         graph_container.appendChild(graph)
         outer_container.appendChild(graph_container)
