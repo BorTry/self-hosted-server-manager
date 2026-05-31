@@ -3,7 +3,7 @@
     "admin_username": "a",
     "admin_password": "b",
     "start_in_tui": false,
-    "compose_hash": "0050f6347eca71b2c30279e55d9c6425c443dcd6626e1a5eecf51091dfe83f807b0bdaa127c50e530d72a25888450fab9b0f2e4c1e3e7abab4b27ae7f4cfc779",
+    "compose_hash": "0050f6347eca71b2c30279e55d9c6425c443dcd6626e1a5eecf51091dfe83f8069aa0612a58402863fe0f1adfb9e335a02afebfc906ad7f4f6689320253e31fb",
     "metric_save_interval": 1,
     "_comment": "How many seconds are between each performance metrics database write"
 }

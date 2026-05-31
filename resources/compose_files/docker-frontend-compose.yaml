@@ -21,6 +21,11 @@ services:
       context: ../buildfiles
       dockerfile: Dockerfile.frontend
     tty: True
+    deploy: 
+      resources: 
+        limits: 
+          memory: 2G
+          cpus: 2.0
     command: 
       - bash
       - -c
@@ -46,6 +51,11 @@ services:
       interval: 5s
       timeout: 5s
       retries: 5
+    deploy: 
+      resources: 
+        limits: 
+          memory: 2G
+          cpus: 2.0
 
 networks: 
   frontend: 
