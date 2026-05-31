@@ -5,7 +5,7 @@ function create_server_card(name, launch_options) {
     
     list_item.className = "server-item shadow round-border"
     list_item.id = name
-
+    
     const image = document.createElement("img")
     image.className = "server-item-image"
     image.id = `${name}-image`

@@ -1,0 +1,11 @@
+.graph-container {
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.graph {
+    height: 13vh;
+    width: 80%;
+}

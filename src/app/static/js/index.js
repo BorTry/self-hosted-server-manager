@@ -17,8 +17,6 @@ async function build_server_list() {
         return response.json()
     })
 
-    console.log(data.message.servers)
-
     // contains launch options for each server
     let all_servers = extract_data(data.message)
 
@@ -109,9 +107,7 @@ function change_server_status(name, online=true) {
 }
 
 function extract_data(response) {
-    // flip the order of " and ' ...
     return response
-    return JSON.parse(response)
 }
 
 async function main() {

@@ -7,6 +7,12 @@ from src.app.lib import SOCKET_THREAD, ALL_SERVERS
 from src.lib import Server_codes
 from ..lib.limiter import limiter
 
+from src.db.db import SessionLocal
+from src.db.mappings import performance_metric, traffic_metric, container, metric_timestamp
+from sqlalchemy import select
+
+from datetime import timedelta, datetime, timezone
+
 def get_running_servers():
     return SOCKET_THREAD.return_val
 
@@ -18,7 +24,6 @@ class ContainerResponseSchema(Schema):
     containers=fields.List(fields.Dict())
 
 class ContainerStartSchema(Schema):
-    #name=fields.Str(required=True),
     launch_opts=fields.Dict(keys=fields.Str(), values=fields.Str())
 
 # ======================== BLUEPRINTS ========================
@@ -26,7 +31,7 @@ class ContainerStartSchema(Schema):
 @blp.route("container/<string:name>")
 class Container(MethodView):
     @blp.response(204)
-    def get(self, name):
+    def get(self, name:str):
         # Get a single server
         # Talk to the backend to get it
         return jsonify(message=get_running_servers()[name])
@@ -37,7 +42,7 @@ class Start_Containers(MethodView):
     @blp.response(404)
     @blp.arguments(ContainerStartSchema)
     @limiter.limit("5 per minute")
-    def post(self, form, name):
+    def post(self, form:ContainerStartSchema, name:str):
         packet = {
             "name":name, 
             "opt":form["launch_opts"] if "launch_opts" in form else "" 
@@ -51,13 +56,9 @@ class Start_Containers(MethodView):
 class Stop_Containers(MethodView):
     @blp.response(204)
     @blp.response(404)
-    @blp.arguments(ContainerStartSchema)
     @limiter.limit("5 per minute")
-    def post(self, form, name):    
-        packet = {
-            "name":name, 
-            "opt":form["launch_opts"] if "launch_opts" in form else "" 
-        }   
+    def post(self, name:str):    
+        packet = {"name":name}   
         SOCKET_THREAD.send(packet, Server_codes.STOP_SERVER)
 
         return "", 204
@@ -67,7 +68,7 @@ class Stop_Containers(MethodView):
 @blp.route("container/all")
 class AllContainers(MethodView):
     @blp.response(204, ContainerResponseSchema)
-    @blp.response(404, Schema)
+    @blp.response(404)
     @limiter.exempt
     def get(self):
         # Get all running servers
@@ -77,8 +78,64 @@ class AllContainers(MethodView):
 @blp.route("container/all/running")
 class AllContainers(MethodView):
     @blp.response(204, ContainerResponseSchema)
-    @blp.response(404, Schema)
+    @blp.response(404)
     @limiter.exempt
     def get(self):
         # Get all running servers
         return jsonify(message=get_running_servers())
+    
+# ======================== ADMIN ========================
+
+@blp.route("container/performance_metrics")
+class AllContainerMetrics(MethodView):
+    @blp.response(404)
+    @blp.response(200)
+    @limiter.exempt
+    def get(self):
+        ordered_rows = {}
+        curr_date = datetime.now(timezone.utc) - timedelta(hours=2)
+
+        with SessionLocal() as session:
+            query = select(performance_metric.ram, performance_metric.cpu, metric_timestamp.time, container.name) \
+                .select_from(performance_metric) \
+                .join(container) \
+                .join(metric_timestamp) \
+                .where(metric_timestamp.time >= curr_date) \
+                .order_by(container.name.asc(), metric_timestamp.time.desc()) \
+                .limit(100)
+
+            rows = session.execute(query).mappings().all()
+
+        for row in rows:
+            if (not row["name"] in ordered_rows):
+                ordered_rows[row["name"]] = []
+
+            ordered_rows[row["name"]].append({
+                "ram": row["ram"],
+                "cpu": row["cpu"],
+                "time": row["time"]
+            })
+
+        for row_name in ordered_rows:
+            ordered_rows[row_name].sort(key=lambda x: x["time"])
+
+        ordered_rows["time_between"] = "15"
+
+        return ordered_rows
+
+@blp.route("container/performance_metrics/<string:name>")
+class AllContainerMetrics(MethodView):
+    @limiter.exempt
+    def get(self, name:str):
+        with SessionLocal() as session:
+            query = select(performance_metric.ram, performance_metric.cpu, metric_timestamp.time, container.name) \
+                .select_from(performance_metric) \
+                .join(container) \
+                .join(metric_timestamp) \
+                .where(container.name == name) \
+                .order_by(metric_timestamp.time)
+
+            rows = session.execute(query).mappings().all()
+            data = [dict(row) for row in rows]
+
+        return data

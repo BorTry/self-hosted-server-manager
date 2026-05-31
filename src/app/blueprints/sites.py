@@ -64,6 +64,7 @@ class admin_page(MethodView):
     @blp.response(302)
     @blp.response(404)
     @blp.response(405)
+    @limiter.exempt
     def get(self, site):
         if (not ("username" in session) or not ("password" in session)): return make_response("You dont have access", 405)
         
@@ -72,7 +73,11 @@ class admin_page(MethodView):
 
         packet = SOCKET_THREAD.send_recv(Server_codes.CHECK_REPEATED_CREDENTIALS, {"username":username, "password": password})
 
-        if (not verify_login(packet)):
+        if (not packet): return make_response("Something went wrong", 500)
+
+        verifired_login = verify_login(packet)
+
+        if (verifired_login == False):
             session.pop("username", None)
             session.pop("password", None)
             return make_response("You dont have access", 405)

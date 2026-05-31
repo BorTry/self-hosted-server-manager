@@ -33,4 +33,7 @@ a {
         var(--main);
     height: 20vh;
     width: calc(100% - var(--side-bar-width));
+    display: grid;
+    grid-template-rows: 1fr;
+    grid-template-columns: 1fr 3fr 3fr;
 }

@@ -2,8 +2,10 @@
 <html>
     <head>
         <link rel="stylesheet" href="{{ url_for('static', filename='css/standard.css') }}">
-        <link rel="stylesheet" href="{{ url_for('static', filename='css/admin_sidebar.css') }}">
-        <link rel="stylesheet" href="{{ url_for('static', filename='css/admin_page.css') }}">
+        <link rel="stylesheet" href="{{ url_for('static', filename='css/admin/admin_sidebar.css') }}">
+        <link rel="stylesheet" href="{{ url_for('static', filename='css/admin/admin_page.css') }}">
+        <link rel="stylesheet" href="{{ url_for('static', filename='css/admin/graph.css') }}">
+        <script type="module" src="{{ url_for('static', filename='js/admin/overview/index.js') }}" defer></script>
     </head>
     <body>
         <div id="main-content-container">
@@ -20,12 +22,7 @@
                 </div>
             </div>
             <div id="main-content" class="main-body transparent-background center-content">
-                <div class="content-container shadow round-border"></div>
-                <div class="content-container shadow round-border"></div>
-                <div class="content-container shadow round-border"></div>
-                <div class="content-container shadow round-border"></div>
-                <div class="content-container shadow round-border"></div>
-                <div class="content-container shadow round-border"></div>
+
             </div>
         </div>
     </body>
