@@ -1,6 +1,6 @@
 from flask_smorest import Blueprint
 from flask.views import MethodView
-from flask import render_template, make_response, session, redirect, request
+from flask import render_template, make_response, session, redirect
 from marshmallow import Schema, fields
 from sqlalchemy import select
 
@@ -34,7 +34,7 @@ class front_page(MethodView):
         session["username"] = None
         session["password"] = None
         
-        html = render_template("index.html")
+        html = render_template("index.html", server_names=ALL_SERVERS["servers"])
         return make_response(html, 200)
 
 @blp.route("/admin")

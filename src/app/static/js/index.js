@@ -1,3 +1,6 @@
+import build_request_form from "./modules/card_factory.mjs"
+import update_gauge from "./modules/gauge.mjs"
+
 var RUNNING_SERVERS = []
 
 // set an interval to get server data
@@ -25,7 +28,7 @@ async function build_server_list() {
     }
 
     for (let server_name of all_servers.servers) {
-        create_server_card(server_name, all_servers.launch_options)
+        build_request_form(server_name, all_servers.launch_options)
     }
 }
 
