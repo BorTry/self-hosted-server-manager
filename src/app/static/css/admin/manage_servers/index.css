@@ -1,0 +1,16 @@
+html {
+  interpolate-size: allow-keywords;
+}
+
+#main-content {
+    height: 100vh;
+    display: block;
+}
+
+.content-container {
+    display: flex;
+    flex-wrap: wrap;
+    height: fit-content;
+    margin: 2vh;
+}
+

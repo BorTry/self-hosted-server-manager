@@ -33,7 +33,7 @@ function order_by_date(points) {
         seconds_since = (Date.parse(entry.time) - Date.parse(points[index - 1].time)) / (1000)
 
         if ((seconds_since / TIME_BETWEEN) > MIN_TIME_DIFF) {
-            for (let ooga = 0; ooga < Math.floor(seconds_since / TIME_BETWEEN); ooga++) {
+            for (let it = 0; it < Math.floor(seconds_since / TIME_BETWEEN); it++) {
                 ordered_points.push([i, {"cpu":0, "ram":0}])
                 i++
             }

@@ -89,7 +89,7 @@ class admin_page(MethodView):
                 html = render_template(f'admin/{site}/index.html', server_names=ALL_SERVERS["servers"], types=OVERVIEW_TYPES)
                 return make_response(html, 200)
             
-            case "manage_server":
+            case _:
                 html = render_template(f'admin/{site}/index.html')
                 return make_response(html, 200)
         

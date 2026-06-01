@@ -141,6 +141,10 @@ class AllContainerMetrics(MethodView):
             ordered_rows[name] = rows
 
         order_rows(ordered_rows)
+
+        for row_name in ordered_rows:
+            ordered_rows[row_name].sort(key=lambda x: x["time"])
+
         ordered_rows["time_between"] = "4"
 
         return ordered_rows[name]

@@ -1,5 +1,5 @@
-import build_request_form from "./modules/card_factory.mjs"
-import update_gauge from "./modules/gauge.mjs"
+import build_request_form from "../modules/card_factory.mjs"
+import update_gauge from "../modules/gauge.mjs"
 
 var RUNNING_SERVERS = []
 
