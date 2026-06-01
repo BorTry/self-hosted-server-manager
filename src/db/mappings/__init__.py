@@ -6,5 +6,6 @@ __all__ = [
     "traffic_metric"
 ]
 
+from .servers import container
 from .connection import connections, login_attempts
-from .metrics import metric_timestamp, performance_metric, traffic_metric, container
+from .metrics import metric_timestamp, performance_metric, traffic_metric

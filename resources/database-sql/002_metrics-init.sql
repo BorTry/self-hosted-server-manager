@@ -1,22 +1,18 @@
 BEGIN;
 
-DROP TABLE IF EXISTS metric_timestamp, performance_metric, traffic_metric;
+DROP SCHEMA IF EXISTS metrics CASCADE;
+CREATE SCHEMA IF NOT EXISTS metrics;
 
-CREATE TABLE container (
-    id              INTEGER         GENERATED ALWAYS AS IDENTITY
-                                    PRIMARY KEY,
-    name            VARCHAR(127)    NOT NULL
-                                    UNIQUE
-);
+DROP TABLE IF EXISTS metrics.timestamp, metrics.performance, metrics.traffic;
 
-CREATE TABLE metric_timestamp (
+CREATE TABLE metrics.timestamp (
     id              INTEGER         GENERATED ALWAYS AS IDENTITY 
                                     PRIMARY KEY,
     time            TIMESTAMPTZ     NOT NULL 
                                     DEFAULT now()
 );
 
-CREATE TABLE performance_metric (
+CREATE TABLE metrics.performance (
     id              INTEGER         GENERATED ALWAYS AS IDENTITY 
                                     PRIMARY KEY,
     time_id         INTEGER         NOT NULL,
@@ -25,17 +21,17 @@ CREATE TABLE performance_metric (
     ram             FLOAT(4)        NOT NULL
 );
 
-ALTER TABLE performance_metric
+ALTER TABLE metrics.performance
 ADD CONSTRAINT fk_pm_pt
 FOREIGN KEY (time_id) 
-REFERENCES metric_timestamp(id);
+REFERENCES metrics.timestamp(id);
 
-ALTER TABLE performance_metric
+ALTER TABLE metrics.performance
 ADD CONSTRAINT fk_pm_container
 FOREIGN KEY (container_id) 
-REFERENCES container(id);
+REFERENCES servers.container(id);
 
-CREATE TABLE traffic_metric (
+CREATE TABLE metrics.traffic (
     id              INTEGER         GENERATED ALWAYS AS IDENTITY 
                                     PRIMARY KEY,
     time_id         INTEGER         NOT NULL,
@@ -44,14 +40,14 @@ CREATE TABLE traffic_metric (
     down            FLOAT(4)        NOT NULL
 );
 
-ALTER TABLE traffic_metric
+ALTER TABLE metrics.traffic
 ADD CONSTRAINT fk_tm_pt
 FOREIGN KEY (time_id) 
-REFERENCES metric_timestamp(id);
+REFERENCES metrics.timestamp(id);
 
-ALTER TABLE traffic_metric
+ALTER TABLE metrics.traffic
 ADD CONSTRAINT fk_tm_container
 FOREIGN KEY (container_id) 
-REFERENCES container(id);
+REFERENCES servers.container(id);
 
 END;

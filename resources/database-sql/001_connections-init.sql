@@ -1,8 +1,11 @@
 BEGIN;
 
-DROP TABLE IF EXISTS connections, login_attempts;
+DROP SCHEMA IF EXISTS admin CASCADE;
+CREATE SCHEMA IF NOT EXISTS admin;
 
-CREATE TABLE connections (
+DROP TABLE IF EXISTS admin.connections, admin.login_attempts;
+
+CREATE TABLE admin.connections (
     id              INTEGER     GENERATED ALWAYS AS IDENTITY 
                                 PRIMARY KEY,
     ip              INET        NOT NULL 
@@ -10,7 +13,7 @@ CREATE TABLE connections (
     blacklisted     BOOLEAN     DEFAULT FALSE
 );
 
-CREATE TABLE login_attempts (
+CREATE TABLE admin.login_attempts (
     id              INTEGER     GENERATED ALWAYS AS IDENTITY 
                                 PRIMARY KEY,
     connection_id   INTEGER     NOT NULL,
@@ -19,9 +22,9 @@ CREATE TABLE login_attempts (
     time            TIMESTAMP   DEFAULT CURRENT_TIMESTAMP
 );
 
-ALTER TABLE login_attempts 
+ALTER TABLE admin.login_attempts 
 ADD CONSTRAINT fk_con_login
 FOREIGN KEY (connection_id) 
-REFERENCES connections(id);
+REFERENCES admin.connections(id);
 
 END;
