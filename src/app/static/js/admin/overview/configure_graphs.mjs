@@ -1,4 +1,4 @@
-import draw_points from "../../modules/graph.mjs"
+import draw_points, {sync_canvas_size} from "../../modules/graph.mjs"
 
 const MIN_TIME_DIFF = 1.4
 
@@ -62,13 +62,20 @@ function update_graphs(graph_names, types) {
 
 export default async function setup_graph_updates(graph_names, types) {
     await get_data() // gets the "time_between"
-
-    setInterval(get_data, TIME_BETWEEN * 1000)
-    setInterval(update_graphs, TIME_BETWEEN * 1000, graph_names, types)
-
     update_graphs(graph_names, types)
 
+    setInterval(get_data, TIME_BETWEEN * 1000)
+    setInterval(update_graphs, 1000, graph_names, types)
+    
     window.onresize = () => {
+        for (let name of graph_names) {
+            for (let type of types) {
+                let canvas = document.getElementById(name + "_" + type)
+                
+                sync_canvas_size(canvas)
+            }
+        }
+
         update_graphs(graph_names, types)
     }
 }

@@ -1,5 +1,12 @@
 .content-container {
     background: var(--main);
+    transition: 1s;
+}
+
+.content-container:hover {
+    transform: scale(1.02, 1.02);
+    overflow: hidden;
+    cursor: pointer;
 }
 
 .container-image {
@@ -26,16 +33,19 @@
 }
 
 .container-image img {
-    width: 100%;
+    clip-path: inset(1px);
     height: inherit;
-    object-fit: cover;
+    width: 100%;
+    display: block;
     position: relative;
     z-index: 2;
+    object-fit: cover;
 }
 
 .graph {
     position: relative;
     z-index: 3;
+    padding-bottom: 2vh;
 }
 
 .graph-container {

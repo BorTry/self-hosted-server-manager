@@ -110,16 +110,7 @@ class AllContainerMetrics(MethodView):
                 rows = session.execute(query).mappings().all()
                 ordered_rows[server_name] = rows
 
-        for row_name in ordered_rows:
-            tmp = []
-            for sub_row in ordered_rows[row_name]:
-                tmp.append({
-                    "ram": sub_row["ram"],
-                    "cpu": sub_row["cpu"],
-                    "time": sub_row["time"]
-                })
-
-            ordered_rows[row_name] = tmp
+        order_rows(ordered_rows)
 
         for row_name in ordered_rows:
             ordered_rows[row_name].sort(key=lambda x: x["time"])
@@ -132,15 +123,51 @@ class AllContainerMetrics(MethodView):
 class AllContainerMetrics(MethodView):
     @limiter.exempt
     def get(self, name:str):
+        ordered_rows = {}
+        curr_date = datetime.now(timezone.utc) - timedelta(hours=2)
+        
         with SessionLocal() as session:
             query = select(performance_metric.ram, performance_metric.cpu, metric_timestamp.time, container.name) \
                 .select_from(performance_metric) \
                 .join(container) \
                 .join(metric_timestamp) \
-                .where(container.name == name) \
-                .order_by(metric_timestamp.time)
+                .where(
+                    metric_timestamp.time >= curr_date,
+                    container.name == name) \
+                .order_by(metric_timestamp.time.desc()) \
+                .limit(50)
 
             rows = session.execute(query).mappings().all()
-            data = [dict(row) for row in rows]
+            ordered_rows[name] = rows
 
-        return data
+        order_rows(ordered_rows)
+        ordered_rows["time_between"] = "4"
+
+        return ordered_rows[name]
+    
+def order_rows(ordered_rows):
+    for row_name in ordered_rows:
+        if (len(ordered_rows[row_name]) <= 1):
+            ordered_rows[row_name] = [{
+                    "ram": 0,
+                    "cpu": 0,
+                    "time": datetime.now() - timedelta(hours=1)
+                },
+                {
+                    "ram": 0,
+                    "cpu": 0,
+                    "time": datetime.now()
+                } 
+            ]
+
+            continue
+
+        tmp = []
+        for sub_row in ordered_rows[row_name]:
+            tmp.append({
+                "ram": sub_row["ram"],
+                "cpu": sub_row["cpu"],
+                "time": sub_row["time"]
+            })
+
+        ordered_rows[row_name] = tmp

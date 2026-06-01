@@ -1,29 +1,28 @@
 :root {
     --side-bar-width: 190px;
-    --side-bar-closed-width: 20px;
+    --side-bar-closed-width: 15px;
 }
 
 #sidebar-container {
     width: var(--side-bar-width);
+    height: 100%;
     margin: 0;
     display: flex;
-    padding-left: 2rem;
-    align-items: left;
+    padding: 0 0 0 15px;
+    align-items: start;
+    z-index: 1;
+    transition-duration: 1s;
+    transition-timing-function: cubic-bezier(0.3, 0.33, 0.35, 1);
+    position: absolute;
+    z-index: 9999;
 }
 
 #sidebar-container:hover {
     transform: translate(0);
-    transition: 1s;
 }
 
 #sidebar-container:not(:hover) {
     transform: translate(calc(var(--side-bar-closed-width) - var(--side-bar-width)));
-    transition: 1s;
-}
-
-#sidebar-container:on {
-    transform: translate(calc(var(--side-bar-closed-width) - var(--side-bar-width)));
-    transition: 1s;
 }
 
 #sidebar {
@@ -35,7 +34,7 @@
 #sidebar-list {
     display: grid;
     grid-template-columns: 1fr;
-    gap: 1rem;
+    gap: 10px;
 }
 
 .sidebar-list-item {

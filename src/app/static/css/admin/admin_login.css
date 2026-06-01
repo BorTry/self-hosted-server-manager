@@ -64,7 +64,7 @@ body {
 #form-container button {
     width: 50%;
     font-size: 1.5rem;
-    align-content: center;
+    align-items: center;
 }
 
 input::placeholder {

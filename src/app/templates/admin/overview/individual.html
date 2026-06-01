@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <link rel="stylesheet" href="{{ url_for('static', filename='css/standard.css') }}">
+        <link rel="stylesheet" href="{{ url_for('static', filename='css/admin/admin_sidebar.css') }}">
+        <link rel="stylesheet" href="{{ url_for('static', filename='css/admin/admin_page.css') }}">
+        <link rel="stylesheet" href="{{ url_for('static', filename='css/admin/overview/individual.css') }}">
+        <link rel="stylesheet" href="{{ url_for('static', filename='css/graph.css') }}">
+        <script>
+            const SERVER_NAME = "{{ server_name }}";
+        </script>
+        <script type="module" src="{{ url_for('static', filename='js/admin/overview/individual.js') }}"></script>
+    </head>
+    <body>
+        <div id="main-content-container">
+            <div id="sidebar-container" class="main-body shadow">
+                <div id="sidebar" class="sticky">
+                    <h2>Menu</h2>
+                    <div id="sidebar-list">
+                        <a href="/admin/overview" class="sidebar-list-item highlighted">Overview<div class="divider"></div></a>
+                        <a href="/admin/manage_server"><div class="sidebar-list-item">Manage servers</div></a>
+                        <a href="/admin/logout"><div class="sidebar-list-item">logout</div></a>
+                    </div>
+                </div>
+            </div>
+            <div id="main-content" class="main-body transparent-background center-content">
+                <div class="content-container transparent-background shadow">
+                    <div>
+                        <div class="header-container">
+                            <div class="gradient"></div>
+                            <img src="{{ url_for('static', filename='images/' ~ server_name ~ '.jpg') }}">
+                        </div>
+                        <div class="title-container">
+                            <div>
+                                <p class="title">{{ server_name }}</p>
+                                <div class="divider"></div>
+                            </div>
+                        </div>
+                        <div id="graph-list">
+                            {% for type in types %}
+                                <div class="graph-container">
+                                    <div class="graph-title-container">
+                                        <div>
+                                            <p>{{ type|capitalize }}</p>
+                                            <div class="divider"></div>
+                                        </div>
+                                    </div>
+                                    <canvas id="{{ type }}" class="graph"></canvas>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </body>
+</html>

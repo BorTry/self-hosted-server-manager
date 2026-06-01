@@ -14,11 +14,12 @@ a {
 #main-content-container {
     display: flex;
     width: 100vw;
+    position: relative;
 }
 
 #main-content {
     display: grid;
-    gap: 2rem;
+    gap: 2vh;
     margin-right: 0;
     margin-left: 0;
     width: 100%;

@@ -1,98 +1,100 @@
-// get all running available servers 
-// create the "cards" for each
-import setup_graph_updates from "./configure_graphs.mjs"
-import {syncCanvasSize} from "../../modules/graph.mjs"
+import draw_points, {sync_canvas_size} from "../../modules/graph.mjs"
 
 const CONTAINER_LIST = document.getElementById("main-content")
+const SERVER_NAMES = []
 const GRAPH_TYPES = ["cpu", "ram"]
-// , "upload", "download"
+const MIN_TIME_DIFF = 1.4
 
-async function get_all_servers() {
-    let data = await fetch("/api/container/all", {
+var METRICS = []
+var TIME_BETWEEN = 15 // default
+
+async function get_data() {
+    METRICS = await fetch("/api/container/performance_metrics", {
         method: "GET"
-    })
-    .then(response => {
+    }).then(response => {
         if (!response.ok) {
             throw new Error("SERVER NOT OK:(")
         }
         return response.json()
-    })
-
-    // contains launch options for each server
-    let all_graphs = extract_data(data.message)
-
-    if (!all_graphs.servers.length) {
-        return null
-    }
-
-    return all_graphs
+    });
+    TIME_BETWEEN = METRICS["time_between"]
 }
 
-function setup_server_containers(server_name) {
-    let outer_container = document.createElement("div")
-    outer_container.className = "content-container shadow round-border"
-    outer_container.id = server_name
-    
-    let image_container = document.createElement("div")
-    image_container.className = "container-image"
+function order_by_date(points) {
+    if (!points) return
 
-    let gradient = document.createElement("div")
-    gradient.className = "image-gradient"
-    image_container.appendChild(gradient)
+    let seconds_since = 0
+    let ordered_points = []
 
-    let img = document.createElement("img")
-    img.src = `/static/images/${server_name}.jpg`
-    
-    image_container.appendChild(img)
+    let i = 0
 
-    outer_container.appendChild(image_container)
+    for (let index = 1; index < points.length; index++) {
+        let entry = points[index]
+        seconds_since = (Date.parse(entry.time) - Date.parse(points[index - 1].time)) / (1000)
 
-    for (let graph_name of GRAPH_TYPES) {
-        let graph_container = document.createElement("div")
-        graph_container.className = "graph-container"
-
-        let graph_title_container = document.createElement("div")
-        graph_title_container.className = "graph-title-container"
-        
-        let graph_title_inner_container = document.createElement("div")
-
-        let graph_title = document.createElement("p")
-        graph_title.textContent = server_name + " " + graph_name
-        
-        let graph_line = document.createElement("div")
-        graph_line.className = "divider"
-        
-        graph_title_inner_container.appendChild(graph_title)
-        graph_title_inner_container.appendChild(graph_line)
-
-        graph_title_container.appendChild(graph_title_inner_container)
-        
-        let graph = document.createElement("canvas")
-        graph.id = server_name + "_" + graph_name
-        graph.className = "graph"
-        syncCanvasSize(graph)
-
-        graph_container.appendChild(graph_title_container)
-        graph_container.appendChild(graph)
-        outer_container.appendChild(graph_container)
+        if ((seconds_since / TIME_BETWEEN) > MIN_TIME_DIFF) {
+            for (let ooga = 0; ooga < Math.floor(seconds_since / TIME_BETWEEN); ooga++) {
+                ordered_points.push([i, {"cpu":0, "ram":0}])
+                i++
+            }
+        } else {
+            ordered_points.push([i, {
+                "cpu": Math.ceil(entry.cpu) / 100,
+                "ram": Math.ceil(entry.ram) / 100
+            }])
+            i++
+        }
     }
-    CONTAINER_LIST.appendChild(outer_container)
+
+    return ordered_points
 }
 
-function extract_data(response) {
-    return response
+function update_graphs(graph_names, types) {
+    for (let name of graph_names) {
+        if (!(name in METRICS)) continue
+        
+        let ordered_points = order_by_date(METRICS[name])
+        
+        for (let type of types) {
+            let canvas = document.getElementById(name + "_" + type)
+            
+            draw_points(canvas, ordered_points, (x) => x[type])
+        }
+    }
+}
+
+export default async function setup_graph_updates(graph_names, types) {
+    await get_data() // gets the "time_between"
+    update_graphs(graph_names, types)
+
+    setInterval(get_data, TIME_BETWEEN * 1000)
+    setInterval(update_graphs, 1000, graph_names, types)
+    
+    window.onresize = () => {
+        for (let name of graph_names) {
+            for (let type of types) {
+                let canvas = document.getElementById(name + "_" + type)
+                
+                sync_canvas_size(canvas)
+            }
+        }
+
+        update_graphs(graph_names, types)
+    }
 }
 
 async function main() {
-    let all_graphs = await get_all_servers()
-
-    if (!all_graphs) return
-
-    for (let server_name of all_graphs.servers) {
-        setup_server_containers(server_name)
+    for (let server_element of CONTAINER_LIST.children) {
+        SERVER_NAMES.push(server_element.id)
     }
 
-    setup_graph_updates(all_graphs.servers, GRAPH_TYPES)
+    let graphs = document.getElementsByClassName("graph")
+
+    for (let graph of graphs) {
+        sync_canvas_size(graph)
+    }
+
+    setup_graph_updates(SERVER_NAMES, GRAPH_TYPES)
 }
 
 main()

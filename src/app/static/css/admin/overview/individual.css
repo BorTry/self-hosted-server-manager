@@ -1,0 +1,104 @@
+.content-container {
+    background: var(--main);
+    border-radius: 8px;
+    overflow: hidden;
+    padding: 0;
+    width: 80vw;
+    height: 100%;
+    display: block;
+}
+
+.content-container > div {
+    width: 100%;
+    background-color: var(--main);
+    color: whitesmoke;
+}
+
+/**/
+
+.header-container {
+    width: 100%;
+    height: 40vh;
+    overflow: hidden;
+    display: flex;
+    position: relative;
+}
+
+.header-container > .gradient {
+    width: inherit;
+    height: inherit;
+    background: 
+        linear-gradient(
+            to top,
+            var(--main),
+            transparent
+        );
+    position: absolute;
+    top: inherit;
+    left: 0;
+    z-index: 3;
+}
+
+.header-container > img {
+    object-fit: cover;
+    width: 100%;
+}
+
+.title-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.title-container > div {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    width: calc-size(fit-content, size + 5vw);;
+}
+
+.title {
+    margin-bottom: 8px;
+    font-size: 2vw;
+}
+
+/**/
+
+#graph-list {
+    padding-top: 2vh;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: 1fr 1fr;
+    gap: 2vh;    
+}
+
+.graph {
+    position: relative;
+    z-index: 3;
+}
+
+.graph-container {
+    flex-wrap: wrap;
+    height: 20vh !important;
+}
+
+.graph-title-container {
+    width: 50%;
+    position: relative;
+    display: flex;
+    justify-content: left;
+    z-index: 4;
+}
+
+.graph-title-container > div {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    width: calc-size(fit-content, size + 30px);
+    padding-left: 2vw;
+}
+
+.graph-title-container > div > p {
+    margin-bottom: 4px;
+}

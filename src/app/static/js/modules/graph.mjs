@@ -3,31 +3,34 @@ const GRAPH_FLOOR = 0
 const TODAY = Date.now()
 const STROKE_COLOR = "#24b811"
 
-export function syncCanvasSize(canvas) {
-    const rect = canvas.getBoundingClientRect();
+export function sync_canvas_size(canvas) {
     const dpr = window.devicePixelRatio || 1;
+    const rect = canvas.getBoundingClientRect();
 
-    canvas.width = Math.round(rect.width * dpr);
-    canvas.height = Math.round(rect.height * dpr);
+    const displayWidth = Math.round(rect.width * dpr);
+    const displayHeight = Math.round(rect.height * dpr);
 
-    const ctx = canvas.getContext("2d");
-    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    if (canvas.width !== displayWidth || canvas.height !== displayHeight) {
+        canvas.width = displayWidth;
+        canvas.height = displayHeight;
+    }
+
+    const context = canvas.getContext("2d");
+    context.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+    return { context, width: rect.width, height: rect.height };
 }
 
 export default function draw_points(canvas, points, attribute_selector= (x) => x, color=STROKE_COLOR) {    
     if (!points) return
 
-    syncCanvasSize(canvas)
+    const {context, width, height} = sync_canvas_size(canvas)
 
-    const rect =  canvas.getBoundingClientRect()
+    context.clearRect(0, 0, canvas.width, canvas.height);
 
-    const HEIGHT = rect.height
-    const WIDTH = rect.width
+    const x_scale_factor = width / (points.length-1)
+    const canvas_floor = height
 
-    const x_scale_factor = WIDTH / (points.length-1)
-    const canvas_floor = HEIGHT
-
-    let context = canvas.getContext("2d")
     context.lineWidth = 3
     context.strokeStyle = STROKE_COLOR
 
@@ -37,7 +40,7 @@ export default function draw_points(canvas, points, attribute_selector= (x) => x
 
     for (let point of points) {
         prev_x = point[0]
-        path.lineTo(point[0] * x_scale_factor, HEIGHT - (attribute_selector(point[1]) * HEIGHT / 1.2))
+        path.lineTo(point[0] * x_scale_factor, height - (attribute_selector(point[1]) * height))
     }
 
     context.stroke(path)

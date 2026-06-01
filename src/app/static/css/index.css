@@ -6,12 +6,12 @@
     display: grid;
     grid-template-columns: repeat(1, 1fr);
     grid-template-rows: auto;
-    gap: 30px
+    gap: 2vh;
 }
 
 .server-item {
     width: 100%;
-    height: 350px;
+    height: 40vh;
     background-color: none;
     grid-template-columns: 1fr 1fr 1fr;
     grid-template-rows: 1fr;

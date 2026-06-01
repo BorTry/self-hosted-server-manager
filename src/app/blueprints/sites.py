@@ -4,7 +4,7 @@ from flask import render_template, make_response, session, redirect, request
 from marshmallow import Schema, fields
 from sqlalchemy import select
 
-from src.app.lib import SOCKET_THREAD
+from src.app.lib import SOCKET_THREAD, ALL_SERVERS
 from src.lib import Server_codes
 from ..lib import limiter, get_user_ip
 
@@ -15,6 +15,9 @@ from datetime import datetime, timedelta
 
 MAX_ATTEMPTS = 3
 ATTEMPT_TIME_DELTA = 10 # minutes
+
+OVERVIEW_TYPES = ["cpu", "ram"]
+ALL_GRAPH_TYPES = ["cpu", "ram", "upload", "download"]
 
 blp = Blueprint("Sites", __name__)
 
@@ -66,32 +69,44 @@ class admin_page(MethodView):
     @blp.response(405)
     @limiter.exempt
     def get(self, site):
-        if (not ("username" in session) or not ("password" in session)): return make_response("You dont have access", 405)
-        
-        username = session["username"]
-        password = session["password"]
+        login_confirmed = confirm_api_login()
 
-        packet = SOCKET_THREAD.send_recv(Server_codes.CHECK_REPEATED_CREDENTIALS, {"username":username, "password": password})
+        if login_confirmed == None: return make_response("Something went wrong", 404)
 
-        if (not packet): return make_response("Something went wrong", 500)
-
-        verifired_login = verify_login(packet)
-
-        if (verifired_login == False):
+        if (login_confirmed == False):
             session.pop("username", None)
             session.pop("password", None)
             return make_response("You dont have access", 405)
 
-        if site == "logout":
-            session.pop("username", None)
-            session.pop("password", None)
+        match site:
+            case "logout":
+                session.pop("username", None)
+                session.pop("password", None)
 
-            return redirect("/")
-
-        else:
-            html = render_template(f'admin/{site}.html')
-            return make_response(html, 200)
+                return redirect("/")
+            
+            case "overview":
+                html = render_template(f'admin/{site}/index.html', server_names=ALL_SERVERS["servers"], types=OVERVIEW_TYPES)
+                return make_response(html, 200)
+            
+            case "manage_server":
+                html = render_template(f'admin/{site}/index.html')
+                return make_response(html, 200)
         
+@blp.route("/admin/overview/<string:site>")
+class admin_individual_overview(MethodView):
+    @blp.response(200)
+    @blp.response(404)
+    @blp.response(405)
+    @limiter.exempt
+    def get(self, site):
+        login_confirmed = confirm_api_login()
+
+        if login_confirmed == False: return make_response("You dont have access", 405)
+        if login_confirmed == None: return make_response("Something went wrong", 404)
+
+        html = render_template("admin/overview/individual.html", server_name=site, types=ALL_GRAPH_TYPES)
+        return make_response(html, 200)
 
 def get_ip_entry(s):
     request_ip = get_user_ip()
@@ -145,3 +160,15 @@ def verify_login(packet):
         s.commit()
 
         return True
+    
+def confirm_api_login():
+    if (not ("username" in session) or not ("password" in session)): return False
+        
+    username = session["username"]
+    password = session["password"]
+
+    packet = SOCKET_THREAD.send_recv(Server_codes.CHECK_REPEATED_CREDENTIALS, {"username":username, "password": password})
+
+    if (not packet): return None
+
+    return verify_login(packet)
