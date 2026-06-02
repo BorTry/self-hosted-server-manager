@@ -26,6 +26,7 @@ body {
         ),
         var(--main);
     background-size: cover;
+    min-height: 100vh;
 }
 
 .round-border {

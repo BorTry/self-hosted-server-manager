@@ -1,16 +1,78 @@
-html {
-  interpolate-size: allow-keywords;
-}
-
 #main-content {
-    height: 100vh;
     display: block;
+    color: whitesmoke;
 }
 
 .content-container {
     display: flex;
+    min-height: 5vh;
+    height: auto;
     flex-wrap: wrap;
-    height: fit-content;
     margin: 2vh;
+    background: var(--main);
 }
 
+.dropdown > form {
+    display: grid;
+    gap: 2vh;
+}
+
+form {
+    margin: 2vh 2vw;
+    padding: 1vh 2vw;
+    display: flex;
+    justify-content: center;
+}
+
+form > div {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    width: 100%;
+}
+
+.inner-form-container {
+    display: flex;
+    justify-content: center;
+    width: 80%;
+    margin: 1vh;
+}
+
+form > div > .divider {
+    margin: 2vh 0;
+}
+
+.check-list {
+    display: grid;
+    align-items: center;
+    grid-template-columns: repeat(2, 1fr);
+    grid-template-rows: repeat(6, 1fr);
+}
+
+.inner-form-container > input {
+    margin: 1vh 1vw;
+}
+
+.text-container {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 2vh;
+}
+
+.text-container > div {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+}
+
+.text-container > textarea {
+    width: 30vw;
+    height: 15vh;
+    overflow-y: auto;
+    resize: none;
+}
+
+.slider-list > div {
+    display: grid;
+    width: 100%;
+    margin: 0 1vw;
+}

@@ -1,3 +1,7 @@
+html {
+  interpolate-size: allow-keywords;
+}
+
 .active {
     height: auto !important;
 }
