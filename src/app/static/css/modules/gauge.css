@@ -1,0 +1,60 @@
+.gauge-container {
+    height: 60px;
+    width: 120px;
+    padding: 10px;
+    margin: 10px;
+    padding-bottom: 0px;
+    overflow: hidden;
+    position: relative;
+}
+
+.gauge {
+    position: absolute;
+    height: 60px;
+    width: 120px;
+    z-index: 2;
+    background: 
+    linear-gradient(
+        to left,
+        green, yellow, red
+        );
+    border-radius: 120px 120px 0px 0px;
+    transition: all 1.3s ease-in-out;
+    rotate: 180deg;
+    transform-origin: bottom;
+}
+
+.gauge-border {
+    z-index: 1;
+    height: 70px;
+    width: 130px;
+    transform: translate(-5px, -5px);
+    border-radius: 132px 132px 0px 0px;
+    background-color: gray;
+}
+
+.gauge-foreground {
+    position: absolute;
+    z-index: 2;
+    transform: translate(20px, 20px);
+    background:
+        radial-gradient(
+            at top left,
+            var(--item-list), transparent
+        ),
+        var(--main);
+    box-shadow: 0px 0px 7px 4px rgba(34, 34, 34, 0.419);
+    height: 40px;
+    width: 80px;
+    border-radius: 120px 120px 0px 0px;
+    text-align: center;
+}
+
+.gauge-background {
+    z-index: 3;
+    position: absolute;
+    transform: translate(-10px, 59px);
+    height: 2px;
+    width: 140px;
+    background-color: gray;
+}
