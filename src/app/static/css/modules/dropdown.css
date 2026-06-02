@@ -15,7 +15,6 @@ html {
     transition: 1s;
     width: 100%;
     height: 5vh;
-    overflow-y: hidden;
     position: relative;
 }
 
@@ -23,6 +22,6 @@ html {
     background: transparent;
 }
 
-.title {
-    height: 5vh;
+.content-container:has(.dropdown) {
+    overflow-y: hidden;
 }

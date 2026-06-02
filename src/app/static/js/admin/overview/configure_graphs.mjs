@@ -6,7 +6,7 @@ var METRICS = []
 var TIME_BETWEEN = 15 // default
 
 async function get_data() {
-    METRICS = await fetch("/api/container/performance_metrics", {
+    METRICS = await fetch("/api/admin/performance_metrics", {
         method: "GET"
     }).then(response => {
         if (!response.ok) {

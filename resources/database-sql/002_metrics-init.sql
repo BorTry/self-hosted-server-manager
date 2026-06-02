@@ -3,8 +3,6 @@ BEGIN;
 DROP SCHEMA IF EXISTS metrics CASCADE;
 CREATE SCHEMA IF NOT EXISTS metrics;
 
-DROP TABLE IF EXISTS metrics.timestamp, metrics.performance, metrics.traffic;
-
 CREATE TABLE metrics.timestamp (
     id              INTEGER         GENERATED ALWAYS AS IDENTITY 
                                     PRIMARY KEY,

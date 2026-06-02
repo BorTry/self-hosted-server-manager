@@ -5,11 +5,18 @@
 
 .content-container {
     display: flex;
-    min-height: 5vh;
+    min-height: 10vh;
+    width: 60%;
     height: auto;
     flex-wrap: wrap;
     margin: 2vh;
     background: var(--main);
+}
+
+.title {
+    height: 10vh;
+    font-size: 5vh;
+    align-content: center;
 }
 
 .dropdown > form {
@@ -62,11 +69,16 @@ form > div > .divider {
 .text-container > div {
     display: grid;
     grid-template-columns: 1fr 1fr;
+    align-items: center;
+}
+
+.text-container > div > input {
+    height: 2vh;
 }
 
 .text-container > textarea {
     width: 30vw;
-    height: 15vh;
+    height: 10vh;
     overflow-y: auto;
     resize: none;
 }

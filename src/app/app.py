@@ -18,4 +18,5 @@ limiter.init_app(app)
 
 # register the different blueprints
 api.register_blueprint(site_blp)
-api.register_blueprint(api_blp)
+api.register_blueprint(frontend_api_blp)
+api.register_blueprint(admin_api_blp)

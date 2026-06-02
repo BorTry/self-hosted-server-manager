@@ -3,8 +3,6 @@ BEGIN;
 DROP SCHEMA IF EXISTS admin CASCADE;
 CREATE SCHEMA IF NOT EXISTS admin;
 
-DROP TABLE IF EXISTS admin.connections, admin.login_attempts;
-
 CREATE TABLE admin.connections (
     id              INTEGER     GENERATED ALWAYS AS IDENTITY 
                                 PRIMARY KEY,
