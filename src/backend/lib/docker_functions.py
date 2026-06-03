@@ -1,6 +1,7 @@
 from json import load
 from os import cpu_count
 from python_on_whales import docker, DockerException
+from time import sleep
 
 SERVER_JSON = None
 CORE_COUNT = cpu_count()
@@ -146,6 +147,20 @@ def start_frontend():
     
     docker.start("frontend_database")
     docker.start("frontend_server")
+    database = docker.ps(all=True, filters={"name": "frontend_database"})[0]
+
+    print("Waiting for database to start...")
+    for _ in range(30):
+        database.reload()
+
+        health = database.state.health.status if database.state.health else None
+
+        if health == "healthy":
+            print("Database is ready.")
+            return
+
+        sleep(1)
+    raise TimeoutError("Database did not start correctly")
 
 def stop_server(server_name:str):
     container_name = convert_server_name(server_name)

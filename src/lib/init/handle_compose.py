@@ -29,14 +29,17 @@ def hash_compose_file() -> str:
 
 def docker_compose():
     try:
+        print("Setting up user servers...")
         docker = DockerClient(compose_files=(SERVERS_COMPOSE_FILE_PATH))
         docker.compose.down()
-        docker.compose.up(build=True, start=False)
+        docker.compose.up(build=True, start=False, quiet=True)
 
+        print("Setting up frontend servers...")
         docker = DockerClient(compose_files=(FRONTEND_COMPOSE_FILE_PATH))
         docker.compose.down()
-        docker.compose.up(build=True, start=False)
+        docker.compose.up(build=True, start=False, quiet=True)
         docker.wait("frontend_database")
+        
         return True
     
     except DockerException as e:
