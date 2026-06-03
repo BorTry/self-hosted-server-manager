@@ -1,7 +1,7 @@
 from src.lib import thread_wrapper, Server_codes, CONSTANTS
 from src.backend.lib.docker_functions import *
 
-from src.db.mappings import metric_timestamp, traffic_metric, performance_metric, container
+from src.db.mappings import metric_timestamp, traffic_metric, performance_metric, container, port_type, ports, ports_mapping
 from src.db.db import SessionLocal
 from sqlalchemy import select
 
@@ -54,20 +54,46 @@ def docker_init(thread:thread_wrapper):
         "launch_options": SERVER_JSON["launch_alternatives"]
     }
 
-    add_containers_to_db(CONTAINERS[Server_codes.ALL_SERVERS]["servers"])
+    add_containers_to_db(CONTAINERS[Server_codes.ALL_SERVERS]["servers"], get_resource_limit_containers())
 
     with thread.data_handler as data:
         data["data"] = CONTAINERS
 
-def add_containers_to_db(containers):
+def add_containers_to_db(containers, limits):  
     with SessionLocal() as session:
-        for container_entry in containers:
-            query = select(container).where(container.name == container_entry)
+        port_types_rows = session.execute(select(port_type)).mappings().all()
+        port_type_mapping = {}
+
+        for port in port_types_rows:
+            port_type_mapping[port["port_type"].type] = port["port_type"].id
+
+        for container_el in containers:
+            query = select(container).where(container.name == container_el)
             entry = session.scalars(query).first()
 
             if (entry): continue
+            
+            container_db_entry = container(
+                name = container_el,
+                ram_limit = limits[container_el]["ram_limit"],
+                cpu_limit = limits[container_el]["cpu_limit"], 
+            )
+            session.add(container_db_entry)
+            session.flush()
 
-            session.add(container(name=container_entry))
+            if len(limits[container_el]["ports"]):
+                mapping_db_entry = ports_mapping(server_id=container_db_entry.id)
+                session.add(mapping_db_entry)
+                session.flush()
+
+                for port in limits[container_el]["ports"]:
+                    session.add(ports(
+                        mapping_id=mapping_db_entry.id,
+                        container_port=port["container_port"],
+                        host_port=port["host_port"], 
+                        type_id=port_type_mapping[port["port_type"]]
+                    ))
+
         session.commit()
 
 def add_resources_to_db(resources):

@@ -34,8 +34,9 @@ CREATE TABLE servers.ports (
     id              INTEGER         GENERATED ALWAYS AS IDENTITY
                                     PRIMARY KEY,
     mapping_id      INTEGER         NOT NULL,
-    port            INTEGER         NOT NULL 
+    host_port       INTEGER         NOT NULL 
                                     UNIQUE,
+    container_port  INTEGER         NOT NULL,
     type_id         INTEGER         NOT NULL    
 );
 
@@ -44,20 +45,19 @@ ADD CONSTRAINT fk_port_mapping
 FOREIGN KEY (mapping_id)
 REFERENCES servers.ports_mapping(id);
 
+CREATE TABLE servers.port_types (
+    id              INTEGER         PRIMARY KEY,
+    type            VARCHAR(3)      NOT NULL
+);
+
 ALTER TABLE servers.ports
 ADD CONSTRAINT fk_port_type
 FOREIGN KEY (type_id)
 REFERENCES servers.port_types(id);
 
-CREATE TABLE servers.port_types (
-    id              INTEGER         PRIMARY KEY,
-    type            VARCHAR(3)      
-)
-
-INSERT INTO servers.port_types (id, type)
+INSERT INTO servers.port_types(id, type)
 VALUES 
-    (0, "TCP"),
-    (1, "UDP"),
-    (2,  NULL),
+    (0, 'tcp'),
+    (1, 'udp');
 
 END;

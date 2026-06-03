@@ -80,6 +80,34 @@ def get_resource_use_for_containers():
 
     return fin_arr
 
+def get_resource_limit_containers():
+    all_containers = docker.ps(all=True)
+
+    resource_usage = {}
+    for server in all_containers:
+        c_name = convert_container_name(server.name)
+        if (not (c_name in SERVER_JSON["container_to_server_names"])): continue
+
+        resource_usage[SERVER_JSON["container_to_server_names"][c_name]] = {
+            "ram_limit": server.host_config.memory / 1_000_000_000,
+            "cpu_limit": get_cpu(server)
+        }
+        
+        ports = server.host_config.port_bindings
+        resource_usage[SERVER_JSON["container_to_server_names"][c_name]]["ports"] = []
+
+        for port_binding in ports:
+            container_port, container_port_type = port_binding.split("/")
+            host_port = ports[port_binding][0].host_port
+
+            resource_usage[SERVER_JSON["container_to_server_names"][c_name]]["ports"].append({
+                "container_port": container_port,
+                "port_type": container_port_type,
+                "host_port": host_port
+            })
+
+    return resource_usage
+
 def get_cpu(container) -> float:
     if container.host_config.nano_cpus:
         return container.host_config.nano_cpus / 1_000_000_000
