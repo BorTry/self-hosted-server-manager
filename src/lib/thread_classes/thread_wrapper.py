@@ -26,6 +26,20 @@ class thread_wrapper:
 
         self.init = init
 
+        self._data = {}
+
+    def __getitem__(self, key):
+        return self._data[key]
+
+    def __setitem__(self, key, value):
+        self._data[key] = value
+
+    def __delitem__(self, key):
+        del self._data[key]
+
+    def __contains__(self, key):
+        return key in self._data
+
     def print(self, *msg:tuple[str]):
         self.logger.log(self.name, "->", *msg)
 

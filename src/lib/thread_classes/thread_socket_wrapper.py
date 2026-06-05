@@ -7,6 +7,8 @@ from threading import Event
 from .thread_wrapper import thread_wrapper
 from .thread_data_handler import thread_data_handler
 
+from ..packets import packet
+
 BUFFER_SIZE = 1024
 CONNECTION_TYPE = (AF_INET, SOCK_DGRAM)
 
@@ -27,18 +29,16 @@ class thread_socket_wrapper(thread_wrapper):
 
         super().__init__(target, init, terminate_signal, name, data_handler, sleeptime)
 
-    def send(self, data:str, code:int=200, target:tuple[str, int]=None):
+    def send(self, data:packet|None, code:int=None, target:tuple[str, int]=None):
         target_address = target or self.target_address
 
         if (not target_address):
             raise ValueError("Target address not defined, in class or function")
         
-        data_packet = {
-            "code": code,
-            "data": data
-        }
+        if code:
+            data.set_data_code(code)
 
-        self.socket.sendto(encode(data_packet), target_address)
+        self.socket.sendto(encode(data), target_address)
 
     def recv(self):
         try:
@@ -48,7 +48,7 @@ class thread_socket_wrapper(thread_wrapper):
         except:
             return None, None
 
-    def send_recv(self, code:int, data:str=""):
+    def send_recv(self, data:packet|None, code:int=None):
         self.send(data=data, code=code)
         new_data, _ = self.recv()
 

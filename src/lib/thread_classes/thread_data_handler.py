@@ -1,5 +1,6 @@
 from multiprocessing import Lock
 from typing import Any
+from copy import deepcopy
 
 class thread_data_handler:
     """
@@ -9,12 +10,19 @@ class thread_data_handler:
         data (Any): What data structure the data should be put into.
     """
     def __init__(self, data:Any):
-        self.lock = Lock()
-        self.data = data
+        self._lock = Lock()
+        self._data = data
 
     def __enter__(self):
-        self.lock.acquire()
-        return self.data
+        self._lock.acquire()
+        return self._data
 
     def __exit__(self, exc_type, exc, tb):
-        self.lock.release()
+        self._lock.release()
+        return False
+
+    def get_copy(self, index:int|str=None):
+        with self._lock:
+            if index != None:
+                return deepcopy(self._data[index])
+            return deepcopy(self._data)
