@@ -20,3 +20,11 @@ limiter.init_app(app)
 api.register_blueprint(site_blp)
 api.register_blueprint(frontend_api_blp)
 api.register_blueprint(admin_api_blp)
+
+@app.errorhandler(422)
+def handle_unprocessable_entity(err):
+    print(err.data)  # inspect in logs
+
+    return {
+        "errors": err.data.get("messages", {})
+    }, 422

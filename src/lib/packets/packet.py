@@ -1,6 +1,8 @@
 from typing import Any
 
 class packet:
+    __slots__ = ("id", "data", "code")
+    
     def __init__(self, id:int, data:Any, code:int):
         self.id = id
         self.data = data

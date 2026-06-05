@@ -9,7 +9,8 @@ init()
 
 DATA = thread_data_handler({
         "data":[None for _ in range(10)],
-        "requests": []
+        "requests": [],
+        "responses": []
     })
 
 thread_terminate_event = Event()
@@ -27,10 +28,12 @@ DOCKER_THREAD = thread_wrapper(
 
 PORT = 3024
 ADDRESS = "0.0.0.0"
+CONTAINER_PORT = 2024
 
 SOCKET_THREAD = thread_socket_wrapper(
     target=socket_func,
     address=(ADDRESS, PORT),
+    target_address=("localhost", 2024),
     terminate_signal=thread_terminate_event,
     data_handler=DATA,
     name="main_socket_thread",

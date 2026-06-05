@@ -2,16 +2,10 @@ from flask_smorest import Blueprint
 from flask.views import MethodView
 from flask import render_template, make_response, session, redirect
 from marshmallow import Schema, fields
-from sqlalchemy import select
 
-from src.app.lib import SOCKET_THREAD, ALL_SERVERS
-from src.lib import Server_codes
+from src.app.lib import SOCKET_THREAD, get_next_id
+from src.lib import Server_codes, request
 from ..lib import limiter, get_user_ip
-
-from src.db.db import SessionLocal
-from src.db.mappings import connections, login_attempts
-
-from datetime import datetime, timedelta
 
 MAX_ATTEMPTS = 3
 ATTEMPT_TIME_DELTA = 10 # minutes
@@ -33,8 +27,11 @@ class front_page(MethodView):
     def get(self):
         session["username"] = None
         session["password"] = None
+
+        if session.get("session_id", None) == None:
+            session["session_id"] = get_next_id(SOCKET_THREAD)
         
-        html = render_template("index.html", server_names=ALL_SERVERS["servers"])
+        html = render_template("index.html", server_names=SOCKET_THREAD["all_servers"])
         return make_response(html, 200)
 
 @blp.route("/admin")
@@ -49,12 +46,13 @@ class admin_login(MethodView):
     @limiter.limit("5 per minute")
     def post(self, form):
         # verify the user with the backend
-        packet = SOCKET_THREAD.send_recv(Server_codes.CHECK_CREDENTIALS, {"username":form["username"], "password": form["password"]})
+        packet = SOCKET_THREAD.send_recv(request(None, {"username":form["username"], "password": form["password"], "ip": get_user_ip()}, Server_codes.CHECK_CREDENTIALS))
 
-        if (not verify_login(packet)):
+        if not packet: return make_response("Something went wrong", 404)
+        if (packet.code != Server_codes.CREDENTIALS_OK):
             session.pop("username", None)
             session.pop("password", None)
-            return  make_response("You dont have access", 405)
+            return make_response("You dont have access", 405)
 
         session["username"] = form["username"]
         session["password"] = form["password"]
@@ -73,6 +71,9 @@ class admin_page(MethodView):
 
         if login_confirmed == None: return make_response("Something went wrong", 404)
 
+        if (session.get("session_id", None) == None):
+            session["session_id"] = get_next_id(SOCKET_THREAD) 
+
         if (login_confirmed == False):
             session.pop("username", None)
             session.pop("password", None)
@@ -86,7 +87,7 @@ class admin_page(MethodView):
                 return redirect("/")
             
             case "overview":
-                html = render_template(f'admin/{site}/index.html', server_names=ALL_SERVERS["servers"], types=OVERVIEW_TYPES)
+                html = render_template(f'admin/{site}/index.html', server_names=SOCKET_THREAD["all_servers"], types=OVERVIEW_TYPES)
                 return make_response(html, 200)
             
             case _:
@@ -107,68 +108,15 @@ class admin_individual_overview(MethodView):
 
         html = render_template("admin/overview/individual.html", server_name=site, types=ALL_GRAPH_TYPES)
         return make_response(html, 200)
-
-def get_ip_entry(s):
-    request_ip = get_user_ip()
-    ip_query = select(connections).where(connections.ip == request_ip)
-
-    connection_entry = s.scalars(ip_query).first()
-
-    if not connection_entry:
-        connection_entry = connections(ip=request_ip)
-        print("Creating new database entry")
-        s.add(connection_entry)
-        s.commit()
-
-    return connection_entry
-
-def get_login_attemps(entry, s):
-    cutoff = datetime.now() - timedelta(minutes=ATTEMPT_TIME_DELTA)
-
-    # check the amount of recent login attempts that failed
-    login_attempts_query = select(login_attempts).where(
-        login_attempts.connection_id == entry.id, 
-        login_attempts.failed_login == True,
-        login_attempts.time >= cutoff
-    )
-    return s.scalars(login_attempts_query).all()
-
-def verify_login(packet):
-    with SessionLocal() as s:
-        connection_entry = get_ip_entry(s)
-        
-        if (connection_entry.blacklisted):
-            return False
-
-        attempts = get_login_attemps(connection_entry, s)
-
-        if (len(attempts) >= MAX_ATTEMPTS):
-            connection_entry.blacklisted = True
-            s.commit()
-
-            print(f'Blacklisting ip: {get_user_ip()}')
-            return False
-
-        new_login_entry = login_attempts(connection_id=connection_entry.id)
-        s.add(new_login_entry)
-        s.commit()
-
-        if (packet["code"] != Server_codes.CREDENTIALS_OK): 
-            return False
-        
-        new_login_entry.failed_login = False
-        s.commit()
-
-        return True
     
 def confirm_api_login():
     if (not ("username" in session) or not ("password" in session)): return False
-        
+
     username = session["username"]
     password = session["password"]
 
-    packet = SOCKET_THREAD.send_recv(Server_codes.CHECK_REPEATED_CREDENTIALS, {"username":username, "password": password})
+    packet = SOCKET_THREAD.send_recv(request(None, {"username":username, "password": password, "ip": get_user_ip()}, Server_codes.CHECK_REPEATED_CREDENTIALS))
 
     if (not packet): return None
 
-    return verify_login(packet)
+    return packet.code == Server_codes.CREDENTIALS_OK

@@ -20,15 +20,14 @@ async function build_server_list() {
         return response.json()
     })
 
-    // contains launch options for each server
-    let all_servers = extract_data(data.message)
+    let server_launch_options = extract_data(data.message)
 
-    if (!all_servers.servers.length) {
+    if (!server_launch_options) {
         return
     }
 
-    for (let server_name of all_servers.servers) {
-        build_request_form(server_name, all_servers.launch_options)
+    for (let server_name of Object.keys(server_launch_options)) {
+        build_request_form(server_name, server_launch_options)
     }
 }
 

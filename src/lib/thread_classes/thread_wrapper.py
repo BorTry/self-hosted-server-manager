@@ -7,7 +7,7 @@ from .thread_data_handler import thread_data_handler
 from ..logger import get_logger
 
 class thread_wrapper:
-    __slots__ = ("name", "logger", "target", "stdout", "sleep_time", "thread", "terminate_signal", "return_val", "data_handler", "init")
+    __slots__ = ("name", "logger", "target", "stdout", "sleep_time", "thread", "terminate_signal", "return_val", "data_handler", "init", "_data")
 
     def __init__(self, target:Callable=None, init:Callable=None, terminate_signal:Event=None, name="thread", data_handler:thread_data_handler=None, sleep_time:float=0.1):
         self.name = name

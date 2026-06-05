@@ -19,6 +19,7 @@ def docker_func(thread:thread_wrapper):
 
     CONTAINERS[Server_codes.RUNNING_SERVERS] = resources_used
     requests = []
+    responses = []
     now = datetime.now()
 
     if (not last_save or (now - last_save).seconds > save_interval.seconds) and len(resources_used):
@@ -28,6 +29,7 @@ def docker_func(thread:thread_wrapper):
     with thread.data_handler as data:
         data["data"] = CONTAINERS
         requests = data["requests"]
+        responses = data["responses"]
 
     if (not len(requests)): return
     # use the data to try to start or stop a server
@@ -39,9 +41,15 @@ def docker_func(thread:thread_wrapper):
                 stop_server(data_packet["data"]["name"])
             case Server_codes.RESTART_SERVER:
                 restart_server(data_packet["data"]["name"])
+            case Server_codes.ADD_CONTAINER:
+                responses.append(data_packet["url"])
+                print(data_packet["data"])
+            case Server_codes.CHANGE_CONTAINER:
+                pass
 
     with thread.data_handler as data:
         data["requests"] = []
+        data["responses"] = responses
 
 # send over data to the com thread
 def docker_init(thread:thread_wrapper):

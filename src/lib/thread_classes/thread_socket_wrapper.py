@@ -1,13 +1,14 @@
+from .thread_wrapper import thread_wrapper
+from .thread_data_handler import thread_data_handler
+
+from ..packets import packet, response
+from ..json_decoder_encoder import decoder, encoder
+
 from socket import socket, AF_INET, SOCK_DGRAM
 from json import dumps, loads
 
 from typing import Callable, Any
 from threading import Event
-
-from .thread_wrapper import thread_wrapper
-from .thread_data_handler import thread_data_handler
-
-from ..packets import packet, response
 
 BUFFER_SIZE = 1024
 CONNECTION_TYPE = (AF_INET, SOCK_DGRAM)
@@ -63,8 +64,8 @@ class thread_socket_wrapper(thread_wrapper):
     def get_new_instance(self):
         return thread_socket_wrapper(self.target, self.init, self.address, self.target_address, self.terminate_signal, self.name, self.sleep_time)
 
-def encode(data:Any):
-    return dumps(data).encode("utf-8")
+def encode(data: Any) -> bytes:
+    return dumps(data, cls=encoder).encode("utf-8")
 
-def decode(data:bytes):
-    return loads(data.decode("utf-8"))
+def decode(data: bytes) -> Any:
+    return loads(data.decode("utf-8"), cls=decoder)

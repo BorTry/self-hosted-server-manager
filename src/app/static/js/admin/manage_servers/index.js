@@ -1,12 +1,23 @@
 const ADD_SERVER_FORM = document.getElementById("add_server_form")
+const SERVER_STREAM = new EventSource("/api/admin/add_container")
+
+SERVER_STREAM.addEventListener("update", (event) => {
+    console.log(event.data)
+})
+
+SERVER_STREAM.addEventListener("close", (event) => {
+    SERVER_STREAM.close()
+})
 
 ADD_SERVER_FORM.addEventListener("submit", (e) => {
     e.preventDefault();
         
     let formData = new FormData(e.target);
 
-    console.log(e.target)
-    console.log(Object.fromEntries(formData));
+    fetch("/api/admin/add_container", {
+        method: "POST",
+        body: formData
+    })
 })
 
 function toggle_input(listen_id, toggle_ids) {

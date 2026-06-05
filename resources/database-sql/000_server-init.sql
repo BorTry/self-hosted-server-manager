@@ -8,9 +8,22 @@ CREATE TABLE servers.container (
                                     PRIMARY KEY,
     name            VARCHAR(127)    NOT NULL
                                     UNIQUE,
-    ram_limit       DECIMAL(5, 2)        ,
+    steam_server_id INTEGER         ,
+    ram_limit       DECIMAL(5, 2)   ,
     cpu_limit       INTEGER         
 );
+
+CREATE TABLE servers.steam_server_id (
+    id              INTEGER         GENERATED ALWAYS AS IDENTITY
+                                    PRIMARY KEY,
+    steam_id        INTEGER         NOT NULL
+                                    UNIQUE
+);
+
+ALTER TABLE servers.container
+ADD CONSTRAINT fk_container_steam
+FOREIGN KEY (steam_server_id)
+REFERENCES servers.steam_server_id;
 
 CREATE TABLE servers.ports_mapping (
     id              INTEGER         GENERATED ALWAYS AS IDENTITY
@@ -21,8 +34,7 @@ CREATE TABLE servers.ports_mapping (
     strict_ports    BOOLEAN         NOT NULL
                                     DEFAULT FALSE,
     do_port_forward BOOLEAN         NOT NULL
-                                    DEFAULT FALSE,
-    success_port    BOOLEAN         
+                                    DEFAULT FALSE       
 );
 
 ALTER TABLE servers.ports_mapping
@@ -47,7 +59,7 @@ REFERENCES servers.ports_mapping(id);
 
 CREATE TABLE servers.port_types (
     id              INTEGER         PRIMARY KEY,
-    type            VARCHAR(3)      NOT NULL
+    type            VARCHAR(3)      
 );
 
 ALTER TABLE servers.ports
@@ -58,6 +70,7 @@ REFERENCES servers.port_types(id);
 INSERT INTO servers.port_types(id, type)
 VALUES 
     (0, 'tcp'),
-    (1, 'udp');
+    (1, 'udp'),
+    (2,  NULL);
 
 END;

@@ -15,3 +15,8 @@ class Server_codes:
 
     OK = 30
     BAD = 40
+
+    ADD_CONTAINER = 50
+    CHANGE_CONTAINER = 51
+    CONTAINER_SUCCESS = 58
+    CONTAINER_FAILED = 59

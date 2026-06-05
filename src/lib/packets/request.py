@@ -1,11 +1,14 @@
 from .packet_types import packet_types
 from .packet import packet
+from ..json_decoder_encoder import register
 
 from typing import Any
 
-
+@register
 class request(packet):
-    def __init__(self, id:int, data:dict, data_code:int):
-        super().__init__(id, data, data_code)
+    __slots__ = ("_type", )
 
-        self.type = packet_types.REQUEST
+    def __init__(self, id:int, data:Any, code:int):
+        super().__init__(id, data, code)
+
+        self._type = packet_types.REQUEST

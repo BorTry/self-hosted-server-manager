@@ -9,6 +9,8 @@ class thread_data_handler:
     Args:
         data (Any): What data structure the data should be put into.
     """
+    __slots__ = ("_lock", "_data")
+    
     def __init__(self, data:Any):
         self._lock = Lock()
         self._data = data
