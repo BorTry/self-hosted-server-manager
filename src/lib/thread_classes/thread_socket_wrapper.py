@@ -7,7 +7,7 @@ from threading import Event
 from .thread_wrapper import thread_wrapper
 from .thread_data_handler import thread_data_handler
 
-from ..packets import packet
+from ..packets import packet, response
 
 BUFFER_SIZE = 1024
 CONNECTION_TYPE = (AF_INET, SOCK_DGRAM)
@@ -48,7 +48,7 @@ class thread_socket_wrapper(thread_wrapper):
         except:
             return None, None
 
-    def send_recv(self, data:packet|None, code:int=None):
+    def send_recv(self, data:packet|None, code:int=None) -> response|None:
         self.send(data=data, code=code)
         new_data, _ = self.recv()
 
