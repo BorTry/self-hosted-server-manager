@@ -1,5 +1,5 @@
 from src.lib import thread_wrapper, Server_codes, CONSTANTS
-from src.backend.lib.docker_functions import *
+from backend.lib.docker.general_functions import *
 
 from src.db.mappings import metric_timestamp, traffic_metric, performance_metric, container, port_type, ports, ports_mapping
 from src.db.db import SessionLocal
@@ -34,16 +34,15 @@ def docker_func(thread:thread_wrapper):
     if (not len(requests)): return
     # use the data to try to start or stop a server
     for data_packet in requests:
-        match (data_packet["code"]):
+        match (data_packet.code):
             case Server_codes.START_SERVER:
-                start_server(data_packet["data"]["name"])
+                start_server(data_packet.data["name"])
             case Server_codes.STOP_SERVER:
-                stop_server(data_packet["data"]["name"])
+                stop_server(data_packet.data["name"])
             case Server_codes.RESTART_SERVER:
-                restart_server(data_packet["data"]["name"])
+                restart_server(data_packet.data["name"])
             case Server_codes.ADD_CONTAINER:
-                responses.append(data_packet["url"])
-                thread.print(data_packet["data"])
+                thread.print(data_packet.data)
             case Server_codes.CHANGE_CONTAINER:
                 pass
 
