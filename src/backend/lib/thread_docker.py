@@ -43,7 +43,7 @@ def docker_func(thread:thread_wrapper):
                 restart_server(data_packet["data"]["name"])
             case Server_codes.ADD_CONTAINER:
                 responses.append(data_packet["url"])
-                print(data_packet["data"])
+                thread.print(data_packet["data"])
             case Server_codes.CHANGE_CONTAINER:
                 pass
 

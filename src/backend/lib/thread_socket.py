@@ -11,13 +11,6 @@ MAX_ATTEMPTS = 3
 ATTEMPT_TIME_DELTA = 10 # minutes
 
 def socket_func(thread:thread_socket_wrapper):
-    handle_incoming(thread)
-
-    if not TARGET_ADDRESS: return
-
-    handle_outgoing(thread, TARGET_ADDRESS)
-
-def handle_incoming(thread:thread_socket_wrapper):
     data_packet, from_address = thread.recv()
 
     if (not data_packet): return
@@ -62,7 +55,6 @@ def handle_incoming(thread:thread_socket_wrapper):
             thread.print(f"There are no functions for code {data_packet['code']}")
 
     if (return_data):
-        print("return", id, return_data, code)
         thread.send(response(id, return_data, code), target=from_address)
 
     elif (incoming_data):
@@ -73,17 +65,6 @@ def handle_incoming(thread:thread_socket_wrapper):
 
     with thread.data_handler as data:
         data["responses"] = []
-
-def handle_outgoing(thread:thread_socket_wrapper, TARGET_ADDRESS:list[str, int]):
-    responses = None
-
-    with thread.data_handler as data:
-        responses = data["responses"]
-
-    if not len(responses): return
-
-    for response in responses:
-        thread.send(response, target=TARGET_ADDRESS)
 
 def verify_login(data):
     if data["username"] != CONSTANTS.CREDENTIALS["username"] or data["password"] != CONSTANTS.CREDENTIALS["password"]: return Server_codes.BAD

@@ -1,5 +1,4 @@
 from threading import Thread, Event
-from time import sleep
 
 from typing import Callable
 
@@ -22,7 +21,7 @@ class thread_wrapper:
         self.return_val = None
 
         self.data_handler = data_handler
-        self.logger = get_logger("Logpanel")
+        self.logger = get_logger(name)
 
         self.init = init
 
@@ -41,10 +40,10 @@ class thread_wrapper:
         return key in self._data
 
     def print(self, *msg:tuple[str]):
-        self.logger.log(self.name, "->", *msg)
+        self.logger.print(*msg)
 
     def log(self, *msg:tuple[str]):
-        self.logger.log_only(self.name, "->", *msg)
+        self.logger.print(*msg)
 
     def terminate(self):
         self.print("Stopping")
@@ -73,6 +72,6 @@ def thread_function_wrapper(self:thread_wrapper, target:Callable):
         while not self.terminate_signal.is_set():
             target(self)
 
-            sleep(self.sleep_time)
+            self.terminate_signal.wait(self.sleep_time)
 
     return wrap

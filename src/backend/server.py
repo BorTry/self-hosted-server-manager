@@ -1,9 +1,10 @@
 from threading import Event
+from time import sleep
 
 from src.backend.lib import socket_func, docker_func, docker_init, stop_frontend, start_frontend, docker_running
 from src.lib import thread_wrapper, thread_socket_wrapper, thread_data_handler, CONSTANTS
-from src.lib.tui import TextualApp
 from src.lib.init import init
+from src.lib.logger import logger
 
 init()
 
@@ -15,7 +16,14 @@ DATA = thread_data_handler({
 
 thread_terminate_event = Event()
 
-TUI = TextualApp(data_handler=DATA)
+#TUI = TextualApp(data_handler=DATA)
+
+LOGGER_THREAD = thread_wrapper(
+    target=logger.print_all, 
+    terminate_signal=thread_terminate_event, 
+    name="log_thread", 
+    sleep_time=.5
+)
 
 DOCKER_THREAD = thread_wrapper(
     target=docker_func,
@@ -42,28 +50,28 @@ SOCKET_THREAD = thread_socket_wrapper(
 
 def start_servers():
     print("\n============== Starting servers ==============\n\n")
-    global DOCKER_THREAD, SOCKET_THREAD, thread_terminate_event
+    global DOCKER_THREAD, SOCKET_THREAD, LOGGER_THREAD, thread_terminate_event
 
     start_frontend()
     
     DOCKER_THREAD.run()
     SOCKET_THREAD.run()
-
+    LOGGER_THREAD.run()
 
 def stop_servers():
     print("\n============== Stopping servers ==============\n\n")
-    global DOCKER_THREAD, SOCKET_THREAD, thread_terminate_event
+    global DOCKER_THREAD, SOCKET_THREAD, LOGGER_THREAD, thread_terminate_event
 
     thread_terminate_event.set()
 
-
     DOCKER_THREAD.terminate()
     SOCKET_THREAD.terminate()
+    LOGGER_THREAD.terminate()
 
     stop_frontend()
 
 def restart_servers():
-    global DOCKER_THREAD, SOCKET_THREAD, thread_terminate_event
+    global DOCKER_THREAD, SOCKET_THREAD, LOGGER_THREAD, thread_terminate_event
 
     stop_servers()
 
@@ -71,6 +79,7 @@ def restart_servers():
         thread_terminate_event.clear()
 
     # Get new instances of each thread
+    LOGGER_THREAD = LOGGER_THREAD.get_new_instance()
     DOCKER_THREAD = DOCKER_THREAD.get_new_instance()
     SOCKET_THREAD = SOCKET_THREAD.get_new_instance()
 
@@ -81,12 +90,7 @@ def main():
         raise Exception("Docker is not running")
 
     start_servers()
-    
-    if CONSTANTS.START_IN_TUI:
-        try:
-            TUI.run()
-        except Exception as e:
-            print(e)
+    sleep(2)
 
     while True:
         try:
@@ -96,12 +100,6 @@ def main():
                 break
             elif (user_in == "restart" or user_in == "r"):
                 restart_servers()
-            elif (user_in == "tui" or user_in == "t"):
-                try:
-                    TUI = TextualApp(data_handler=DATA)
-                    TUI.run()
-                except Exception as e:
-                    print(e)
             else: 
                 print(f'There is no option for {user_in}. Use h for commands')
 

@@ -116,8 +116,6 @@ class addContainer(MethodView):
 
         queue = add_subscriber(SOCKET_THREAD, session_id)
 
-        print("id", session.get("session_id", None))
-
         def stream():
             try:
                 while True:
