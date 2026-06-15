@@ -59,3 +59,7 @@ class compose_file:
             self.volumes = grouping("volumes")
             self.top_level_entries.append("volumes")
         self.volumes.add_entry(new_volume)
+
+    def write_to_file(self):
+        with open(self.file_path, "w") as file:
+            file.write(f"{self!r}")

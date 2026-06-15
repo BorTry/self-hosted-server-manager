@@ -48,7 +48,7 @@ class grouping:
     def __setitem__(self, key, value):
         self.grouping_entries[key] = value
 
-    def __getitem__(self, key):
+    def __getitem__(self, key) -> named_entry_base|project_name:
         return self.grouping_entries[key]
 
     def __delitem__(self, key):
