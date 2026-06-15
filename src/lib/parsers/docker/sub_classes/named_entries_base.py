@@ -5,7 +5,7 @@ from .constants import SPACING
 
 class named_entry_base(ABC):
     TESTS = {
-        "is_string": lambda x: bool(re.match(r"^[^\n+](\/|\S+)", x)),
+        "is_string": lambda x: bool(re.match(r"^[^\n+]*(\/\S+|\S+)", x)),
         "is_list": lambda x: bool(re.match(r"^\s+\-", x)),
     }
 

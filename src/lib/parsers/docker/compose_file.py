@@ -60,6 +60,18 @@ class compose_file:
             self.top_level_entries.append("volumes")
         self.volumes.add_entry(new_volume)
 
+    def remove_service(self, service_name):
+        if (not ("services" in self.top_level_entries)): return
+        del self.services[service_name]
+
+    def remove_network(self, network_name):
+        if (not ("networks" in self.top_level_entries)): return
+        del self.networks[network_name]
+
+    def remove_volume(self, volume_name):
+        if (not ("volumes" in self.top_level_entries)): return
+        del self.volumes[volume_name]
+
     def write_to_file(self):
         with open(self.file_path, "w") as file:
             file.write(f"{self!r}")

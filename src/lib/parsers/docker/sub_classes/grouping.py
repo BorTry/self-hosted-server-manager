@@ -45,6 +45,9 @@ class grouping:
 
         return final_str
     
+    def __iter__(self):
+        return iter(self.grouping_entries)
+
     def __setitem__(self, key, value):
         self.grouping_entries[key] = value
 
