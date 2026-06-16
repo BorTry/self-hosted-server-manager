@@ -44,7 +44,7 @@ def socket_func(thread:thread_socket_wrapper):
         case Server_codes.ADD_CONTAINER:
             code = Server_codes.CONTAINER_SUCCESS
             return_data = f"Recieved data for new container {data["server_name"]}"
-            incoming_data = data
+            incoming_data = data_packet
             # quickly verify the data, add to db, and pass on to docker thread
             #code = Server_codes.CONTAINER_FAILED
 
@@ -57,7 +57,7 @@ def socket_func(thread:thread_socket_wrapper):
     if (return_data):
         thread.send(response(id, return_data, code), target=from_address)
 
-    elif (incoming_data):
+    if (incoming_data):
         thread.print("appending request ->", f'{incoming_data}')
         
         with thread.data_handler as data:

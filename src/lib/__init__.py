@@ -16,3 +16,4 @@ from .constants import CONSTANTS
 from .logger import get_logger
 
 from .json_decoder_encoder import encoder, decoder
+from .parsers.docker import compose_file, service, volume, network

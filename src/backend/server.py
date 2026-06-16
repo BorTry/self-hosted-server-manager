@@ -4,9 +4,11 @@ from time import sleep
 from src.backend.lib import socket_func, docker_func, docker_init, stop_frontend, start_frontend, docker_running
 from src.lib import thread_wrapper, thread_socket_wrapper, thread_data_handler, CONSTANTS
 from src.lib.init import init
-from src.lib.logger import logger
+from src.lib.logger import logger, get_logger
 
 init()
+
+LOGGER = get_logger("main_thread")
 
 DATA = thread_data_handler({
         "data":[None for _ in range(10)],
@@ -50,7 +52,6 @@ SOCKET_THREAD = thread_socket_wrapper(
 
 def start_servers():
     print("\n============== Starting servers ==============\n\n")
-    global DOCKER_THREAD, SOCKET_THREAD, LOGGER_THREAD, thread_terminate_event
 
     start_frontend()
     
@@ -60,7 +61,6 @@ def start_servers():
 
 def stop_servers():
     print("\n============== Stopping servers ==============\n\n")
-    global DOCKER_THREAD, SOCKET_THREAD, LOGGER_THREAD, thread_terminate_event
 
     thread_terminate_event.set()
 
@@ -90,12 +90,11 @@ def main():
         raise Exception("Docker is not running")
 
     start_servers()
-    sleep(2)
+    LOGGER.print("Server has been started")
 
     while True:
         try:
-            user_in = input("\n=================== Select Action ===================\n\n")
-
+            user_in = input("")
             if (user_in == "quit" or user_in == "q"):
                 break
             elif (user_in == "restart" or user_in == "r"):

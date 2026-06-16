@@ -1,5 +1,5 @@
 from src.lib import thread_wrapper, Server_codes, CONSTANTS
-from backend.lib.docker.general_functions import *
+from .docker import *
 
 from src.db.mappings import metric_timestamp, traffic_metric, performance_metric, container, port_type, ports, ports_mapping
 from src.db.db import SessionLocal
@@ -42,7 +42,7 @@ def docker_func(thread:thread_wrapper):
             case Server_codes.RESTART_SERVER:
                 restart_server(data_packet.data["name"])
             case Server_codes.ADD_CONTAINER:
-                thread.print(data_packet.data)
+                try_to_add_container(thread, data_packet.data)
             case Server_codes.CHANGE_CONTAINER:
                 pass
 

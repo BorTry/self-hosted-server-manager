@@ -1,10 +1,8 @@
 from json import load
-from os import cpu_count
 from python_on_whales import docker, DockerException
 from time import sleep
 
 SERVER_JSON = None
-CORE_COUNT = cpu_count()
 
 with open("./servers.json", "r") as file:
     SERVER_JSON = load(file)
@@ -138,7 +136,6 @@ def stop_frontend():
     
     docker.stop("frontend_server")
     docker.wait("frontend_server")
-    docker.stop("frontend_database")
 
 def start_frontend(): 
     # check to see if the docker container exists at all
