@@ -1,7 +1,7 @@
 name: frontend
 
 services:
-  frontend: 
+  frontend:
     container_name: frontend_server
     depends_on: 
       db:
@@ -21,12 +21,9 @@ services:
       context: ../buildfiles
       dockerfile: Dockerfile.frontend
     tty: True
-    deploy: 
-      resources: 
-        limits: 
-          memory: 2G
-          cpus: 2.0
-    command: 
+    cpus: 1.0
+    mem_limit: 250MB
+    command:
       - bash
       - -c
       - source ../opt/venv/bin/activate; flask --app src.app.app run --host=0.0.0.0 --port 8043
@@ -51,11 +48,8 @@ services:
       interval: 5s
       timeout: 5s
       retries: 5
-    deploy: 
-      resources: 
-        limits: 
-          memory: 2G
-          cpus: 2.0
+    cpus: 1.0
+    mem_limit: 250MB
 
 networks: 
   frontend: 

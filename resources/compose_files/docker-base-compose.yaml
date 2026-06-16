@@ -1,0 +1,6 @@
+services:
+  base:
+    build:
+      context: ../buildfiles
+      dockerfile: Dockerfile.base_image
+    image: base_image
