@@ -1,7 +1,7 @@
 from .named_entries_base import named_entry_base
 
 class service(named_entry_base):
-    __slots__ = ("container_name", "image", "ports", "build", "volumes", "working_dir", "user", "environment", "networks", "cpus", "mem_limit", "command")
+    __slots__ = ("container_name", "image", "ports", "build", "volumes", "entrypoint", "depends_on", "working_dir", "user", "environment", "networks", "cpus", "mem_limit", "command")
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)

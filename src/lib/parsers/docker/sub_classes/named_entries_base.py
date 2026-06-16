@@ -6,7 +6,7 @@ from .constants import SPACING
 class named_entry_base(ABC):
     TESTS = {
         "is_string": lambda x: bool(re.match(r"^[^\n+]*(\/\S+|\S+)", x)),
-        "is_list": lambda x: bool(re.match(r"^\s+\-", x)),
+        "is_list": lambda x: bool(re.match(r"^\s*\- *(\S+)", x)),
     }
 
     __slots__ = ("name", )
@@ -43,6 +43,18 @@ class named_entry_base(ABC):
 
         return final_str
     
+    def __getitem__(self, key):
+        if not hasattr(self, key): return
+        return getattr(self, key)
+
+    def __setitem__(self, key, value):
+        if not key in self.__slots__: return
+        setattr(self, key, value)
+
+    def __delitem__(self, key):
+        if not hasattr(self, key): return
+        delattr(self, key)
+    
     def _iterative_structuring(self):
         # separates lists, dicts and strings
         for att in self.__slots__:
@@ -76,7 +88,7 @@ def _turn_dict_to_str(dictionary, depth=0):
         else:
             final_str += f"{SPACING*(3+depth)}{key}: {dictionary[key]}\n"
 
-    return final_str
+    return final_str[:len(final_str)-1]
 
 def _create_list(value):
     return re.findall(r"- (\S+)", value)
@@ -84,7 +96,7 @@ def _create_list(value):
 def _create_dict(value):
     dic = {}
 
-    all_values = re.finditer(r"(\S+)\: (\S+)", value)
+    all_values = re.finditer(r"(\S+)\: ([\S+\s*]+)", value)
 
     for entry in all_values:
         dic[entry.group(1)] = entry.group(2)

@@ -52,6 +52,7 @@ class grouping:
         self.grouping_entries[key] = value
 
     def __getitem__(self, key) -> named_entry_base|project_name:
+        if not (key in self.grouping_entries): return None
         return self.grouping_entries[key]
 
     def __delitem__(self, key):

@@ -74,4 +74,4 @@ class compose_file:
 
     def write_to_file(self):
         with open(self.file_path, "w") as file:
-            file.write(f"{self!r}")
+            file.write(f"{self!r}")        
