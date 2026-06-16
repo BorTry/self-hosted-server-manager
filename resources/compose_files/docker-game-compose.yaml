@@ -40,7 +40,6 @@ services:
       context: ../buildfiles
       dockerfile: Dockerfile.factorio
     volumes: 
-      - ../../../server_data/factorio:/data
       - ${SERVER_DATA_PATH}/factorio:/data
     entrypoint: 
       - /entrypoint.sh
