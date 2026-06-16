@@ -1,0 +1,9 @@
+from debian:stable-slim
+
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends gosu && \
+    rm -rf /var/lib/apt/lists/*
+
+RUN useradd -m server_user
+
+COPY ./entrypoint.sh /entrypoint.sh
