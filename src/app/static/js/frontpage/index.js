@@ -20,14 +20,14 @@ async function build_server_list() {
         return response.json()
     })
 
-    let server_launch_options = extract_data(data.message)
+    let servers = extract_data(data.message)
 
-    if (!server_launch_options) {
+    if (!servers) {
         return
     }
 
-    for (let server_name of Object.keys(server_launch_options)) {
-        build_request_form(server_name, server_launch_options)
+    for (let server_name of servers.all_servers) {
+        build_request_form(server_name, servers.launch_opts)
     }
 }
 

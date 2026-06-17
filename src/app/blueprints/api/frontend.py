@@ -52,7 +52,10 @@ class AllContainers(MethodView):
     @blp.response(404)
     @limiter.exempt
     def get(self):
-        return jsonify(message=SOCKET_THREAD["launch_options"])
+        return jsonify(message={
+            "all_servers": SOCKET_THREAD["all_servers"],
+            "launch_opts": SOCKET_THREAD["launch_options"]
+        })
 
 @blp.route("container/all/running")
 class AllContainers(MethodView):

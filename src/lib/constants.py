@@ -9,4 +9,4 @@ class CONSTANTS:
         "username": None,
         "password": None
     }
-    METRICS_INTERVAL = 1
+    METRICS_INTERVAL = None

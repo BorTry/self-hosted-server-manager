@@ -2,7 +2,7 @@ const server_list = document.getElementById("server-list")
 
 export default function build_request_form(name, launch_options) {
     const hidden_info = document.createElement("div")
-    hidden_info.className  = "server-item-hidden full-size"
+    hidden_info.className = "server-item-hidden full-size"
 
     create_hidden_page(name, launch_options)
 }
