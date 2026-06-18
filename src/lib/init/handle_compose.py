@@ -54,7 +54,7 @@ def _docker_compose_file(mapping_name:str) -> bool:
         print(COMPOSE_MSG[mapping_name])
 
         docker = DockerClient(compose_files=(MAPPING[mapping_name]))
-        docker.compose.build(quiet=True)
+        docker.compose.up(build=True)
         
         return True
     

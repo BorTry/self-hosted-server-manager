@@ -1,4 +1,3 @@
 python-on-whales
 textual 
 textual-dev
-pyyaml

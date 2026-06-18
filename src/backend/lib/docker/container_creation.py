@@ -8,7 +8,7 @@ MAIN_COMPOSE_PATH = "./resources/compose_files/docker-game-compose.yaml"
 TEMP_COMPOSE_FILE = compose_file(TEMP_COMPOSE_PATH)
 MAIN_COMPOSE_FILE = compose_file(MAIN_COMPOSE_PATH)
 
-def try_to_add_container(thread:thread_wrapper, compose_args):
+def try_to_add_container(thread:thread_wrapper, compose_args) -> bool:
     server_name = compose_args["server_name"]
 
     new_container = service(
@@ -22,15 +22,22 @@ def try_to_add_container(thread:thread_wrapper, compose_args):
         working_dir="/data",
     )
 
+    # add dicts and arrays
     new_container["ports"] = compose_args["ports"].split(";")
     new_container["volumes"] = [f"${{SERVER_DATA_PATH}}/{server_name}:/data"]
-    #new_container["build"] = {"context": "../buildfiles", "dockerfile": f"Dockerfile.{server_name}"}
+    new_container["entrypoint"] = ["/entrypoint.sh"]
 
+    if (False):
+        new_container["build"] = {"context": "../buildfiles", "dockerfile": f"Dockerfile.{server_name}"}
+    
     thread.print(new_container)
 
     TEMP_COMPOSE_FILE.add_service(new_container)
     TEMP_COMPOSE_FILE.write_to_file()
 
+    _test_new_container(thread, new_container)
+
+def _test_new_container(thread:thread_wrapper, new_container:service):
     docker = DockerClient(compose_files=(TEMP_COMPOSE_PATH))
 
     success = False
