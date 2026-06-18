@@ -9,7 +9,7 @@ var METRICS = []
 var TIME_BETWEEN = 15 // default
 
 async function get_data() {
-    METRICS = await fetch("/api/admin/performance_metrics/"+SERVER_NAME, {
+    METRICS = await fetch("/api/admin/metrics/"+SERVER_NAME, {
         method: "GET"
     }).then(response => {
         if (!response.ok) {
@@ -18,6 +18,7 @@ async function get_data() {
         return response.json()
     });
     TIME_BETWEEN = METRICS["time_between"]||15
+    console.log(METRICS)
 }
 
 function order_by_date(points) {
@@ -52,7 +53,7 @@ function order_by_date(points) {
 }
 
 function update_graphs(graph_name, types) {  
-    let ordered_points = order_by_date(METRICS)
+    let ordered_points = order_by_date(METRICS[SERVER_NAME])
 
     for (let type of types) {
         let canvas = document.getElementById(type)

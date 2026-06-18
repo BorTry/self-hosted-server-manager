@@ -11,7 +11,7 @@ MAX_ATTEMPTS = 3
 ATTEMPT_TIME_DELTA = 10 # minutes
 
 OVERVIEW_TYPES = ["cpu", "ram"]
-ALL_GRAPH_TYPES = ["cpu", "ram", "upload", "download"]
+ALL_GRAPH_TYPES = ["cpu", "ram", "up", "down"]
 
 blp = Blueprint("Sites", __name__)
 

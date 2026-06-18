@@ -9,7 +9,7 @@ var METRICS = []
 var TIME_BETWEEN = 15 // default
 
 async function get_data() {
-    METRICS = await fetch("/api/admin/performance_metrics", {
+    METRICS = await fetch("/api/admin/metrics", {
         method: "GET"
     }).then(response => {
         if (!response.ok) {
@@ -17,7 +17,7 @@ async function get_data() {
         }
         return response.json()
     });
-    TIME_BETWEEN = METRICS["time_between"]
+    TIME_BETWEEN = METRICS["time_between"]||15
 }
 
 function order_by_date(points) {
