@@ -70,7 +70,6 @@ def _find_type(obj, att, string):
     if named_entry_base.TESTS["is_string"](string):
         obj[att] = string.strip()
     elif named_entry_base.TESTS["is_list"](string):
-        print(string)
         obj[att] = _create_list(string)
     else:
         obj[att] = _create_dict(string)
@@ -100,9 +99,13 @@ def _create_list(value):
 def _create_dict(value):
     dic = {}
 
-    all_values = re.finditer(r"(\S+)\: ?([\S\s]+)", value)
+    all_values = re.finditer(r"(\S+)\: ?(.+)", value)
+    is_nested = re.match(r"\s*(\w+)\: *\n([\S\s]+)", value)
 
-    for entry in all_values:
-        _find_type(dic, entry.group(1), entry.group(2))
+    if is_nested:
+        dic[is_nested.group(1)] = _create_dict(is_nested.group(2))
+    else:
+        for entry in all_values:
+            _find_type(dic, entry.group(1), entry.group(2))
 
     return dic
