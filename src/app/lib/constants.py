@@ -1,5 +1,10 @@
 from src.lib import thread_socket_wrapper, thread_data_handler
 from src.app.lib.socket_functions import socket_func, socket_init
+from dotenv import load_dotenv
+from os import environ
+
+load_dotenv("./.env")
+METRICS_INTERVAL = environ.get("METRICS_INTERVAL")
 
 ADDRESS = "0.0.0.0"
 OWN_PORT = 2024

@@ -2,7 +2,7 @@ import draw_points, {sync_canvas_size} from "../../modules/graph.mjs"
 
 const CONTAINER_LIST = document.getElementById("main-content")
 const SERVER_NAMES = []
-const GRAPH_TYPES = ["cpu", "ram", "upload", "download"]
+const GRAPH_TYPES = ["cpu", "ram", "up", "down"]
 const MIN_TIME_DIFF = 1.4
 
 var METRICS = []
@@ -18,7 +18,6 @@ async function get_data() {
         return response.json()
     });
     TIME_BETWEEN = METRICS["time_between"]||15
-    console.log(METRICS)
 }
 
 function order_by_date(points) {

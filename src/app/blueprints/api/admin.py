@@ -2,7 +2,7 @@ from flask_smorest import Blueprint
 from flask.views import MethodView
 from flask import make_response, Response, session, current_app
 
-from src.app.lib import SOCKET_THREAD, DATA_HANDLER, add_subscriber
+from src.app.lib import SOCKET_THREAD, DATA_HANDLER, add_subscriber, METRICS_INTERVAL
 from ...lib.limiter import limiter
 from src.lib import Server_codes, request
 
@@ -48,7 +48,7 @@ class AllContainerMetrics(MethodView):
 
         ordered_rows = order_rows(rows, True)
 
-        ordered_rows["time_between"] = "4"
+        ordered_rows["time_between"] = METRICS_INTERVAL
 
         return ordered_rows
 
@@ -77,7 +77,7 @@ class AllContainerMetrics(MethodView):
 
         ordered_rows = order_rows(rows)
 
-        ordered_rows["time_between"] = "4"
+        ordered_rows["time_between"] = METRICS_INTERVAL
 
         return ordered_rows
 

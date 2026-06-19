@@ -3,19 +3,7 @@ import draw_points, {sync_canvas_size} from "../../modules/graph.mjs"
 const MIN_TIME_DIFF = 1.4
 
 var METRICS = []
-var TIME_BETWEEN = 15 // default
-
-async function get_data() {
-    METRICS = await fetch("/api/admin/metrics", {
-        method: "GET"
-    }).then(response => {
-        if (!response.ok) {
-            throw new Error("SERVER NOT OK:(")
-        }
-        return response.json()
-    });
-    TIME_BETWEEN = METRICS["time_between"]
-}
+var TIME_BETWEEN = TIME_BETWEEN != undefined ? TIME_BETWEEN : 15 // default
 
 function order_by_date(points) {
     if (!points) return

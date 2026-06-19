@@ -3,6 +3,7 @@ from platform import system
 
 from src.lib import CONSTANTS
 from .handle_compose import check_compose_files
+from .update_frontend_compose import update_frontend_environment_var
 
 def fill_config():
     json_obj = None
@@ -15,14 +16,15 @@ def fill_config():
 
     json_obj["os"] = system()
 
-    check_compose_files(json_obj)
-
+    CONSTANTS.METRICS_INTERVAL = json_obj["metric_save_interval"]
     CONSTANTS.START_IN_TUI = json_obj["start_in_tui"]
     CONSTANTS.OS = json_obj["os"]
-    CONSTANTS.METRICS_INTERVAL = json_obj["metric_save_interval"]
 
     CONSTANTS.CREDENTIALS["username"] = json_obj["admin_username"]
     CONSTANTS.CREDENTIALS["password"] = json_obj["admin_password"]
+
+    update_frontend_environment_var()
+    check_compose_files(json_obj)
 
     with open(CONSTANTS.CONFIG_FILE_PATH, "w") as file:
         file.write(dumps(json_obj, indent=4))
