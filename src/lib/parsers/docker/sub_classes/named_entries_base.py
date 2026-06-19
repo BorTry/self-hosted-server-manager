@@ -70,6 +70,7 @@ def _find_type(obj, att, string):
     if named_entry_base.TESTS["is_string"](string):
         obj[att] = string.strip()
     elif named_entry_base.TESTS["is_list"](string):
+        print(string)
         obj[att] = _create_list(string)
     else:
         obj[att] = _create_dict(string)
@@ -94,7 +95,7 @@ def _turn_dict_to_str(dictionary, depth=0):
     return final_str
 
 def _create_list(value):
-    return re.findall(r"- (\S+)", value)
+    return re.findall(r"- (.+)", value)
 
 def _create_dict(value):
     dic = {}
