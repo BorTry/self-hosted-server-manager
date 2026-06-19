@@ -64,12 +64,15 @@ class named_entry_base(ABC):
 
             if (not value): continue
 
-            if named_entry_base.TESTS["is_string"](value):
-                setattr(self, att, value.strip())
-            elif named_entry_base.TESTS["is_list"](value):
-                setattr(self, att, _create_list(value))
-            else:
-                setattr(self, att, _create_dict(value))
+            _find_type(self, att, value)
+
+def _find_type(obj, att, string):
+    if named_entry_base.TESTS["is_string"](string):
+        obj[att] = string.strip()
+    elif named_entry_base.TESTS["is_list"](string):
+        obj[att] = _create_list(string)
+    else:
+        obj[att] = _create_dict(string)
 
 def _turn_list_to_str(array):
     final_str = "\n"
@@ -81,14 +84,14 @@ def _turn_list_to_str(array):
 
 def _turn_dict_to_str(dictionary, depth=0):
     final_str = "\n"
-    
+
     for key in dictionary:
         if type(dictionary[key]) is dict:
-            final_str += _turn_dict_to_str(dictionary[key], depth + 1)
+            final_str += f"{SPACING*(3+depth)}{key}: {_turn_dict_to_str(dictionary[key], depth + 1)}"
         else:
             final_str += f"{SPACING*(3+depth)}{key}: {dictionary[key]}\n"
 
-    return final_str[:len(final_str)-1]
+    return final_str
 
 def _create_list(value):
     return re.findall(r"- (\S+)", value)
@@ -96,9 +99,9 @@ def _create_list(value):
 def _create_dict(value):
     dic = {}
 
-    all_values = re.finditer(r"(\S+)\: ([\S+\s*]+)", value)
+    all_values = re.finditer(r"(\S+)\: ?([\S\s]+)", value)
 
     for entry in all_values:
-        dic[entry.group(1)] = entry.group(2)
+        _find_type(dic, entry.group(1), entry.group(2))
 
     return dic
