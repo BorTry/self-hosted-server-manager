@@ -1,3 +1,14 @@
+:root {
+    --list-height: 30vh;
+    --list-gradient-height: 7vh;
+    --list-gradient-offset: 5vh;
+}
+
+.content-container {
+    background: var(--main);
+    padding: 2vh 0;
+}
+
 /* =============== Server list =============== */
 
 #server-list {
@@ -9,63 +20,49 @@
     gap: 2vh;
 }
 
-.server-item {
-    width: 100%;
-    height: 40vh;
-    background-color: none;
-    grid-template-columns: 1fr 1fr 1fr;
-    grid-template-rows: 1fr;
-    display: grid;
-    padding-bottom: .7rem;
-}
-
-.server-item:hover .server-item-image {
-    width: 100%;
-    transition: 1s;
-}
-
-.server-item:not(:hover) .server-item-image {
-    width: 198%; /* should be 198% */
-    transition: 1s;
-}
-
-.server-item-image {
-    height: inherit;
-    object-fit: cover;
-    z-index: 10;
-    border-radius: 8px 0px 0px 8px;
-    border: .4rem solid;
+.dropdown-container {
+    height: var(--list-height) !important;
+    border-radius: 8px 8px 8px 8px;
+    border: 0.25vh solid;
     border-color: var(--offline);
 }
 
-.server-item-hidden {
-    color: white;
-    z-index: 1;
-    justify-items: left;
-    background:
-        radial-gradient(
-            at top right,
-            var(--item-list), transparent
-        ),
-        var(--main);
+.dropdown-container:hover {
+    transform: scale(1.02, 1.02);
 }
 
-.server-item-info {
-    color: rgb(215, 215, 215);
-    justify-items: left;
-    background:
-        radial-gradient(
-            at top left,
-            var(--item-list), transparent
-        ),
-        var(--main);
-    border-radius: 0px 8px 8px 0px;
+.dropdown-title {
+    height: var(--list-height);
+    margin-bottom: var(--list-gradient-height);
+    cursor: pointer;
 }
 
-.server-info-container {
-    display: grid;
-    grid-template-rows: 1fr 1fr 1.5fr;
-    grid-template-columns: 1fr;
+.dropdown-image {
+    width: 100%;
+    height: calc(var(--list-height) + var(--list-gradient-height));
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: -1;
+}
+
+.dropdown-image > img {
+    height: 100%;
+    width: 100%;
+    object-fit: cover;
+    object-position: center;
+}
+
+.image-gradient {
+    height: calc(var(--list-gradient-height) + var(--list-gradient-offset));
+    width: 100%;
+    position: absolute;
+    margin-top: calc((var(--list-gradient-height) + var(--list-gradient-offset)) * -1);
+    background: linear-gradient(
+        to top,
+        var(--main) 5%,
+        transparent
+    );
 }
 
 /* =============== Server form =============== */
@@ -74,34 +71,36 @@
     align-items: center;
     justify-content: center;
     display: grid;
+    gap: 3vh;
     grid-template-rows: .8fr .2fr;
     grid-template-columns: 1fr;
 }
 
-.server-form-container {
+.inner-form-container {
+    gap: 1vh;
     display: grid;
     width: 100%;
     align-items: center;
     justify-content: center;
     grid-template-rows: repeat(3, 1fr);
     grid-template-columns: repeat(1, .8fr);
-    gap: 1rem;
 }
 
 .server-form :is(button, select, option) {
     color: whitesmoke;
-    background: var(--main);
+    background: var(--body);
     font-size: 1.2rem;
     margin-top: 1rem;
     border: 0px;
     height: 100%;
+    cursor: pointer;
 }
 
 .server-form label {
     font-size: 1.4rem;
 }
 
-.server-form-container div {
+.inner-form-container div {
     align-items: center;
     justify-content: center;
     display: grid;
@@ -111,10 +110,8 @@
 
 .button-container {
     grid-row-start: 2;
-    margin-left: 13%;
-    display: grid;
-    grid-template-columns: repeat(2, 0.4fr);
-    grid-template-rows: 0.5fr;
+    display: flex;
+    margin: 2vh 15%;
     gap: 2rem;
 }
 
@@ -122,6 +119,13 @@
     width: 100%;
     padding: 0.5rem 0.8rem;
     margin-top: 0px;
+    cursor: pointer;
+    transition: 0.75s;
+}
+
+.button-container button:hover {
+    transform: scale(1.01, 1.01);
+    box-shadow: 3px 1.5px 3px 2px rgba(210, 210, 210, 0.413);
 }
 
 .stop_button {
@@ -137,4 +141,3 @@
     display: flex;
     gap: 10px;
 }
-

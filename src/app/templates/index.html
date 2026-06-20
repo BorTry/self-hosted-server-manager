@@ -1,68 +1,47 @@
+{% from "modules/gauges.html" import gauges %}
+
 <!DOCTYPE html>
-<html>
+<html lang="en">
     <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Document</title>
+
         <link rel="stylesheet" href="{{ url_for('static', filename='css/standard.css') }}">
         <link rel="stylesheet" href="{{ url_for('static', filename='css/frontpage/index.css') }}">
         <link rel="stylesheet" href="{{ url_for('static', filename='css/modules/gauge.css') }}">
+        <link rel="stylesheet" href="{{ url_for('static', filename='css/modules/dropdown.css') }}">
+
+        <script type="module" src="{{ url_for('static', filename='js/modules/dropdown.js') }}"></script>
         <script type="module" src="{{ url_for('static', filename='js/frontpage/index.js') }}" defer></script>
     </head>
     <body>
-        <div id="header" class="main-body shadow round-border">
-
-        </div>
+        <div id="header" class="main-body shadow round-border"></div>
         <div id="body" class="main-body transparent-background">
             <div id="server-list">
                 {% for server_name in server_names %}
-                    <div class="server-item shadow round-border" id="{{ server_name }}">
-                        <img class="server-item-image" id="{{ server_name }}-image" src="/static/images/{{ server_name }}.jpg">
-                        <div class="server-item-hidden full-size">
-                            <div class="full-size">
-                                <form for="{{ server_name }}" id="{{ server_name }}-form" class="server-form full-size">
-                                    <div class="server-form-container" id="{{ server_name }}-form-container"></div>
-                                    <div class="button-container">
-                                        <button type="submit" name="start" class="round-border shadow">
-                                            Start Server
-                                        </button>
-                                        <button type="submit" name="stop" class="stop_button round-border shadow">
-                                            Stop Server
-                                        </button>
-                                    </div>
-                                </form>
+                    <div class="dropdown-container shadow round-border">
+                        <div class="dropdown-title">
+                            <div class="dropdown-image">
+                                <img id="{{ server_name }}-image" src="/static/images/{{ server_name }}.jpg">
+                                <div class="image-gradient"></div>
                             </div>
                         </div>
-                        <div class="server-item-info full-size">
-                            <div class="server-info-container full-size">
-                                <div class="center-content">
-                                    <h1 class="title">
-                                        {{ server_name }}
-                                    </h1>   
-                                    <div class="divider"></div>
-                                </div>
-                                <div id="{{ server_name }}-player-count" class="center-content full-size">
-                                    <h3>Player count</h3>
-                                    <p>0/20</p>
-                                </div>
-                                <div class="gauge-list">
-                                    <div id="cpu-gauge-{{ server_name }}-container" class="gauge-container">
-                                        <div class="gauge" id="cpu-gauge-{{ server_name }}"></div>
-                                        <div class="gauge-background"></div>
-                                    <div class="gauge-foreground">
-                                        <p style="text-align: center; font-weight: bold;">
-                                            Cpu
-                                        </p>
-                                    </div>
-                                    <div class="gauge-border inset-shadow"></div>
-                                </div>
-                                <div id="ram-gauge-{{ server_name }}-container" class="gauge-container">
-                                    <div class="gauge" id="ram-gauge-{{ server_name }}"></div>
-                                    <div class="gauge-background"></div>
-                                    <div class="gauge-foreground">
-                                        <p style="text-align: center; font-weight: bold;">
-                                            Ram
-                                        </p>
-                                    </div>
-                                    <div class="gauge-border inset-shadow"></div>
-                                    </div>
+                        <div class="dropdown">
+                            <div class="content-container">
+                                {{ gauges(["cpu", "ram"], server_name) }}
+                                <div class="form-container full-size">
+                                    <form for="{{ server_name }}" id="{{ server_name }}-form" class="server-form full-size">
+                                        <div class="inner-form-container" id="{{ server_name }}-form-container"></div>
+                                        <div class="button-container">
+                                            <button type="submit" name="start" class="round-border shadow">
+                                                Start Server
+                                            </button>
+                                            <button type="submit" name="stop" class="stop_button round-border shadow">
+                                                Stop Server
+                                            </button>
+                                        </div>
+                                    </form>
                                 </div>
                             </div>
                         </div>
@@ -70,10 +49,6 @@
                 {% endfor %}
             </div>
         </div>
-        <div id="footer" class="main-body round-border shadow">
-            
-        </div>
+        <div id="footer" class="main-body shadow round-border"></div>
     </body>
-    <footer>
-    </footer>
 </html>

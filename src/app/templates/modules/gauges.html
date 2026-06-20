@@ -1,0 +1,16 @@
+{% macro gauges(gauge_types, gauge_name) %}
+    <div class="gauge-list">
+        {% for gauge_type in gauge_types %}
+            <div id="{{ gauge_type }}-gauge-{{ gauge_name }}-container" class="gauge-container">
+                <div class="gauge" id="{{ gauge_type }}-gauge-{{ gauge_name }}"></div>
+                <div class="gauge-background"></div>
+                <div class="gauge-foreground">
+                    <p style="text-align: center; font-weight: bold;">
+                        {{ gauge_type }}
+                    </p>
+                </div>
+                <div class="gauge-border inset-shadow"></div>
+            </div>
+        {% endfor%}
+    </div>
+{% endmacro %}

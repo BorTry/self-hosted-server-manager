@@ -29,7 +29,7 @@ class front_page(MethodView):
         session["password"] = None
 
         if session.get("session_id", None) == None:
-            session["session_id"] = get_next_id(SEND_SOCKET_THREAD)
+            session["session_id"] = get_next_id()
         
         html = render_template("index.html", server_names=SEND_SOCKET_THREAD["all_servers"])
         return make_response(html, 200)
@@ -72,7 +72,7 @@ class admin_page(MethodView):
         if login_confirmed == None: return make_response("Something went wrong", 404)
 
         if (session.get("session_id", None) == None):
-            session["session_id"] = get_next_id(SEND_SOCKET_THREAD) 
+            session["session_id"] = get_next_id() 
 
         if (login_confirmed == False):
             session.pop("username", None)
