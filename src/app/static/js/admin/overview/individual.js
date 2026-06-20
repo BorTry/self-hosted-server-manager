@@ -2,7 +2,7 @@ import draw_points, {sync_canvas_size} from "../../modules/graph.mjs"
 
 const CONTAINER_LIST = document.getElementById("main-content")
 const SERVER_NAMES = []
-const GRAPH_TYPES = ["cpu", "ram", "up", "down"]
+const GRAPH_TYPES = ["cpu", "ram", "upload", "download"]
 const MIN_TIME_DIFF = 1.4
 
 var METRICS = []
@@ -18,6 +18,7 @@ async function get_data() {
         return response.json()
     });
     TIME_BETWEEN = METRICS["time_between"]||15
+    console.log(METRICS)
 }
 
 function order_by_date(points) {
@@ -27,6 +28,13 @@ function order_by_date(points) {
     let ordered_points = []
 
     let i = 0
+
+    let max_values = {
+        "cpu": 1,
+        "ram": 1,
+        "upload": 1,
+        "download": 1,
+    }
 
     for (let index = 1; index < points.length; index++) {
         let entry = points[index]
@@ -45,10 +53,20 @@ function order_by_date(points) {
                 "download": Math.ceil(entry.download || 0) / 100
             }])
             i++
+            
+            for (let attribute_name in max_values) {
+                let value = Math.ceil(entry[attribute_name] / 100)
+                if (value > max_values[attribute_name]) {
+                    max_values[attribute_name] = value
+                }
+            }
         }
     }
 
-    return ordered_points
+    return { 
+        "points": ordered_points,
+        "max_values": max_values
+    }
 }
 
 function update_graphs(graph_name, types) {  
@@ -56,8 +74,8 @@ function update_graphs(graph_name, types) {
 
     for (let type of types) {
         let canvas = document.getElementById(type)
-        
-        draw_points(canvas, ordered_points, (x) => x[type])
+
+        draw_points(canvas, ordered_points.points, ordered_points.max_values[type], (x) => x[type])
     }
 }
 

@@ -13,8 +13,8 @@ class metrics_view(Base):
     time: Mapped[datetime] =                            mapped_column(DateTime(timezone=True), primary_key=True)
     cpu: Mapped[Float] =                                mapped_column(Float(precision=4), nullable=False)
     ram: Mapped[Float] =                                mapped_column(Float(precision=4), nullable=False)
-    up: Mapped[int] =                                   mapped_column(nullable=False)
-    down: Mapped[int] =                                 mapped_column(nullable=False)
+    upload: Mapped[int] =                               mapped_column(nullable=False)
+    download: Mapped[int] =                             mapped_column(nullable=False)
 
     def __repr__(self) -> str:
         return f'metric_view(name={self.name!r}, time={self.time!r} cpu={self.cpu!r} ram={self.ram!r} up={self.up!r} down={self.down!r})'

@@ -34,8 +34,8 @@ CREATE TABLE metrics.traffic (
                                     PRIMARY KEY,
     time_id         INTEGER         NOT NULL,
     container_id    INTEGER         NOT NULL,
-    up              FLOAT(4)        NOT NULL,
-    down            FLOAT(4)        NOT NULL
+    upload              FLOAT(4)        NOT NULL,
+    download            FLOAT(4)        NOT NULL
 );
 
 ALTER TABLE metrics.traffic

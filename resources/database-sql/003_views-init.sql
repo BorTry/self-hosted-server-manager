@@ -20,13 +20,13 @@ DROP VIEW IF EXISTS metrics.all_metrics CASCADE;
 DROP VIEW IF EXISTS metrics CASCADE;
 
 CREATE VIEW metrics.all_metrics AS
-    SELECT p.time_id, p.container_id, p.cpu, p.ram, t.up, t.down 
+    SELECT p.time_id, p.container_id, p.cpu, p.ram, t.upload, t.download 
     FROM metrics.performance AS p
     JOIN metrics.traffic AS t
         ON p.time_id = t.time_id AND p.container_id = t.container_id;
 
 CREATE VIEW metrics AS
-    SELECT s.name, t.time, m.cpu, m.ram, m.up, m.down 
+    SELECT s.name, t.time, m.cpu, m.ram, m.upload, m.download 
     FROM metrics.timestamp AS t
     LEFT JOIN metrics.all_metrics AS m
         ON t.id = m.time_id

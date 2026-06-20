@@ -46,7 +46,12 @@ class AllContainerMetrics(MethodView):
         with SessionLocal() as session:
             rows = session.execute(query).mappings().all()
 
-        ordered_rows = order_rows(rows, True)
+        ordered_rows = _order_rows(rows)
+
+        for name in SOCKET_THREAD["all_servers"]:
+            if name in ordered_rows: continue
+
+            _fill_empty_rows(ordered_rows, name)
 
         ordered_rows["time_between"] = METRICS_INTERVAL
 
@@ -63,8 +68,8 @@ class AllContainerMetrics(MethodView):
             metrics_view.time,
             metrics_view.cpu,
             metrics_view.ram,
-            metrics_view.up,
-            metrics_view.down
+            metrics_view.upload,
+            metrics_view.download
             ) \
             .where(
                 metrics_view.time >= last_2_hours,
@@ -75,8 +80,7 @@ class AllContainerMetrics(MethodView):
         with SessionLocal() as session:
             rows = session.execute(query).mappings().all()
 
-        ordered_rows = order_rows(rows)
-
+        ordered_rows = _order_rows(rows) if len(rows) > 1 else _fill_empty_rows({}, server_name)
         ordered_rows["time_between"] = METRICS_INTERVAL
 
         return ordered_rows
@@ -129,11 +133,27 @@ class addContainer(MethodView):
 
         return Response(stream(), status=200, mimetype="text/event-stream")
 
-def order_rows(ordered_arr, add_empty_entries=False):
-    ordered_dict = {}
+def _fill_empty_rows(obj, entry_name):
+    obj[entry_name] = [{
+            "ram": 0,
+            "cpu": 0,
+            "time": datetime.now() - timedelta(seconds=METRICS_INTERVAL*2),
+            "upload": 0,
+            "download": 0
+        },
+        {
+            "ram": 0,
+            "cpu": 0,
+            "time": datetime.now(),
+            "upload": 0,
+            "download": 0
+        } 
+    ]
 
-    current_app.logger.info("allah oh akbar")
-    current_app.logger.info(ordered_arr)
+    return obj
+
+def _order_rows(ordered_arr):
+    ordered_dict = {}
 
     for entry in ordered_arr:
         if not (entry.name in ordered_dict):
@@ -145,27 +165,10 @@ def order_rows(ordered_arr, add_empty_entries=False):
             "ram": entry.ram
         }
 
-        if hasattr(entry, "up"):
-            entry_dict["up"] = entry.up
-            entry_dict["down"] = entry.down
+        if hasattr(entry, "upload"):
+            entry_dict["upload"] = entry.upload
+            entry_dict["download"] = entry.download
 
         ordered_dict[entry.name].append(entry_dict)
-
-    if (not add_empty_entries): return ordered_dict
-
-    for name in SOCKET_THREAD["all_servers"]:
-        if name in ordered_dict: continue
-
-        ordered_dict[name] = [{
-                "ram": 0,
-                "cpu": 0,
-                "time": datetime.now() - timedelta(hours=2)
-            },
-            {
-                "ram": 0,
-                "cpu": 0,
-                "time": datetime.now()
-            } 
-        ]
-
+    
     return ordered_dict

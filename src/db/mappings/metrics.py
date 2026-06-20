@@ -42,8 +42,8 @@ class traffic_metric(Base):
     id: Mapped[int] =                                   mapped_column(primary_key=True)
     container_id: Mapped[int] =                         mapped_column(ForeignKey("servers.container.id"), nullable=False)
     time_id: Mapped[int] =                              mapped_column(ForeignKey("metrics.timestamp.id"), nullable=False)
-    up: Mapped[Float] =                                 mapped_column(Float(precision=4), nullable=False)
-    down: Mapped[Float] =                               mapped_column(Float(precision=4), nullable=False)
+    upload: Mapped[Float] =                             mapped_column(Float(precision=4), nullable=False)
+    download: Mapped[Float] =                           mapped_column(Float(precision=4), nullable=False)
 
     time =                                              relationship("metric_timestamp", foreign_keys=[time_id])
     container =                                         relationship(Container, foreign_keys=[container_id])

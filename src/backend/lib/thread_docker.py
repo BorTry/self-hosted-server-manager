@@ -115,6 +115,6 @@ def add_resources_to_db(resources):
             entry = session.scalars(query).first()
 
             session.add(performance_metric(container_id=entry.id, time_id=stamp.id, cpu=container_entry["cpu"], ram=container_entry["ram"]))
-            session.add(traffic_metric(container_id=entry.id, time_id=stamp.id, up=container_entry["upload"], down=container_entry["download"]))
+            session.add(traffic_metric(container_id=entry.id, time_id=stamp.id, upload=container_entry["upload"], download=container_entry["download"]))
 
         session.commit()
