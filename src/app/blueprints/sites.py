@@ -3,7 +3,7 @@ from flask.views import MethodView
 from flask import render_template, make_response, session, redirect
 from marshmallow import Schema, fields
 
-from src.app.lib import SOCKET_THREAD, get_next_id
+from src.app.lib import SEND_SOCKET_THREAD, get_next_id
 from src.lib import Server_codes, request
 from ..lib import limiter, get_user_ip
 
@@ -29,9 +29,9 @@ class front_page(MethodView):
         session["password"] = None
 
         if session.get("session_id", None) == None:
-            session["session_id"] = get_next_id(SOCKET_THREAD)
+            session["session_id"] = get_next_id(SEND_SOCKET_THREAD)
         
-        html = render_template("index.html", server_names=SOCKET_THREAD["all_servers"])
+        html = render_template("index.html", server_names=SEND_SOCKET_THREAD["all_servers"])
         return make_response(html, 200)
 
 @blp.route("/admin")
@@ -46,7 +46,7 @@ class admin_login(MethodView):
     @limiter.limit("5 per minute")
     def post(self, form):
         # verify the user with the backend
-        packet = SOCKET_THREAD.send_recv(request(None, {"username":form["username"], "password": form["password"], "ip": get_user_ip()}, Server_codes.CHECK_CREDENTIALS))
+        packet = SEND_SOCKET_THREAD.send_recv(request(None, {"username":form["username"], "password": form["password"], "ip": get_user_ip()}, Server_codes.CHECK_CREDENTIALS))
 
         if not packet: return make_response("Something went wrong", 404)
         if (packet.code != Server_codes.CREDENTIALS_OK):
@@ -72,7 +72,7 @@ class admin_page(MethodView):
         if login_confirmed == None: return make_response("Something went wrong", 404)
 
         if (session.get("session_id", None) == None):
-            session["session_id"] = get_next_id(SOCKET_THREAD) 
+            session["session_id"] = get_next_id(SEND_SOCKET_THREAD) 
 
         if (login_confirmed == False):
             session.pop("username", None)
@@ -87,7 +87,7 @@ class admin_page(MethodView):
                 return redirect("/")
             
             case "overview":
-                html = render_template(f'admin/{site}/index.html', server_names=SOCKET_THREAD["all_servers"], types=OVERVIEW_TYPES)
+                html = render_template(f'admin/{site}/index.html', server_names=SEND_SOCKET_THREAD["all_servers"], types=OVERVIEW_TYPES)
                 return make_response(html, 200)
             
             case _:
@@ -115,7 +115,7 @@ def confirm_api_login():
     username = session["username"]
     password = session["password"]
 
-    packet = SOCKET_THREAD.send_recv(request(None, {"username":username, "password": password, "ip": get_user_ip()}, Server_codes.CHECK_REPEATED_CREDENTIALS))
+    packet = SEND_SOCKET_THREAD.send_recv(request(None, {"username":username, "password": password, "ip": get_user_ip()}, Server_codes.CHECK_REPEATED_CREDENTIALS))
 
     if (not packet): return None
 

@@ -1,4 +1,4 @@
-from src.lib import thread_wrapper, Server_codes, CONSTANTS
+from src.lib import thread_wrapper, Server_codes, CONSTANTS, response
 from .docker import *
 
 from src.db.mappings import metric_timestamp, traffic_metric, performance_metric, container, port_type, ports, ports_mapping
@@ -15,7 +15,7 @@ last_save = None
 def docker_func(thread:thread_wrapper):
     global save_interval, last_save
     # get all running servers
-    resources_used = get_resource_use_for_containers()
+    resources_used = get_all_containers()
 
     CONTAINERS[Server_codes.RUNNING_SERVERS] = resources_used
     requests = []
@@ -33,6 +33,8 @@ def docker_func(thread:thread_wrapper):
 
     if (not len(requests)): return
     # use the data to try to start or stop a server
+    thread.print(*requests)
+
     for data_packet in requests:
         match (data_packet.code):
             case Server_codes.START_SERVER:
@@ -42,7 +44,10 @@ def docker_func(thread:thread_wrapper):
             case Server_codes.RESTART_SERVER:
                 restart_server(data_packet.data["name"])
             case Server_codes.ADD_CONTAINER:
-                try_to_add_container(thread, data_packet.data)
+                response_data = try_to_add_container(thread, data_packet.data)
+                
+                responses.append(response(data_packet.id, **response_data))
+
             case Server_codes.CHANGE_CONTAINER:
                 pass
 

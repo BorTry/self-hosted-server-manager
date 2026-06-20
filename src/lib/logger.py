@@ -8,7 +8,7 @@ class logger:
     def print_all(*args):
         while True:
             if logger.LOGGERS.empty(): break
-            print(*logger.LOGGERS.get())
+            print(*logger.LOGGERS.get(), flush=True)
 
     @staticmethod
     def logger(logger_name:str=""):

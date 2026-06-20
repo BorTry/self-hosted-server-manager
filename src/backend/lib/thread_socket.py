@@ -42,9 +42,10 @@ def socket_func(thread:thread_socket_wrapper):
             if data_packet.code == Server_codes.CHECK_CREDENTIALS: thread.print(f'User "{data["username"]}" with password "{data["password"]}" is trying to log in.')
 
         case Server_codes.ADD_CONTAINER:
-            code = Server_codes.CONTAINER_SUCCESS
+            code = Server_codes.OK
             return_data = f"Recieved data for new container {data["server_name"]}"
             incoming_data = data_packet
+            from_address = None
             # quickly verify the data, add to db, and pass on to docker thread
             #code = Server_codes.CONTAINER_FAILED
 
@@ -64,7 +65,12 @@ def socket_func(thread:thread_socket_wrapper):
             data["requests"].append(incoming_data)
 
     with thread.data_handler as data:
-        data["responses"] = []
+        if len(data["responses"]) > 0:
+            for packet in data["responses"]:
+                thread.print(f"Sending packet: {packet!r}")
+                thread.send(packet)
+
+            data["responses"] = []
 
 def verify_login(data):
     if data["username"] != CONSTANTS.CREDENTIALS["username"] or data["password"] != CONSTANTS.CREDENTIALS["password"]: return Server_codes.BAD

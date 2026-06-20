@@ -43,7 +43,7 @@ def get_container_names(all:bool=False):
 
 # ============================ Container stats ============================
 
-def get_resource_use_for_containers():
+def get_all_containers():
     fin_arr = []
 
     all_containers = docker.ps()

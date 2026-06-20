@@ -1,0 +1,35 @@
+from src.lib import thread_socket_wrapper
+from src.lib import Server_codes
+from src.lib import request
+
+def send_socket_func(thread:thread_socket_wrapper):
+    if (len(thread["all_servers"]) == 0):
+        send_socket_init(thread)
+        return
+
+    # regular updates
+    packet = thread.send_recv(request(None, "", Server_codes.RUNNING_SERVERS))
+
+    if packet != None:
+        with thread.data_handler as thread_data:
+            thread_data["running_servers"] = packet.data
+
+    pending_requests = thread.data_handler.get_copy("pending_requests")
+    # send all pending requests and wait for them to return
+    if len(pending_requests) > 0:
+        for pending_request in pending_requests:
+            thread.send(pending_request)
+
+    with thread.data_handler as thread_data:
+        thread_data["pending_requests"] = []
+
+def send_socket_init(thread:thread_socket_wrapper):
+    thread["all_servers"] = []
+    thread["launch_options"] = []
+
+    data = thread.send_recv(request(None, "", Server_codes.ALL_SERVERS))
+
+    if (not data): return
+
+    thread["all_servers"] = data.data["servers"]
+    thread["launch_options"] = data.data["launch_options"]

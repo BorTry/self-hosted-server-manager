@@ -11,4 +11,4 @@ class response(packet):
     def __init__(self, id:int, data:Any, code:int):
         super().__init__(id, data, code)
 
-        self._type = packet_types.REQUEST
+        self._type = packet_types.RESPONSE

@@ -1,4 +1,4 @@
-from src.lib import thread_wrapper, compose_file, service
+from src.lib import thread_wrapper, compose_file, service, Server_codes
 
 from python_on_whales import DockerClient, DockerException
 
@@ -7,6 +7,11 @@ MAIN_COMPOSE_PATH = "./resources/compose_files/docker-game-compose.yaml"
 
 TEMP_COMPOSE_FILE = compose_file(TEMP_COMPOSE_PATH)
 MAIN_COMPOSE_FILE = compose_file(MAIN_COMPOSE_PATH)
+
+{
+    "failure": bool,
+    "failure_reason": str
+}
 
 def try_to_add_container(thread:thread_wrapper, compose_args) -> bool:
     server_name = compose_args["server_name"]
@@ -28,14 +33,15 @@ def try_to_add_container(thread:thread_wrapper, compose_args) -> bool:
     new_container["entrypoint"] = ["/entrypoint.sh"]
 
     if (False):
+        # create a docer buildfile if the image need any extra dependencies
         new_container["build"] = {"context": "../buildfiles", "dockerfile": f"Dockerfile.{server_name}"}
     
-    thread.print(new_container)
-
     TEMP_COMPOSE_FILE.add_service(new_container)
     TEMP_COMPOSE_FILE.write_to_file()
 
-    _test_new_container(thread, new_container)
+    return_message = _test_new_container(thread, new_container)
+
+    return return_message
 
 def _test_new_container(thread:thread_wrapper, new_container:service):
     docker = DockerClient(compose_files=(TEMP_COMPOSE_PATH))
@@ -50,7 +56,7 @@ def _test_new_container(thread:thread_wrapper, new_container:service):
         print(e)
 
     if not success:
-        return False
+        return _generate_return_msg(True, "Container failed to compile -> Check your settings")
 
     success = False
 
@@ -66,7 +72,15 @@ def _test_new_container(thread:thread_wrapper, new_container:service):
     TEMP_COMPOSE_FILE.write_to_file()
 
     if not success:
-        return False
+        return _generate_return_msg(True, "Container failed to run -> Check your run command")
 
     #MAIN_COMPOSE_FILE.add_service(new_container)
     #MAIN_COMPOSE_FILE.write_to_file()
+
+    return _generate_return_msg(False)
+
+def _generate_return_msg(failure:bool, message:str=None):
+    return {
+        "code": Server_codes.CONTAINER_FAILED if failure else Server_codes.CONTAINER_SUCCESS,
+        "data": message
+    }

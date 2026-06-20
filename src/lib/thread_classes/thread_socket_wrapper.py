@@ -17,14 +17,13 @@ class thread_socket_wrapper(thread_wrapper):
     __slots__ = ("address", "target_address", "socket")
 
     def __init__(self, target:Callable=None, init:Callable=None, address:tuple[str, int]=None, target_address:tuple[str, int]=None, data_handler:thread_data_handler=None, terminate_signal:Event=None, name:str="thread", sleeptime:float=0.0):
-        if (not address):
-            raise Exception("Socket thread needs an address to bind to")
-
-        self.target_address = target_address # Only given if a socket thread needs to send and wait for an answer
+        self.target_address = target_address
         self.address = address
 
         self.socket = socket(*CONNECTION_TYPE)
-        self.socket.bind(address)
+
+        if (address):
+            self.socket.bind(address)
 
         self.socket.settimeout(0.25)
 
@@ -32,6 +31,8 @@ class thread_socket_wrapper(thread_wrapper):
 
     def send(self, data:packet|None, code:int=None, target:tuple[str, int]=None):
         target_address = target or self.target_address
+
+        print(target_address)
 
         if (not target_address):
             raise ValueError("Target address not defined, in class or function")
@@ -41,7 +42,7 @@ class thread_socket_wrapper(thread_wrapper):
 
         self.socket.sendto(encode(data), target_address)
 
-    def recv(self):
+    def recv(self):       
         try:
             new_data, address = self.socket.recvfrom(BUFFER_SIZE)
 

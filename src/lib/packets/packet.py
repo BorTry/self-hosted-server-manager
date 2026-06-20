@@ -16,3 +16,6 @@ class packet:
 
     def set_data_code(self, code:int):
         self.code = code
+
+    def __repr__(self):
+        return f"\n\tid: {self.id}\n\tdata: {self.data}\n\tcode: {self.code}"

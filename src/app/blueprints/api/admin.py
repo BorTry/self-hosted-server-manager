@@ -1,8 +1,8 @@
 from flask_smorest import Blueprint
 from flask.views import MethodView
-from flask import make_response, Response, session, current_app
+from flask import make_response, Response, session
 
-from src.app.lib import SOCKET_THREAD, DATA_HANDLER, add_subscriber, METRICS_INTERVAL
+from src.app.lib import SEND_SOCKET_THREAD, DATA_HANDLER, add_subscriber, METRICS_INTERVAL
 from ...lib.limiter import limiter
 from src.lib import Server_codes, request
 
@@ -48,7 +48,7 @@ class AllContainerMetrics(MethodView):
 
         ordered_rows = _order_rows(rows)
 
-        for name in SOCKET_THREAD["all_servers"]:
+        for name in SEND_SOCKET_THREAD["all_servers"]:
             if name in ordered_rows: continue
 
             _fill_empty_rows(ordered_rows, name)
@@ -119,7 +119,7 @@ class addContainer(MethodView):
 
         if (session_id == None): return make_response("", 500)
 
-        queue = add_subscriber(SOCKET_THREAD, session_id)
+        queue = add_subscriber(session_id)
 
         def stream():
             try:
