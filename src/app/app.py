@@ -23,8 +23,33 @@ api.register_blueprint(admin_api_blp)
 
 @app.errorhandler(422)
 def handle_unprocessable_entity(err):
-    print(err.data)  # inspect in logs
+    if (hasattr(err, "data")):
+        print(err.data)  # inspect in logs
+        return {
+            "errors": err.data.get("messages", {})
+        }, 404
+    else:
+        print(err)
+        return ""
 
-    return {
-        "errors": err.data.get("messages", {})
-    }, 422
+@app.errorhandler(404)
+def handle_unprocessable_entity(err):
+    if (hasattr(err, "data")):
+        print(err.data)  # inspect in logs
+        return {
+            "errors": err.data.get("messages", {})
+        }, 404
+    else:
+        print(err)
+        return ""
+
+@app.errorhandler(405)
+def handle_unprocessable_entity(err):
+    if (hasattr(err, "data")):
+        print(err.data)  # inspect in logs
+        return {
+            "errors": err.data.get("messages", {})
+        }, 405
+    else:
+        print(err)
+        return ""

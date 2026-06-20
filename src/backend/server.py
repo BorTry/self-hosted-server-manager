@@ -2,7 +2,7 @@ from threading import Event
 from time import sleep
 
 from src.backend.lib import socket_func, docker_func, docker_init, stop_frontend, start_frontend, docker_running
-from src.lib import thread_wrapper, thread_socket_wrapper, thread_data_handler, CONSTANTS
+from src.lib import thread_wrapper, thread_socket_wrapper, thread_data_handler
 from src.lib.init import init
 from src.lib.logger import logger, get_logger
 

@@ -5,7 +5,7 @@ class logger:
     LOGGERS = Queue(maxsize=100)
 
     @staticmethod
-    def print_all(self):
+    def print_all(*args):
         while True:
             if logger.LOGGERS.empty(): break
             print(*logger.LOGGERS.get())

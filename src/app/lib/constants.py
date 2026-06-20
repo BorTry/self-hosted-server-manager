@@ -1,10 +1,11 @@
-from src.lib import thread_socket_wrapper, thread_data_handler
+from src.lib import thread_socket_wrapper, thread_data_handler, thread_wrapper
+from src.lib.logger import logger
 from src.app.lib.socket_functions import socket_func, socket_init
 from dotenv import load_dotenv
 from os import environ
 
 load_dotenv("./.env")
-METRICS_INTERVAL = environ.get("METRICS_INTERVAL")
+METRICS_INTERVAL = int(environ.get("METRICS_INTERVAL"))
 
 ADDRESS = "0.0.0.0"
 OWN_PORT = 2024
@@ -18,6 +19,12 @@ DATA_HANDLER = thread_data_handler({
     "current_id": 1
 })
 
+LOGGER_THREAD = thread_wrapper(
+    target=logger.print_all, 
+    name="log_thread", 
+    sleep_time=.5
+)
+
 SOCKET_THREAD = thread_socket_wrapper(
     target=socket_func,
     init=socket_init,
@@ -29,6 +36,7 @@ SOCKET_THREAD = thread_socket_wrapper(
 )
 
 try:
+    LOGGER_THREAD.run()
     SOCKET_THREAD.run()
 except OSError as e:
     print(e)
