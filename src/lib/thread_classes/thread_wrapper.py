@@ -5,10 +5,12 @@ from typing import Callable
 from .thread_data_handler import thread_data_handler
 from ..logger import get_logger
 
-class thread_wrapper:
-    __slots__ = ("name", "logger", "target", "stdout", "sleep_time", "thread", "terminate_signal", "return_val", "data_handler", "init", "_data")
+from datetime import datetime, timezone
 
-    def __init__(self, target:Callable=None, init:Callable=None, terminate_signal:Event=None, name="thread", data_handler:thread_data_handler=None, sleep_time:float=0.1):
+class thread_wrapper:
+    __slots__ = ("name", "logger", "on_close", "target", "stdout", "sleep_time", "thread", "terminate_signal", "return_val", "data_handler", "init", "_data")
+
+    def __init__(self, target:Callable=None, init:Callable=None, on_close:Callable=None, terminate_signal:Event=None, name="thread", data_handler:thread_data_handler=None, sleep_time:float=0.1):
         self.name = name
         self.sleep_time = sleep_time
 
@@ -24,6 +26,7 @@ class thread_wrapper:
         self.logger = get_logger(name)
 
         self.init = init
+        self.on_close = on_close
 
         self._data = {}
 
@@ -46,14 +49,14 @@ class thread_wrapper:
         self.logger.print(*msg)
 
     def terminate(self):
-        self.print("Stopping")
+        print(datetime.now(timezone.utc).strftime("[%H:%M:%S]"), self.thread.name, "->", "Stopping", flush=True)
 
         # Close the thread and wait for it to finish
         if (not self.terminate_signal.is_set()):
             self.terminate_signal.set() # Multiple threads can use the same event signal
 
         if self.thread and self.thread.is_alive():
-            print(f"Waiting for {self.thread.name} to terminate")
+            print(datetime.now(timezone.utc).strftime("[%H:%M:%S]"), self.name, "->", f'Waiting for {self.thread.name} to terminate', flush=True)
             self.thread.join()
 
     def run(self):
@@ -71,7 +74,12 @@ def thread_function_wrapper(self:thread_wrapper, target:Callable):
     def wrap():
         while not self.terminate_signal.is_set():
             target(self)
+            
+            if not self.sleep_time: continue
 
             self.terminate_signal.wait(self.sleep_time)
+
+        if self.on_close is not None:
+            self.on_close(self)
 
     return wrap
