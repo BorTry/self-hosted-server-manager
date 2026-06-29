@@ -2,7 +2,7 @@ from flask_smorest import Blueprint
 from flask.views import MethodView
 from flask import make_response, Response, session
 
-from src.app.lib import SEND_SOCKET_THREAD, DATA_HANDLER, METRICS_INTERVAL, create_web_stream
+from src.app.lib import SEND_SOCKET_THREAD, DATA_HANDLER, METRICS_INTERVAL, create_web_stream, add_request
 from ...lib.limiter import limiter
 from src.lib import Server_codes, request
 
@@ -88,13 +88,16 @@ class AllContainerMetrics(MethodView):
 @blp.route("get_logs/<string:server_name>")
 class containerServerLog(MethodView):
     @limiter.exempt
-    def get():
+    def get(self, server_name):
         session_id = session.get("session_id", None)
 
         if (session_id is None):
             return make_response("No session ID", 403)
 
         stream = create_web_stream(session_id)
+
+        # create a logging thread for this server
+        add_request(request(session["session_id"], {"server_name":server_name}, Server_codes.LOG_CONTAINER))
 
         return Response(stream(), status=200, mimetype="text/event-stream")
 

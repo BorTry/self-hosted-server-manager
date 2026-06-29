@@ -1,6 +1,7 @@
-from src.lib import thread_wrapper, Server_codes, CONSTANTS, response
 from .docker import *
+from .thread_container_logger import logger_generator, add_session_id, remove_session_id
 
+from src.lib import thread_wrapper, Server_codes, CONSTANTS, response
 from src.db.mappings import metric_timestamp, traffic_metric, performance_metric, container, port_type, ports, ports_mapping
 from src.db.db import SessionLocal
 from sqlalchemy import select
@@ -8,9 +9,6 @@ from sqlalchemy import select
 from datetime import timedelta, datetime
 
 CONTAINERS = [None] * 10
-
-save_interval = 0
-last_save = None
 
 def docker_func(thread:thread_wrapper):
     global save_interval, last_save
@@ -22,9 +20,9 @@ def docker_func(thread:thread_wrapper):
     responses = []
     now = datetime.now()
 
-    if (not last_save or (now - last_save).seconds > save_interval.seconds) and len(resources_used):
+    if (not thread["last_save"] or (now - thread["last_save"]).seconds > thread["save_interval"].seconds) and len(resources_used):
         add_resources_to_db(resources_used)
-        last_save = now
+        thread["last_save"] = now
 
     with thread.data_handler as data:
         data["data"] = CONTAINERS
@@ -47,6 +45,14 @@ def docker_func(thread:thread_wrapper):
                 response_data = try_to_add_container(thread, data_packet.data)
                 
                 responses.append(response(data_packet.id, **response_data))
+            case Server_codes.LOG_CONTAINER:
+                server_name = data_packet.data["server_name"]
+                container_name = convert_server_name(server_name)
+
+                if not (container_name in thread["logger_threads"]):
+                    generate_new_log_thread(thread, container_name, data_packet.id)
+
+                add_session_id(thread["logger_threads"][container_name], data_packet.id)
 
             case Server_codes.CHANGE_CONTAINER:
                 pass
@@ -57,19 +63,24 @@ def docker_func(thread:thread_wrapper):
 
 # send over data to the com thread
 def docker_init(thread:thread_wrapper):
-    global save_interval
-    
-    save_interval = timedelta(seconds=CONSTANTS.METRICS_INTERVAL)
-
     CONTAINERS[Server_codes.ALL_SERVERS] = {
         "servers": SERVER_JSON["server_names"],
         "launch_options": SERVER_JSON["launch_alternatives"]
     }
 
+    thread["logger_threads"] = {}
+    thread["save_interval"] = timedelta(seconds=CONSTANTS.METRICS_INTERVAL)
+    thread["last_save"] = datetime.now()
+
     add_containers_to_db(CONTAINERS[Server_codes.ALL_SERVERS]["servers"], get_resource_limit_containers())
 
     with thread.data_handler as data:
         data["data"] = CONTAINERS
+
+def docker_on_close(thread:thread_wrapper):
+    if (len(thread["logger_threads"]) > 0):
+        for logger_name in thread["logger_threads"]:
+            thread["logger_threads"][logger_name].terminate()
 
 def add_containers_to_db(containers, limits):  
     with SessionLocal() as session:
@@ -123,3 +134,14 @@ def add_resources_to_db(resources):
             session.add(traffic_metric(container_id=entry.id, time_id=stamp.id, upload=container_entry["upload"], download=container_entry["download"]))
 
         session.commit()
+
+def generate_new_log_thread(thread:thread_wrapper, server_name:str, session_id:int):
+    thread.print(f'Generating new thread for server: {server_name}')
+
+    try:
+        log_thread = logger_generator(server_name, thread.terminate_signal)
+    except Exception as e:
+        thread.print(f'got an error while setting up new log thread for server: {server_name}\n{e!r}')
+        return
+
+    thread["logger_threads"][server_name] = log_thread

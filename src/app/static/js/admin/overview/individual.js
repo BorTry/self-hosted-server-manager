@@ -8,6 +8,16 @@ const MIN_TIME_DIFF = 1.4
 var METRICS = []
 var TIME_BETWEEN = 15 // default
 
+const SERVER_STREAM = new EventSource("/api/admin/get_logs/"+SERVER_NAME)
+
+SERVER_STREAM.addEventListener("update", (event) => {
+    console.log(event.data)
+})
+
+SERVER_STREAM.addEventListener("close", (event) => {
+    SERVER_STREAM.close()
+})
+
 async function get_data() {
     METRICS = await fetch("/api/admin/metrics/"+SERVER_NAME, {
         method: "GET"

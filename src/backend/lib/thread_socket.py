@@ -52,8 +52,14 @@ def socket_func(thread:thread_socket_wrapper):
         case Server_codes.CHANGE_CONTAINER:
             pass
 
+        case Server_codes.LOG_CONTAINER:
+            code = Server_codes.OK
+            return_data = f"Recieved log request for container {data["server_name"]}"
+            incoming_data = data_packet
+            from_address = None
+
         case _:
-            thread.print(f"There are no functions for code {data_packet['code']}")
+            thread.print(f"There are no functions for code {data_packet.code}")
 
     if (return_data):
         thread.send(response(id, return_data, code), target=from_address)
