@@ -1,11 +1,20 @@
+{% from "modules/graphs.html" import graph %}
+{% from "modules/element-log.html" import element_log %}
+
 <!DOCTYPE html>
 <html>
     <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Document</title>
+        
         <link rel="stylesheet" href="{{ url_for('static', filename='css/standard.css') }}">
         <link rel="stylesheet" href="{{ url_for('static', filename='css/admin/admin_sidebar.css') }}">
         <link rel="stylesheet" href="{{ url_for('static', filename='css/admin/admin_page.css') }}">
         <link rel="stylesheet" href="{{ url_for('static', filename='css/admin/overview/individual.css') }}">
         <link rel="stylesheet" href="{{ url_for('static', filename='css/modules/graph.css') }}">
+        <link rel="stylesheet" href="{{ url_for('static', filename='css/modules/element-log.css') }}">
+
         <script>
             const SERVER_NAME = "{{ server_name }}";
         </script>
@@ -24,30 +33,36 @@
                 </div>
             </div>
             <div id="main-content" class="main-body transparent-background center-content">
-                <div class="content-container transparent-background shadow">
+                <div class="content-container shadow">
                     <div>
                         <div class="header-container">
                             <div class="gradient"></div>
                             <img src="{{ url_for('static', filename='images/' ~ server_name ~ '.jpg') }}">
                         </div>
-                        <div class="title-container">
-                            <div>
-                                <p class="title">{{ server_name }}</p>
-                                <div class="divider"></div>
-                            </div>
-                        </div>
-                        <div id="graph-list">
-                            {% for type in types %}
-                                <div class="graph-container">
-                                    <div class="graph-title-container">
-                                        <div>
-                                            <p>{{ type|capitalize }}</p>
-                                            <div class="divider"></div>
-                                        </div>
-                                    </div>
-                                    <canvas id="{{ type }}" class="graph"></canvas>
+                        <div class="content-container">
+                            <div class="title-container">
+                                <div>
+                                    <p class="title">{{ server_name }}</p>
+                                    <div class="divider"></div>
                                 </div>
-                            {% endfor %}
+                            </div>
+                            <div id="stats">
+                                <!-- Stats of the container, online, suspected failures/warnings (temp/cpu/ram/traffic)? -->
+                                <div>
+                                    <div class="inline-text-container">
+                                        <p>Server Status: </p>
+                                        <p id="server-status">Offline</p>
+                                    </div>
+                                    <p>Server Warnings:</p>
+                                    {{ element_log("server-warnings") }}
+                                </div>
+                            </div>
+                            <div id="graph-list">
+                                {{ graph(types, server_name) }}
+                            </div>
+                            <div id="logs">
+                                {{ element_log("server-logs") }}
+                            </div>
                         </div>
                     </div>
                 </div>

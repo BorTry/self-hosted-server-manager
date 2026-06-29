@@ -24,6 +24,13 @@
     }
 }
 
+@media (min-width: 2000px) {
+    #server-list {
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: 3vh;
+    }
+}
+
 .form-container {
     order: -1;
 }
@@ -55,7 +62,6 @@
 .dropdown-title {
     height: var(--list-height);
     margin-bottom: var(--list-gradient-height);
-    cursor: pointer;
 }
 
 .dropdown-image {
@@ -151,6 +157,7 @@
 
 .stop_button {
     background: var(--offline) !important;
+    color: rgb(35, 36, 35) !important;
 }
 
 /* =============== Server form =============== */
@@ -158,9 +165,8 @@
 .gauge-list {
     justify-content: center;
     align-items: center;
-    width: 30%;
-    height: fit-content;
+    width: calc-size(fit-content, size - 20px);
     display: flex;
-    gap: 1vw;
     flex-wrap: wrap;
+    max-height: calc-size(fit-content, size + 5vh);
 }

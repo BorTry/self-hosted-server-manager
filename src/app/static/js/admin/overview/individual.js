@@ -18,7 +18,6 @@ async function get_data() {
         return response.json()
     });
     TIME_BETWEEN = METRICS["time_between"]||15
-    console.log(METRICS)
 }
 
 function order_by_date(points) {
@@ -73,7 +72,7 @@ function update_graphs(graph_name, types) {
     let ordered_points = order_by_date(METRICS[SERVER_NAME])
 
     for (let type of types) {
-        let canvas = document.getElementById(type)
+        let canvas = document.getElementById(SERVER_NAME+"_"+type)
 
         draw_points(canvas, ordered_points.points, ordered_points.max_values[type], (x) => x[type])
     }

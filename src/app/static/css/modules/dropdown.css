@@ -21,4 +21,5 @@ html {
 
 .dropdown-title {
     background: transparent;
+    cursor: pointer;
 }

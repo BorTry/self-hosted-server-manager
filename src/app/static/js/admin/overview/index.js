@@ -70,8 +70,6 @@ function update_graphs(graph_names, types) {
         
         let ordered_points = order_by_date(METRICS[name])
         
-        console.log(ordered_points)
-
         for (let type of types) {
             let canvas = document.getElementById(name + "_" + type)
             

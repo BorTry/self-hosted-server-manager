@@ -1,0 +1,29 @@
+.element-log-container {
+    background-color: white;
+    width: 30vw;
+    border-radius: 8px;
+    display: flex;
+    justify-content: center;
+}
+
+.element-log {
+    display: none;
+    max-height: 10vh;
+}
+
+.element-log:has(.element-log-item) {
+    display: grid;
+    grid-template-columns: 1fr;
+    grid-template-rows: auto;
+    color: black;
+    width: 98%;
+    overflow-y: auto;
+}
+
+.element-log-item {
+    margin: 0.1vh 0;
+}
+
+#server-status {
+    margin-left: 0.5vw;
+}

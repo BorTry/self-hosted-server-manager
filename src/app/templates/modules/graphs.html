@@ -1,0 +1,13 @@
+{% macro graph(types, graph_name) %}
+    {% for type in types %}
+        <div class="graph-container">
+            <div class="graph-title-container">
+                <div>
+                    <p>{{ type|capitalize }}</p>
+                    <div class="divider"></div>
+                </div>
+            </div>
+            <canvas id="{{ graph_name }}_{{ type }}" class="graph"></canvas>
+        </div>
+    {% endfor %}
+{% endmacro %}

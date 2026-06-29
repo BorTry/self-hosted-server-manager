@@ -10,7 +10,7 @@ def get_next_id():
 
         return id
 
-def add_subscriber(session_id:int):
+def _add_subscriber(session_id:int):
     with DATA_HANDLER as data:
         data["subscribers"][session_id] = queue.Queue(maxsize=10)
 
@@ -19,3 +19,18 @@ def add_subscriber(session_id:int):
 def add_request(request_obj:request):
     with DATA_HANDLER as data:
         data["pending_requests"].append(request_obj)
+
+def create_web_stream(session_id):
+    queue = _add_subscriber(session_id)
+
+    def stream():
+        try:
+            while True:
+                msg = queue.get()
+
+                yield "event: update\n"
+                yield f'data: {msg}\n\n'
+        finally:
+            queue.close()
+
+    return stream

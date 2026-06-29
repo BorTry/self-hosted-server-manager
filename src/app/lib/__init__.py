@@ -7,7 +7,7 @@ __all__ = [
     "limiter"
 ]
 
-from .data_functions import add_subscriber, get_next_id, add_request
+from .data_functions import create_web_stream, get_next_id, add_request
 from .sockets import SEND_SOCKET_THREAD, LISTEN_SOCKET_THREAD, DATA_HANDLER
 from .constants import METRICS_INTERVAL
 from .get_ip import get_user_ip

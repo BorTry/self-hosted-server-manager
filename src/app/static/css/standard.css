@@ -81,6 +81,12 @@ body {
     font-weight: bold;
 }
 
+.inline-text-container {
+    display: flex;
+    flex-wrap: nowrap;
+    width: fit-content;
+}
+
 /* =============== Main bodies =============== */
 
 .main-body {
