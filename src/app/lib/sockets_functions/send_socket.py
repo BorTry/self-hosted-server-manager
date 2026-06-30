@@ -12,7 +12,11 @@ def send_socket_func(thread:thread_socket_wrapper):
 
     if packet != None:
         with thread.data_handler as thread_data:
-            thread_data["running_servers"] = packet.data
+            if not packet.data:
+                thread_data["running_servers"] = {}
+            else:
+                for server in packet.data:
+                    thread_data["running_servers"][server["name"]] = server
 
     pending_requests = thread.data_handler.get_copy("pending_requests")
     # send all pending requests and wait for them to return

@@ -11,17 +11,16 @@ from datetime import timedelta, datetime
 CONTAINERS = [None] * 10
 
 def docker_func(thread:thread_wrapper):
-    global save_interval, last_save
     # get all running servers
-    resources_used = get_all_containers()
+    running_containers = get_all_containers()
 
-    CONTAINERS[Server_codes.RUNNING_SERVERS] = resources_used
+    CONTAINERS[Server_codes.RUNNING_SERVERS] = running_containers
     requests = []
     responses = []
     now = datetime.now()
 
-    if (not thread["last_save"] or (now - thread["last_save"]).seconds > thread["save_interval"].seconds) and len(resources_used):
-        add_resources_to_db(resources_used)
+    if len(running_containers) and (not thread["last_save"] or (now - thread["last_save"]).seconds > thread["save_interval"].seconds):
+        add_resources_to_db(running_containers)
         thread["last_save"] = now
 
     with thread.data_handler as data:

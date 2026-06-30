@@ -9,7 +9,8 @@ from ...lib.limiter import limiter
 from ..schemas import ContainerResponseSchema, ContainerStartSchema
 
 def get_running_servers():
-    return DATA_HANDLER.get_copy("running_servers")
+    servers = DATA_HANDLER.get_copy("running_servers")
+    return servers
 
 blp = Blueprint("Frontend_api", __name__, url_prefix="/api")
 
@@ -17,7 +18,11 @@ blp = Blueprint("Frontend_api", __name__, url_prefix="/api")
 class Container(MethodView):
     @blp.response(204)
     def get(self, name:str):
-        return jsonify(message=get_running_servers()[name])
+        servers = get_running_servers()
+        if servers:
+            return jsonify(message=servers[name])
+        else:
+            return jsonify(message=None)
 
 @blp.route("container/<string:name>/start")
 class Start_Containers(MethodView):

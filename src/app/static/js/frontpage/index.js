@@ -2,6 +2,7 @@ import build_request_form from "./card_factory.mjs"
 import update_gauge from "../modules/gauge.mjs"
 
 var RUNNING_SERVERS = []
+var ALL_SERVERS = []
 
 // set an interval to get server data
 setInterval(async function() {
@@ -21,6 +22,8 @@ async function build_server_list() {
     })
 
     let servers = extract_data(data.message)
+
+    ALL_SERVERS = servers.all_servers
 
     if (!servers) {
         return
@@ -43,68 +46,20 @@ async function change_live_servers() {
         return response.json()
     })
 
-    let all_servers = extract_data(data.message)
+    let server_stats = extract_data(data.message)
 
-    // turn all server-listing red if none are running
-    if (!all_servers) {
-        if (!RUNNING_SERVERS.length) return
+    for (let server_name of ALL_SERVERS) {
+        let is_online = Object.hasOwn(server_stats, server_name)
+        let server_entry = server_stats[server_name]
 
-        for (let server_name of RUNNING_SERVERS) {
-            change_server_status(server_name, false)
-            update_gauge(`cpu-gauge-${server_name}`, 0)
-            update_gauge(`ram-gauge-${server_name}`, 0)
-        }
-        return
-    }
-
-    // update the ram and cpu gauges for each server
-    for (let usage of all_servers) {
-        update_gauge(`cpu-gauge-${usage.name}`, usage.cpu)
-        update_gauge(`ram-gauge-${usage.name}`, usage.ram)
-    }
-
-    // turn "all server" items green if none are recorded as running
-    if (!RUNNING_SERVERS.length) {
-        for (let server_name of all_servers) {
-            change_server_status(server_name.name)
-            RUNNING_SERVERS.push(server_name.name)
-        }
-
-        return
-    }
-
-    let tmp_arr = []
-
-    // Change the servers to be red:)
-    for (let server_name of all_servers) {
-        let index = RUNNING_SERVERS.indexOf(server_name.name)
-
-        if (index < 0) {
-            change_server_status(server_name.name)
-            continue
-        }
-        
-        change_server_status(server_name.name)
-        RUNNING_SERVERS.splice(index, 1)
-    }
-
-    // Change the servers to be red:)
-    for (let server_name of RUNNING_SERVERS) {
-        change_server_status(server_name, false)
-        update_gauge(`cpu-gauge-${server_name}`, 0)
-        update_gauge(`ram-gauge-${server_name}`, 0)
-    }
-
-    RUNNING_SERVERS.length = 0
-
-    for (let server_name of all_servers) {
-        RUNNING_SERVERS.push(server_name.name)
+        change_server_status(server_name, is_online)
+        update_gauge(`cpu-gauge-${server_name}`, is_online ? server_entry.cpu : 0)
+        update_gauge(`ram-gauge-${server_name}`, is_online ? server_entry.ram : 0)
     }
 }
 
 function change_server_status(name, online=true) {
-    let el = document.getElementById(name)
-    let image_con = el.getElementsByClassName("server-item-image")[0]
+    let image_con = document.getElementById(name)
     image_con.style.borderColor = online ? "var(--online)" : "var(--offline)"
 }
 

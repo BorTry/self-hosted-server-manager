@@ -10,7 +10,7 @@ var TIME_BETWEEN = 15 // default
 
 const SERVER_STREAM = new EventSource("/api/admin/get_logs/"+SERVER_NAME)
 const element_log = document.getElementById("server-logs")
-const indent_reg2 = new RegExp("^\\t")
+const server_status_element = document.getElementById("server-status")
 
 SERVER_STREAM.addEventListener("update", (event) => {
     let len = event.data.length
@@ -41,7 +41,6 @@ function clean_and_add_log(text) {
     const frag = document.createDocumentFragment()
 
     for (const data_segment of split_logs) {
-        const indent_reg = new RegExp("^s+S*")
         const element = document.createElement("div")
         element.className = "element-log-item"
         element.className += /^\\t/.test(data_segment) ? " element-log-indent" : ""
@@ -62,6 +61,17 @@ async function get_data() {
         return response.json()
     });
     TIME_BETWEEN = METRICS["time_between"]||15
+}
+
+async function is_server_running() {
+    return await fetch("/api/container/"+SERVER_NAME, {
+        method: "GET"
+    }).then(response => {
+        if (!response.ok) {
+            throw new Error("SERVER NOT OK:(")
+        }
+        return response.json()
+    });
 }
 
 function order_by_date(points) {
@@ -148,6 +158,16 @@ async function main() {
     }
 
     setup_graph_updates(SERVER_NAME, GRAPH_TYPES)
+
+    setInterval(async function() {
+        let server_status = await is_server_running()
+        server_status_element.style.color = server_status.message ? "var(--online)" : "var(--offline)"
+        server_status_element.innerText = server_status.message ? "Online" : "Offline"
+    }, TIME_BETWEEN * 1000)
+
+    let server_status = await is_server_running()
+    server_status_element.style.color = server_status.message ? "var(--online)" : "var(--offline)"
+    server_status_element.innerText = server_status.message ? "Online" : "Offline"
 }
 
 main()

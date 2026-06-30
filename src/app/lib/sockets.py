@@ -12,7 +12,7 @@ TERMINATE_SIGNAL = Event()
 
 DATA_HANDLER = thread_data_handler({
     "subscribers": {},
-    "running_servers": [],
+    "running_servers": {},
     "pending_requests": [],
     "current_id": 1
 })

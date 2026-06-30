@@ -61,7 +61,7 @@ def socket_func(thread:thread_socket_wrapper):
         case _:
             thread.print(f"There are no functions for code {data_packet.code}")
 
-    if (return_data):
+    if (return_data is not None):
         thread.send(response(id, return_data, code), target=from_address)
 
     if (incoming_data):
