@@ -31,26 +31,26 @@ class thread_socket_wrapper(thread_wrapper):
 
         super().__init__(target, init, on_close, terminate_signal, name, data_handler, sleeptime)
 
-    def send(self, data:packet|None, code:int=None, target:tuple[str, int]=None):
+    def send(self, data_packet:packet|None, code:int=None, target:tuple[str, int]=None):
         target_address = target or self.target_address
 
         if (not target_address):
             raise ValueError("Target address not defined, in class or function")
         
         if code:
-            data.set_data_code(code)
+            data_packet.set_data_code(code)
 
-        if data._type == packet_types.BATCH or data._type == packet_types.BATCH_HEADER:
-            self.socket.sendto(_encode(data), target_address)
+        if data_packet._type == packet_types.BATCH or data_packet._type == packet_types.BATCH_HEADER:
+            self.socket.sendto(_encode(data_packet), target_address)
             return
 
-        encoded_data = dumps(data.data)
+        encoded_data = dumps(data_packet.data)
         data_size = len(encoded_data)
 
         if data_size > BUFFER_SIZE:
-            self._chunk_and_send_data(data, data_size, target_address)
+            self._chunk_and_send_data(data_packet, data_size, target_address)
         else:
-            self.socket.sendto(_encode(data), target_address)
+            self.socket.sendto(_encode(data_packet), target_address)
 
     def recv(self):       
         try:
@@ -71,7 +71,7 @@ class thread_socket_wrapper(thread_wrapper):
             return None, None
 
     def send_recv(self, data:packet|None, code:int=None) -> response|None:
-        self.send(data=data, code=code)
+        self.send(data_packet=data, code=code)
         new_data, _ = self.recv()
 
         return new_data
@@ -97,33 +97,30 @@ class thread_socket_wrapper(thread_wrapper):
             if (decoded_batch_data.sequence != i):
                 self.print(f"Something went wrong, got sequnce number {decoded_batch_data.sequence} at place {i}")
 
-            BATCH_BUFFER.append(decoded_batch_data)
+            BATCH_BUFFER.append(decoded_batch_data.data)
         self.socket.recvfrom(BUFFER_SIZE)
 
         return response(batch_header_packet.id, self._dechunk_data(BATCH_BUFFER), batch_header_packet.code), address
 
-    def _chunk_and_send_data(self, data:packet, data_size:int, target_address:tuple[str, int]):
-        max_data_size = ceil(BUFFER_SIZE * 0.9)
+    def _chunk_and_send_data(self, data_packet:packet, data_size:int, target_address:tuple[str, int]):
+        max_data_size = ceil(BUFFER_SIZE * 0.8)
         total_batches = ceil(data_size / max_data_size) # "done" confirmation packet
 
-        self.send_recv(batch_header(data.id, data.code, total_batches)) # ask to open for a batch
+        self.send_recv(batch_header(data_packet.id, data_packet.code, total_batches)) # ask to open for a batch
 
-        str_data = dumps(data.data)
+        str_data = data_packet.data
 
         for i in range(total_batches):
             start = max_data_size * i
             end =  max_data_size * (i+1)
 
-            self.send(batch(str_data[start:end], i))
-        self.send(response(packet.id, "", Server_codes.OK), target=target_address)
+            data_segment = str_data[start:end]
+
+            self.send(batch(data_segment, i))
+        self.send(response(data_packet.id, "", Server_codes.OK), target=target_address)
 
     def _dechunk_data(self, batched_data):
-        full_data = ""
-
-        for batch in batched_data:
-            full_data += batch.data
-
-        return full_data
+        return "".join(batched_data)
 
 def _encode(data: Any) -> bytes:
     return dumps(data, cls=encoder).encode("utf-8")

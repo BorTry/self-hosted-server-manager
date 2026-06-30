@@ -3,6 +3,8 @@ from src.lib import request
 
 import queue
 
+MAX_CLIENT_QUEUE_SIZE = 100
+
 def get_next_id():
     with DATA_HANDLER as data:
         id = data["current_id"]
@@ -12,7 +14,7 @@ def get_next_id():
 
 def _add_subscriber(session_id:int):
     with DATA_HANDLER as data:
-        data["subscribers"][session_id] = queue.Queue(maxsize=10)
+        data["subscribers"][session_id] = queue.Queue(maxsize=MAX_CLIENT_QUEUE_SIZE)
 
         return data["subscribers"][session_id] # return the queue
     
@@ -28,8 +30,8 @@ def create_web_stream(session_id):
             while True:
                 msg = queue.get()
 
-                yield "event: update\n"
-                yield f'data: {msg}\n\n'
+                yield f'event: {msg["type"]}\n'
+                yield f'data: {msg["data"]}\n\n'
         finally:
             queue.close()
 

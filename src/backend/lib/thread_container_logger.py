@@ -1,19 +1,21 @@
 from src.lib import thread_wrapper, thread_socket_wrapper, Server_codes, CONSTANTS, response, thread_data_handler
 
 from python_on_whales import docker
-from datetime import datetime
+from datetime import datetime, timedelta
 from threading import Event
+
+from json import dumps
 
 LOGGER_THREAD_SLEEP_TIME = 5
 
 def logger_func(thread:thread_socket_wrapper):
     if not thread["full_logs"]:
-        thread["full_logs"] = docker.logs(container=thread["server_name"])
-        thread["last_check"] = datetime.now()
-        return
+        last_30_min = thread["last_check"] - timedelta(minutes=30)
+        logs = docker.logs(container=thread["server_name"], since=last_30_min)
+    else:
+        logs = docker.logs(container=thread["server_name"], since=thread["last_check"])
 
-    logs = docker.logs(container=thread["server_name"], since=thread["last_check"])
-    thread["last_check"] = datetime.now()
+    thread["last_check"] = datetime.now() - timedelta(seconds=1)
 
     if not logs: return
 
@@ -23,10 +25,10 @@ def logger_func(thread:thread_socket_wrapper):
 
     for session_id in global_session_ids:
         if not (session_id in thread["session_ids"]):
-            thread.send(response(session_id, {"logs":f'{thread["full_logs"]!r}'}, Server_codes.LOG_CONTAINER))
+            thread.send(response(session_id, thread["full_logs"], Server_codes.LOG_CONTAINER))
             thread["session_ids"].add(session_id)
         else:
-            thread.send(response(session_id, {"logs":logs}, Server_codes.LOG_CONTAINER))
+            thread.send(response(session_id, logs, Server_codes.LOG_CONTAINER))
 
 def logger_init(thread:thread_socket_wrapper):
     thread["full_logs"] = ""

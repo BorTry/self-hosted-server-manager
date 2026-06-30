@@ -54,7 +54,7 @@ def socket_func(thread:thread_socket_wrapper):
 
         case Server_codes.LOG_CONTAINER:
             code = Server_codes.OK
-            return_data = f"Recieved log request for container {data["server_name"]}"
+            return_data = ""
             incoming_data = data_packet
             from_address = None
 

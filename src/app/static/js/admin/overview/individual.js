@@ -9,14 +9,48 @@ var METRICS = []
 var TIME_BETWEEN = 15 // default
 
 const SERVER_STREAM = new EventSource("/api/admin/get_logs/"+SERVER_NAME)
+const element_log = document.getElementById("server-logs")
+const indent_reg2 = new RegExp("^\\t")
 
 SERVER_STREAM.addEventListener("update", (event) => {
-    console.log(event.data)
+    let len = event.data.length
+    clean_and_add_log(event.data.slice(1, len - 2))
+})
+
+var STREAM_BATCH = []
+
+SERVER_STREAM.addEventListener("batch", (event) => {
+    let len = event.data.length
+    STREAM_BATCH.push(event.data.slice(1, len - 2))
+})
+
+SERVER_STREAM.addEventListener("end", (event) => {
+    console.log("LIGMA")
+    const parsed_data = STREAM_BATCH.join("")
+    clean_and_add_log(parsed_data)
+
+    STREAM_BATCH = []
 })
 
 SERVER_STREAM.addEventListener("close", (event) => {
     SERVER_STREAM.close()
 })
+
+function clean_and_add_log(text) {
+    const split_logs = text.split("\\n")
+    const frag = document.createDocumentFragment()
+
+    for (const data_segment of split_logs) {
+        const indent_reg = new RegExp("^s+S*")
+        const element = document.createElement("div")
+        element.className = "element-log-item"
+        element.className += /^\\t/.test(data_segment) ? " element-log-indent" : ""
+        element.innerText = data_segment.replace("\\t", "").replace("\\", "")
+        frag.appendChild(element)
+    }
+
+    element_log.appendChild(frag)
+}
 
 async function get_data() {
     METRICS = await fetch("/api/admin/metrics/"+SERVER_NAME, {
