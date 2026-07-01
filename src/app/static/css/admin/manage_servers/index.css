@@ -1,5 +1,4 @@
 #main-content {
-    display: block;
     color: whitesmoke;
 }
 
@@ -22,6 +21,10 @@
 .dropdown > form {
     display: grid;
     gap: 2vh;
+}
+
+.dropdown-container {
+    height: 10vh;
 }
 
 form {

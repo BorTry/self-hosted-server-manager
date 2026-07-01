@@ -48,7 +48,7 @@
 }
 
 .dropdown-container {
-    height: var(--list-height) !important;
+    height: var(--list-height);
     border-radius: 8px 8px 8px 8px;
     border: 0.25vh solid;
     border-color: var(--offline);
