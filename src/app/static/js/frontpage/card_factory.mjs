@@ -13,7 +13,7 @@ function create_hidden_page(name, launch_options) {
     form.addEventListener("submit", async (e) => {
         e.preventDefault();
         
-        document.getElementById(`${name}-image`).style.borderColor = "var(--waiting)"
+        document.getElementById(name).style.borderColor = "var(--waiting)"
         let change = e.submitter.name
         
         let formData = new FormData(e.target);

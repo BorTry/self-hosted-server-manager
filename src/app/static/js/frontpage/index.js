@@ -3,6 +3,7 @@ import update_gauge from "../modules/gauge.mjs"
 
 var RUNNING_SERVERS = []
 var ALL_SERVERS = []
+const PREV_STATES = {}
 
 // set an interval to get server data
 setInterval(async function() {
@@ -52,9 +53,13 @@ async function change_live_servers() {
         let is_online = Object.hasOwn(server_stats, server_name)
         let server_entry = server_stats[server_name]
 
+        if (PREV_STATES[server_name] === is_online) continue
+
+        PREV_STATES[server_name] = is_online
+
         change_server_status(server_name, is_online)
-        update_gauge(`cpu-gauge-${server_name}`, is_online ? server_entry.cpu : 0)
-        update_gauge(`ram-gauge-${server_name}`, is_online ? server_entry.ram : 0)
+        update_gauge(`cpu-gauge-${server_name}`, server_entry ? server_entry.cpu : 0)
+        update_gauge(`ram-gauge-${server_name}`, server_entry ? server_entry.ram : 0)
     }
 }
 
