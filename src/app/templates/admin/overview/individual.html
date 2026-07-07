@@ -49,9 +49,19 @@
                             <div id="stats">
                                 <!-- Stats of the container, online, suspected failures/warnings (temp/cpu/ram/traffic)? -->
                                 <div>
-                                    <div class="inline-text-container">
-                                        <p>Server Status: </p>
-                                        <p id="server-status"></p>
+                                    <div class="inline-text-container spacing">
+                                        <div class="inline-text-container small-spacing">
+                                            <p>Server Status: </p>
+                                            <p id="server-status"></p>
+                                        </div>
+                                        <div class="inline-text-container small-spacing">
+                                            <p>Server Ports:</p>
+                                            <div class="inline-text-container">
+                                                {% for port in ports %}
+                                                    <p class="offline">{{ port }}</p>
+                                                {% endfor %}
+                                            </div>
+                                        </div>
                                     </div>
                                     <p>Server Warnings:</p>
                                     {{ element_log("server-warnings") }}

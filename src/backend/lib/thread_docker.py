@@ -71,7 +71,7 @@ def docker_init(thread:thread_wrapper):
     thread["save_interval"] = timedelta(seconds=CONSTANTS.METRICS_INTERVAL)
     thread["last_save"] = datetime.now()
 
-    add_containers_to_db(CONTAINERS[Server_codes.ALL_SERVERS]["servers"], get_resource_limit_containers())
+    add_containers_to_db(thread, CONTAINERS[Server_codes.ALL_SERVERS]["servers"], get_resource_limit_containers())
 
     with thread.data_handler as data:
         data["data"] = CONTAINERS
@@ -81,7 +81,7 @@ def docker_on_close(thread:thread_wrapper):
         for logger_name in thread["logger_threads"]:
             thread["logger_threads"][logger_name].terminate()
 
-def add_containers_to_db(containers, limits):  
+def add_containers_to_db(thread:thread_wrapper, containers, limits):  
     with SessionLocal() as session:
         port_types_rows = session.execute(select(port_type)).mappings().all()
         port_type_mapping = {}
@@ -93,22 +93,33 @@ def add_containers_to_db(containers, limits):
             query = select(container).where(container.name == container_el)
             entry = session.scalars(query).first()
 
-            if (entry): continue
-            
-            container_db_entry = container(
-                name = container_el,
-                ram_limit = limits[container_el]["ram_limit"],
-                cpu_limit = limits[container_el]["cpu_limit"], 
-            )
-            session.add(container_db_entry)
-            session.flush()
-
-            if len(limits[container_el]["ports"]):
-                mapping_db_entry = ports_mapping(server_id=container_db_entry.id)
-                session.add(mapping_db_entry)
+            if (not entry): 
+                entry = container(
+                    name = container_el,
+                    ram_limit = limits[container_el]["ram_limit"],
+                    cpu_limit = limits[container_el]["cpu_limit"], 
+                )
+                session.add(entry)
                 session.flush()
 
+
+            if len(limits[container_el]["ports"]):
+                existing_ports_query = select(ports.host_port) \
+                    .join(ports_mapping, ports_mapping.id == ports.mapping_id) \
+                    .where(ports_mapping.server_id == entry.id)
+                
+                rows = session.execute(existing_ports_query).mappings().all()
+                existing_ports = [row["host_port"] for row in rows]
+
                 for port in limits[container_el]["ports"]:
+                    if int(port["host_port"]) in existing_ports: 
+                        thread.print(f"post {port['host_port']} already exists for container {entry.name}. Skipping")
+                        continue
+
+                    mapping_db_entry = ports_mapping(server_id=entry.id)
+                    session.add(mapping_db_entry)
+                    session.flush()
+
                     session.add(ports(
                         mapping_id=mapping_db_entry.id,
                         container_port=port["container_port"],

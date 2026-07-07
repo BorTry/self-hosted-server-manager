@@ -81,6 +81,22 @@ body {
     font-weight: bold;
 }
 
+.spacing {
+    gap: 2vw;
+}
+
+.small-spacing {
+    gap: 0.5vw;
+}
+
+.offline {
+    color: var(--offline);
+}
+
+.online {
+    color: var(--online)
+}
+
 .inline-text-container {
     display: flex;
     flex-wrap: nowrap;

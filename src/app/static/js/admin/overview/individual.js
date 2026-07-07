@@ -161,12 +161,12 @@ async function main() {
 
     setInterval(async function() {
         let server_status = await is_server_running()
-        server_status_element.style.color = server_status.message ? "var(--online)" : "var(--offline)"
+        server_status_element.className = server_status.message ? "online" : "offline"
         server_status_element.innerText = server_status.message ? "Online" : "Offline"
     }, TIME_BETWEEN * 1000)
-
+    
     let server_status = await is_server_running()
-    server_status_element.style.color = server_status.message ? "var(--online)" : "var(--offline)"
+    server_status_element.className = server_status.message ? "online" : "offline"
     server_status_element.innerText = server_status.message ? "Online" : "Offline"
 }
 

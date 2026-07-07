@@ -43,7 +43,7 @@ def socket_func(thread:thread_socket_wrapper):
 
         case Server_codes.ADD_CONTAINER:
             code = Server_codes.OK
-            return_data = f"Recieved data for new container {data["server_name"]}"
+            return_data = f"Recieved data for new container {data['server_name']}"
             incoming_data = data_packet
             from_address = None
             # quickly verify the data, add to db, and pass on to docker thread

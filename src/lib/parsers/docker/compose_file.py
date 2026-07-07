@@ -38,7 +38,7 @@ class compose_file:
         final_str = ""
 
         for att in self.top_level_entries:
-            final_str += f"{getattr(self, att, "")!r}"
+            final_str += f"{getattr(self, att, '')!r}"
 
         return final_str
 

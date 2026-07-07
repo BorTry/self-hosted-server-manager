@@ -38,7 +38,8 @@ class grouping:
             self.grouping_entries[entry] = grouping.NAME_CLASS_MAPPING[self.grouping_type](name=entry,**tmp)
 
     def __repr__(self):
-        final_str = f"{self.grouping_type}: {"\n" if self.grouping_type != "name" else ""}"
+        start = '\n' if self.grouping_type != 'name' else ''
+        final_str = f"{self.grouping_type}: {start}"
         
         for entry_name in self.grouping_entries:
             final_str += f"{self.grouping_entries[entry_name]!r}\n"

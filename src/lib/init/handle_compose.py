@@ -7,15 +7,15 @@ from .. import compose_file
 CHUNK_SIZE = 4096
 
 MAPPING = {
+    "base": "./resources/compose_files/docker-base-compose.yaml",
     "server": "./resources/compose_files/docker-game-compose.yaml",
-    "frontend": "./resources/compose_files/docker-frontend-compose.yaml",
-    "base": "./resources/compose_files/docker-base-compose.yaml"
+    "frontend": "./resources/compose_files/docker-frontend-compose.yaml"
 }
 
 COMPOSE_MSG = {
+    "base": "Setting up base image...",
     "server": "Setting up user servers...",
-    "frontend": "Setting up frontend servers...",
-    "base": "Setting up base image..."
+    "frontend": "Setting up frontend servers..."
 }
 
 def check_compose_files(json_hash_obj):   

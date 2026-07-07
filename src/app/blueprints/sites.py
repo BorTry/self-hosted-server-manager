@@ -7,6 +7,10 @@ from src.app.lib import SEND_SOCKET_THREAD, get_next_id
 from src.lib import Server_codes, request
 from ..lib import limiter, get_user_ip
 
+from src.db.mappings import servers_view
+from src.db.db import SessionLocal
+from sqlalchemy import select
+
 MAX_ATTEMPTS = 3
 ATTEMPT_TIME_DELTA = 10 # minutes
 
@@ -106,9 +110,19 @@ class admin_individual_overview(MethodView):
         if login_confirmed == False: return make_response("You dont have access", 405)
         if login_confirmed == None: return make_response("Something went wrong", 404)
 
-        html = render_template("admin/overview/individual.html", server_name=site, types=ALL_GRAPH_TYPES)
+        query = select(servers_view.host_port).where(servers_view.name == site)
+
+        with SessionLocal() as session:
+            rows = session.execute(query).mappings().all()
+
+        ports = []
+
+        for row in rows:
+            ports.append(row["host_port"])
+
+        html = render_template("admin/overview/individual.html", server_name=site, types=ALL_GRAPH_TYPES, ports=ports)
         return make_response(html, 200)
-    
+
 def confirm_api_login():
     if (not ("username" in session) or not ("password" in session)): return False
 
