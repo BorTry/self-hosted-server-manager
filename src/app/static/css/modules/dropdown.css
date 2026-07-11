@@ -1,7 +1,3 @@
-.active {
-    height: calc-size(auto, size + 0px) !important;
-}
-
 .dropdown {
     height: 100%;
     position: relative;
