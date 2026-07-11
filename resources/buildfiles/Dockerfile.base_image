@@ -7,3 +7,5 @@ RUN apt-get update && \
 RUN useradd -m server_user
 
 COPY ./entrypoint.sh /entrypoint.sh
+
+RUN chmod 655 ./entrypoint
