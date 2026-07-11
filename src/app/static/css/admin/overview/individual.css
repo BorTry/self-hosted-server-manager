@@ -11,6 +11,13 @@ body {
     padding-bottom: 2.5vh;
     overflow: hidden;
 }
+
+@media (min-width: 2000px) {
+    .content-container {
+        width: 60vw;
+    }
+}
+
 /**/
 
 .header-container {
@@ -69,6 +76,18 @@ body {
     font-size: 1.4rem;
 }
 
+#stats > div > .inline-text-container {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    width: 70%;
+    justify-items: center;
+    margin: auto;
+}
+
+#stats > div > p {
+    text-align: center;
+}
+
 /* ================ logs ================ */
 
 #logs {
@@ -76,8 +95,16 @@ body {
     justify-content: center;
 }
 
-.element-log-container:has(#server-logs) {
-    width: 60vw !important;
+@media (max-width: 1999px) {
+    .element-log-container:has(#server-logs) {
+        width: 60vw !important;
+    }
+}
+
+@media (min-width: 2000px) {
+    .element-log-container:has(#server-logs) {
+        width: 50vw !important;
+    }
 }
 
 .element-log-indent {
