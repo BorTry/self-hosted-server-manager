@@ -48,6 +48,9 @@ class thread_wrapper:
     def log(self, *msg:tuple[str]):
         self.logger.print(*msg)
 
+    def is_alive(self):
+        return not self.terminate_signal.is_set() and self.thread.is_alive()
+
     def terminate(self):
         print(datetime.now(timezone.utc).strftime("[%H:%M:%S]"), self.thread.name, "->", "Stopping", flush=True)
 
@@ -58,6 +61,11 @@ class thread_wrapper:
         if self.thread and self.thread.is_alive():
             print(datetime.now(timezone.utc).strftime("[%H:%M:%S]"), self.name, "->", f'Waiting for {self.thread.name} to terminate', flush=True)
             self.thread.join()
+
+    def terminate_next_cycle(self):
+        # should only be run on threads that dont share terminate signals
+        self.terminate_signal.set()
+        self.print("Stopping next cycle")
 
     def run(self):
         self.print(f"Starting {self.name}")

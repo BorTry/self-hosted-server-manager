@@ -52,7 +52,7 @@ def socket_func(thread:thread_socket_wrapper):
         case Server_codes.CHANGE_CONTAINER:
             pass
 
-        case Server_codes.LOG_CONTAINER:
+        case Server_codes.LOG_CONTAINER|Server_codes.STOP_LOG_CONTAINER:
             code = Server_codes.OK
             return_data = ""
             incoming_data = data_packet

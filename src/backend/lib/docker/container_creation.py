@@ -33,9 +33,9 @@ def try_to_add_container(thread:thread_wrapper, compose_args) -> bool:
     new_container["entrypoint"] = ["/entrypoint.sh"]
 
     if (False):
-        # create a docer buildfile if the image need any extra dependencies
+        # create a docker buildfile if the image need any extra dependencies
         new_container["build"] = {"context": "../buildfiles", "dockerfile": f"Dockerfile.{server_name}"}
-    
+
     TEMP_COMPOSE_FILE.add_service(new_container)
     TEMP_COMPOSE_FILE.write_to_file()
 

@@ -8,6 +8,12 @@ const MIN_TIME_DIFF = 1.4
 var METRICS = []
 var TIME_BETWEEN = 15 // default
 
+window.addEventListener("pageshow", function (event) {
+    if (event.persisted) {
+        window.location.reload()
+    }
+})
+
 async function get_data() {
     METRICS = await fetch("/api/admin/metrics", {
         method: "GET"

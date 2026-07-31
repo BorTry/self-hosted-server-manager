@@ -48,10 +48,14 @@ def docker_func(thread:thread_wrapper):
                 server_name = data_packet.data["server_name"]
                 container_name = convert_server_name(server_name)
 
-                if not (container_name in thread["logger_threads"]):
-                    generate_new_log_thread(thread, container_name, data_packet.id)
+                generate_new_log_thread(thread, container_name)
 
                 add_session_id(thread["logger_threads"][container_name], data_packet.id)
+
+            case Server_codes.STOP_LOG_CONTAINER:
+                thread.print(data_packet.data["id"], data_packet.data)
+                thread.print("Removing id from loggers")
+                remove_session_id(thread, data_packet.data["id"])
 
             case Server_codes.CHANGE_CONTAINER:
                 pass
@@ -145,13 +149,22 @@ def add_resources_to_db(resources):
 
         session.commit()
 
-def generate_new_log_thread(thread:thread_wrapper, server_name:str, session_id:int):
-    thread.print(f'Generating new thread for server: {server_name}')
+def generate_new_log_thread(thread:thread_wrapper, container_name:str):
+    if not (container_name in thread["logger_threads"]):
+        thread.print(f'Generating new thread for server: {container_name}')
 
-    try:
-        log_thread = logger_generator(server_name, thread.terminate_signal)
-    except Exception as e:
-        thread.print(f'got an error while setting up new log thread for server: {server_name}\n{e!r}')
-        return
+        try:
+            log_thread = logger_generator(container_name)
+        except Exception as e:
+            thread.print(f'got an error while setting up new log thread for server: {container_name}\n{e!r}')
+            return
 
-    thread["logger_threads"][server_name] = log_thread
+        thread["logger_threads"][container_name] = log_thread
+    else:
+        # container references might exist, but not run currently
+        log_thread = thread["logger_threads"][container_name]
+
+        if (log_thread.is_alive()): return
+
+        thread["logger_threads"][container_name] = log_thread.get_new_instance()
+        thread["logger_threads"][container_name].run()

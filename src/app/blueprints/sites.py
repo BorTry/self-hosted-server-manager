@@ -75,13 +75,15 @@ class admin_page(MethodView):
 
         if login_confirmed == None: return make_response("Something went wrong", 404)
 
-        if (session.get("session_id", None) == None):
-            session["session_id"] = get_next_id() 
-
         if (login_confirmed == False):
             session.pop("username", None)
             session.pop("password", None)
             return make_response("You dont have access", 405)
+
+        if (session.get("session_id", None) == None):
+            session["session_id"] = get_next_id() 
+
+        SEND_SOCKET_THREAD.send(request(None, {"id":session["session_id"]}, Server_codes.STOP_LOG_CONTAINER))
 
         match site:
             case "logout":
@@ -96,6 +98,7 @@ class admin_page(MethodView):
             
             case _:
                 html = render_template(f'admin/{site}/index.html')
+
                 return make_response(html, 200)
         
 @blp.route("/admin/overview/<string:site>")
