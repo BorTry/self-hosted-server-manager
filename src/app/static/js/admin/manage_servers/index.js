@@ -21,6 +21,7 @@ ADD_SERVER_FORM.addEventListener("submit", (e) => {
 })
 
 function toggle_input(listen_id, toggle_ids) {
+    // toggles the toggle inputs based on the listen id
     let listen_element = document.getElementById(listen_id)
     let toggle_elements = []
 
@@ -37,6 +38,7 @@ function toggle_input(listen_id, toggle_ids) {
 }
 
 function update_slider_output(slider_id, unit) {
+    // updates the number on the slider while its being used
     let slider_element = document.getElementById(slider_id)
     let bubble = document.getElementById("out_"+slider_id)
 

@@ -1,3 +1,6 @@
+{% from "admin/manage_server/add_server_form.html" import add_server_form %}
+{% from "admin/manage_server/change_server_form.html" import change_server_form %}
+
 <!DOCTYPE html>
 <html>
     <head>
@@ -11,8 +14,8 @@
         <link rel="stylesheet" href="{{ url_for('static', filename='css/admin/manage_servers/index.css') }}">
         <link rel="stylesheet" href="{{ url_for('static', filename='css/modules/dropdown.css') }}">
 
-        <script type="module" src="{{ url_for('static', filename='js/modules/dropdown.js') }}"></script>
         <script type="module" src="{{ url_for('static', filename='js/admin/manage_servers/index.js') }}"></script>
+        <script type="module" src="{{ url_for('static', filename='js/admin/manage_servers/dropdown_switch.js') }}"></script>
     </head>
     <body>
         <div id="main-content-container">
@@ -28,125 +31,41 @@
             </div>
             <div id="main-content" class="main-body transparent-background">
                 <div class="content-container shadow round-border">
-                    <div class="dropdown-container">
-                        <div class="dropdown-title">
-                            <div>
-                                <div class="title">Change Servers</div>
-                                 <div class="center-content">
-                                    <div class="divider"></div>
+                    <div id="server-forms">
+                        <div id="dropdown-titles">
+                            <div id="add_server" class="dropdown-title round-border">
+                                <div>
+                                    <div class="title">Add Server</div>
+                                </div>
+                            </div>
+                            <div id="change_server" class="dropdown-title round-border">
+                                <div>
+                                    <div class="title">Change Servers</div>
                                 </div>
                             </div>
                         </div>
-                        <div class="dropdown">
-                            <div>ooga</div>
-                            <div>ooga</div>
-                            <div>ooga</div>
-                            <div>ooga</div>
-                            <div>ooga</div>
-                            <div>ooga</div>
-                            <div>ooga</div>
-                            <div>ooga</div>
-                            <div>ooga</div>
-                            <div>ooga</div>
-                            <div>ooga</div>
-                            <div>ooga</div>
-                            <div>ooga</div>
-                            <div>ooga</div>
-                            <div>ooga</div>
-                            <div>ooga</div>
-                            <div>ooga</div>
-                            <div>ooga</div>
-                            <div>ooga</div>
-                            <div>ooga</div>
-                            <div>ooga</div>
+                        <div class="center-content">
+                            <div class="divider"></div>
+                        </div>
+                        <div id="dropdown-menus">
+                            <div id="change_server_dropdown" class="dropdown-container">
+                                <div class="dropdown">
+                                    {{ change_server_form() }}
+                                </div>
+                            </div>
+                            <div id="add_server_dropdown" class="dropdown-container">
+                                <div class="dropdown">
+                                    {{ add_server_form() }}
+                                </div>
+                            </div>
                         </div>
                     </div>
-                </div>
-                <div class="content-container shadow round-border">
-                    <div class="dropdown-container">
-                        <div class="dropdown-title">
-                            <div>
-                                <div class="title">Add Server</div>
-                                <div class="center-content">
-                                    <div class="divider"></div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="dropdown">
-                            <form id="add_server_form" class="round-border">
-                                <div>
-                                    <div class="inner-form-container">
-                                        <div class="text-container">
-                                            <div>
-                                                <label for="server_name">Server Name:</label>
-                                                <input id="server_name" name="server_name" type="text" required>
-                                            </div>
-                                            <div>
-                                                <label for="ports">Ports:</label>
-                                                <input id="ports" name="ports" type="text" required>
-                                            </div>
-                                        </div>
-                                    </div>
-                                <div class="divider"></div>
-                                </div>
-                                <div>
-                                    <div class="inner-form-container check-list">
-                                        <label for="restrict_ports">Restrict ports:</label>
-                                        <input id="restrict_ports" name="restrict_ports" type="checkbox">
-                                        <label for="port_type">Port type:</label>
-                                        <select id="port_type" name="port_type" disabled>
-                                            <option>TCP</option>
-                                            <option>UDP</option>
-                                        </select>
-                                        <label for="strict_ports">Strict ports:</label>
-                                        <input id="strict_ports" name="strict_ports" type="checkbox">
-                                        <label for="forward_ports">Try to port forwards:</label>
-                                        <input id="forward_ports" name="forwards_ports" type="checkbox" checked>
-                                        <label for="steam_server">Steam server:</label>
-                                        <input id="steam_server" name="steam_server" type="checkbox">
-                                        <label for="steam_id">Steam id:</label>
-                                        <input id="steam_id" name="steam_id" type="text" disabled>
-                                    </div>
-                                </div>
-                                <div>
-                                    <div class="inner-form-container slider-list">
-                                        <div>
-                                            <label for="cpu_limit">Cpu cores:</label>
-                                            <input id="cpu_limit" name="cpu_limit" type="range" min="1" max="6" step="1" value="2">
-                                            <output id="out_cpu_limit">2 Cores</output>
-                                        </div>
-                                        <div>
-                                            <label for="ram_limit">Ram limit:</label>
-                                            <input id="ram_limit" name="ram_limit" type="range" min="0.25" max="16" step="0.25" value="2">
-                                            <output id="out_ram_limit">2GB</output>
-                                        </div>
-                                    </div>
-                                    <div class="divider"></div>
-                                </div>
-                                <div>
-                                    <div class="inner-form-container">
-                                        <div class="text-container">
-                                            <label for="launch_opt">Launch command:</label>
-                                            <textarea type="text" id="launch_opt" name="launch_opt" type="text" class="text_input" required></textarea>
-                                            <label for="install_opt">Install command:</label>
-                                            <textarea type="text" id="install_opt" name="install_opt" type="text" class="text_input"></textarea>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div>
-                                    <div class="inner-form-container">
-                                        <div>
-                                            <label for="image">Choose an image:</label>
-                                            <input type="file" id="image" name="image" accept="image/png, image/jpeg">
-                                        </div>
-                                    </div>
-                                    <div class="divider"></div>
-                                </div>
-                                <div>
-                                    <button type="submit" value="">Add server</button>
-                                </div>
-                            </form>
-                        </div>
+                    <div id="job-queue-list">
+                        <div class="job-queue-item"></div>
+                        <div class="job-queue-item"></div>
+                        <div class="job-queue-item"></div>
+                        <div class="job-queue-item"></div>
+                        <div class="job-queue-item"></div>
                     </div>
                 </div>
             </div>

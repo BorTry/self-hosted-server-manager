@@ -136,7 +136,7 @@ class addContainer(MethodView):
         if (session_id == None): 
             return make_response("No session ID", 403)
 
-        stream = create_web_stream()
+        stream = create_web_stream(session_id)
 
         return Response(stream(), status=200, mimetype="text/event-stream")
 
