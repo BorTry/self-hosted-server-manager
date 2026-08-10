@@ -8,7 +8,7 @@ from ..logger import get_logger
 from datetime import datetime, timezone
 
 class thread_wrapper:
-    __slots__ = ("name", "logger", "on_close", "target", "stdout", "sleep_time", "thread", "terminate_signal", "return_val", "data_handler", "init", "_data")
+    __slots__ = ("name", "logger", "on_close", "target", "stdout", "sleep_time", "thread", "terminate_signal", "data_handler", "init", "_data")
 
     def __init__(self, target:Callable=None, init:Callable=None, on_close:Callable=None, terminate_signal:Event=None, name="thread", data_handler:thread_data_handler=None, sleep_time:float=0.1):
         self.name = name
@@ -20,7 +20,6 @@ class thread_wrapper:
         self.target = target
         self.thread = Thread(target=thread_function_wrapper(self, target), name=name)
         self.terminate_signal = terminate_signal or Event()
-        self.return_val = None
 
         self.data_handler = data_handler
         self.logger = get_logger(name)
@@ -76,7 +75,7 @@ class thread_wrapper:
         self.thread.start()
 
     def get_new_instance(self):
-        return thread_wrapper(self.target, self.init, self.terminate_signal, self.name, self.data_handler, self.sleep_time)
+        return thread_wrapper(self.target, self.init, self.on_close, None, self.name, self.data_handler, self.sleep_time)
 
 def thread_function_wrapper(self:thread_wrapper, target:Callable):
     def wrap():

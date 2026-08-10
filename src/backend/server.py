@@ -49,7 +49,7 @@ SOCKET_THREAD = thread_socket_wrapper(
     terminate_signal=thread_terminate_event,
     data_handler=DATA,
     name="main_socket_thread",
-    sleeptime=0.1
+    sleep_time=0.1
 ) # Talks to the frontend
 
 def start_servers():

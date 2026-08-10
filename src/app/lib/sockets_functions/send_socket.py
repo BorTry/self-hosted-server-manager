@@ -11,7 +11,7 @@ def send_socket_func(thread:thread_socket_wrapper):
     packet = thread.send_recv(request(None, "", Server_codes.RUNNING_SERVERS))
 
     if packet != None:
-        if type(packet) == bool: return
+        if type(packet) == bool or type(packet.data) == bool: return
 
         with thread.data_handler as thread_data:
             if not packet.data:

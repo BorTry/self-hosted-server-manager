@@ -18,7 +18,7 @@ CONNECTION_TYPE = (AF_INET, SOCK_DGRAM)
 class thread_socket_wrapper(thread_wrapper):
     __slots__ = ("address", "target_address", "socket")
 
-    def __init__(self, target:Callable=None, init:Callable=None, on_close:Callable=None, address:tuple[str, int]=None, target_address:tuple[str, int]=None, data_handler:thread_data_handler=None, terminate_signal:Event=None, name:str="thread", sleeptime:float=0.0):
+    def __init__(self, target:Callable=None, init:Callable=None, on_close:Callable=None, address:tuple[str, int]=None, target_address:tuple[str, int]=None, data_handler:thread_data_handler=None, terminate_signal:Event=None, name:str="thread", sleep_time:float=0.0):
         self.target_address = target_address
         self.address = address
 
@@ -29,7 +29,7 @@ class thread_socket_wrapper(thread_wrapper):
 
         self.socket.settimeout(0.25)
 
-        super().__init__(target, init, on_close, terminate_signal, name, data_handler, sleeptime)
+        super().__init__(target, init, on_close, terminate_signal, name, data_handler, sleep_time)
 
     def send(self, data_packet:packet|None, code:int=None, target:tuple[str, int]=None):
         target_address = target or self.target_address
@@ -83,7 +83,7 @@ class thread_socket_wrapper(thread_wrapper):
             self.socket.close()
 
     def get_new_instance(self):
-        return thread_socket_wrapper(self.target, self.init, self.address, self.target_address, self.terminate_signal, self.name, self.sleep_time)
+        return thread_socket_wrapper(self.target, self.init, self.on_close, self.address, self.target_address, self.data_handler, self.terminate_signal, self.name, self.sleep_time)
 
     def _recieve_batches(self, batch_header_packet:batch_header, address:tuple[str, int]):
         BATCH_BUFFER = []

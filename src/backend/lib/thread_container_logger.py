@@ -15,14 +15,14 @@ def logger_func(thread:thread_socket_wrapper):
 
     thread["last_check"] = datetime.now() - timedelta(seconds=1)
 
-    if (thread["last_log_time"] < (thread["last_check"] - timedelta(seconds=MAX_LOGGER_IDLE_TIME))):
+    global_session_ids = thread.data_handler.get_copy("session_ids")
+
+    if (thread["last_log_time"] < (thread["last_check"] - timedelta(seconds=MAX_LOGGER_IDLE_TIME)) and len(global_session_ids) == 0):
         thread.print("Closing thread: No traffic")
         thread.terminate_next_cycle()
         return
 
     if not logs: return
-
-    global_session_ids = thread.data_handler.get_copy("session_ids")
 
     if (len(global_session_ids) > 0):
         thread["last_log_time"] = thread["last_check"]
@@ -56,7 +56,7 @@ def logger_generator(container_name:str):
         init=logger_init,
         data_handler=data_handler,
         target_address=("localhost", 2024),
-        sleeptime=LOGGER_THREAD_SLEEP_TIME,
+        sleep_time=LOGGER_THREAD_SLEEP_TIME,
         name=f'log_thread_{container_name}'
     )
 
@@ -67,6 +67,9 @@ def logger_generator(container_name:str):
     return log_thread
 
 def add_session_id(thread:thread_socket_wrapper, session_id:int):
+    if type(thread.data_handler) == str:
+        print(thread.data_handler)
+    
     with thread.data_handler as data:
         data["session_ids"].add(session_id)
 

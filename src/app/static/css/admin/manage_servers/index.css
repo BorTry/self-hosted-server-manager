@@ -89,6 +89,7 @@ body {
     align-items: center;
     justify-items: center;
     grid-template-columns: repeat(3, 1fr);
+    overflow: hidden;
 }
 
 .job-queue-item:hover {
@@ -98,6 +99,14 @@ body {
 .error-container {
     display: none;
     grid-column: span 3;
+    padding: 1vh 0.5vw;
+    background-color: var(--secondary);
+    width: 95%;
+    margin-bottom: 2vh;
+}
+
+.error-container > p {
+    margin: 0;
 }
 
 form {

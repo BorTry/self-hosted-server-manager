@@ -4,7 +4,6 @@ const SERVER_STREAM = new EventSource("/api/admin/add_container")
 const job_queue = document.getElementById("job-queue-list")
 
 SERVER_STREAM.addEventListener("update", (event) => {
-    console.log(event.data)
     const data = JSON.parse(event.data)
 
     const status_element = document.getElementById("status_" + data.server_id)
@@ -17,6 +16,8 @@ SERVER_STREAM.addEventListener("update", (event) => {
         const element_container = document.getElementById("server_" + data.server_id)
 
         status_element.innerText = data.success ? "Success" : "Failed"
+        status_element.style.color = data.success ? "var(--online)" : "var(--offline)"
+
         element_container.dataset.done = true
 
         if (data.success) return
@@ -63,7 +64,7 @@ function create_job_element(data) {
 
 function create_error_box(server_id) {
     const box_div = document.createElement("div")
-    box_div.className = "error-container"
+    box_div.className = "error-container round-border shadow"
     
     const error_p = document.createElement("p")
     error_p.id = "error_" + server_id

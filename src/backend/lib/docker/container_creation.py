@@ -1,12 +1,15 @@
 from src.lib import thread_wrapper, compose_file, service, Server_codes
 
 from python_on_whales import DockerClient, DockerException
+from re import sub, DOTALL
 
 TEMP_COMPOSE_PATH = "./resources/compose_files/docker-temp-compose.yaml"
 MAIN_COMPOSE_PATH = "./resources/compose_files/docker-game-compose.yaml"
 
 TEMP_COMPOSE_FILE = compose_file(TEMP_COMPOSE_PATH)
 MAIN_COMPOSE_FILE = compose_file(MAIN_COMPOSE_PATH)
+
+DOCKER_AI_MSG_REG = r"\n?\x1b\[[0-9;]*mWhat's next:.*"
 
 def try_to_add_container(thread:thread_wrapper, compose_args) -> bool:
     server_name = compose_args["server_name"]
@@ -17,7 +20,7 @@ def try_to_add_container(thread:thread_wrapper, compose_args) -> bool:
         cpus=str(compose_args["cpu_limit"])+".0",
         mem_limit=compose_args["ram_limit"]+"GB",
         command=compose_args["launch_opt"],
-        image="alpine",
+        image="base_image",
         user="server_user:server_user",
         working_dir="/data",
     )
@@ -36,37 +39,25 @@ def try_to_add_container(thread:thread_wrapper, compose_args) -> bool:
 
     return_message = _test_new_container(thread, new_container)
 
+    TEMP_COMPOSE_FILE.remove_service(new_container.name)
+    TEMP_COMPOSE_FILE.write_to_file()
+
     return return_message
 
 def _test_new_container(thread:thread_wrapper, new_container:service):
     docker = DockerClient(compose_files=(TEMP_COMPOSE_PATH))
-    success = False
 
     try:
         docker.compose.build(services=(new_container.name), quiet=True)
-        success = True
-        thread.print("works")
     except DockerException as e:
-        print(e)
-
-    if not success:
-        return _generate_return_msg(True, "Container failed to compile -> Check your settings")
-
-    success = False
+        return _generate_return_msg(True, sub(DOCKER_AI_MSG_REG, '', f"Container failed to compile -> Check your settings\nError was: {e}", flags=DOTALL))
 
     try:
         docker.compose.up(services=(new_container.name), quiet=True)
-        success = True
-        thread.print("works 2")
     except DockerException as e:
-        print(e)
-    
-    docker.compose.down(services=(new_container.name))
-    TEMP_COMPOSE_FILE.remove_service(new_container.name)
-    TEMP_COMPOSE_FILE.write_to_file()
+        return _generate_return_msg(True, sub(DOCKER_AI_MSG_REG, '', f"Container failed to run -> Check your run command\nError was: {e}", flags=DOTALL))
 
-    if not success:
-        return _generate_return_msg(True, "Container failed to run -> Check your run command")
+    docker.compose.down(services=(new_container.name), quiet=True)
 
     #MAIN_COMPOSE_FILE.add_service(new_container)
     #MAIN_COMPOSE_FILE.write_to_file()

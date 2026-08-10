@@ -31,7 +31,7 @@ SEND_SOCKET_THREAD = thread_socket_wrapper(
     terminate_signal=TERMINATE_SIGNAL,
     data_handler=DATA_HANDLER,
     name="app_send_socket_thread",
-    sleeptime=2,
+    sleep_time=2,
 )
 
 LISTEN_SOCKET_THREAD = thread_socket_wrapper(
@@ -41,7 +41,7 @@ LISTEN_SOCKET_THREAD = thread_socket_wrapper(
     terminate_signal=TERMINATE_SIGNAL,
     data_handler=DATA_HANDLER,
     name="app_listen_socket_thread",
-    sleeptime=1,
+    sleep_time=1,
 )
 
 atexit.register(lambda _: TERMINATE_SIGNAL.set())

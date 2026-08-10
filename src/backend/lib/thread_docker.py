@@ -60,6 +60,8 @@ def docker_func(thread:thread_wrapper):
 
                 generate_new_log_thread(thread, container_name)
 
+                print(thread["logger_threads"][container_name])
+
                 add_session_id(thread["logger_threads"][container_name], data_packet.id)
 
             case Server_codes.STOP_LOG_CONTAINER:
