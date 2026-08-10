@@ -6,6 +6,8 @@ from src.db.mappings import metric_timestamp, traffic_metric, performance_metric
 from src.db.db import SessionLocal
 from sqlalchemy import select
 
+
+from json import dumps
 from datetime import timedelta, datetime
 
 CONTAINERS = [None] * 10
@@ -36,14 +38,22 @@ def docker_func(thread:thread_wrapper):
         match (data_packet.code):
             case Server_codes.START_SERVER:
                 start_server(data_packet.data["name"])
+
             case Server_codes.STOP_SERVER:
                 stop_server(data_packet.data["name"])
+
             case Server_codes.RESTART_SERVER:
                 restart_server(data_packet.data["name"])
+
             case Server_codes.ADD_CONTAINER:
                 response_data = try_to_add_container(thread, data_packet.data)
-                
+                response_data["data"]['name'] = data_packet.data["server_name"]
+                response_data["data"]['server_id'] = data_packet.data["server_id"]
+
+                response_data["data"] = dumps(response_data["data"])
+
                 responses.append(response(data_packet.id, **response_data))
+
             case Server_codes.LOG_CONTAINER:
                 server_name = data_packet.data["server_name"]
                 container_name = convert_server_name(server_name)

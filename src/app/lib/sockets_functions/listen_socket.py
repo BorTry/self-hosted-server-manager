@@ -7,7 +7,7 @@ MAX_MESSAGE_SIZE = 4096
 def listen_socket_func(thread:thread_socket_wrapper):
     response, _ = thread.recv()
 
-    if response is None: return
+    if response is None or response.id is None: return
 
     data_size = len(f"{response.data!r}".encode("utf-8"))
 
@@ -24,7 +24,7 @@ def listen_socket_func(thread:thread_socket_wrapper):
                 subscribers[response.id].put({"type":"batch", "data":f"{response.data[start:end]!r}"})
             subscribers[response.id].put({"type":"end", "data":""})
         else:
-            subscribers[response.id].put({"type":"update", "data":f"{response.data!r}"})
+            subscribers[response.id].put({"type":"update", "data":response.data})
 
 def listen_socket_init(thread:thread_socket_wrapper):
     pass

@@ -8,11 +8,6 @@ MAIN_COMPOSE_PATH = "./resources/compose_files/docker-game-compose.yaml"
 TEMP_COMPOSE_FILE = compose_file(TEMP_COMPOSE_PATH)
 MAIN_COMPOSE_FILE = compose_file(MAIN_COMPOSE_PATH)
 
-{
-    "failure": bool,
-    "failure_reason": str
-}
-
 def try_to_add_container(thread:thread_wrapper, compose_args) -> bool:
     server_name = compose_args["server_name"]
 
@@ -45,7 +40,6 @@ def try_to_add_container(thread:thread_wrapper, compose_args) -> bool:
 
 def _test_new_container(thread:thread_wrapper, new_container:service):
     docker = DockerClient(compose_files=(TEMP_COMPOSE_PATH))
-
     success = False
 
     try:
@@ -82,5 +76,5 @@ def _test_new_container(thread:thread_wrapper, new_container:service):
 def _generate_return_msg(failure:bool, message:str=None):
     return {
         "code": Server_codes.CONTAINER_FAILED if failure else Server_codes.CONTAINER_SUCCESS,
-        "data": message
+        "data": {'msg': message, 'success': not failure}
     }

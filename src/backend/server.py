@@ -1,7 +1,7 @@
 from threading import Event
 from time import sleep
 
-from src.backend.lib import socket_func, docker_func, docker_init, docker_on_close, stop_frontend, start_frontend, docker_running
+from src.backend.lib import socket_func, docker_func, docker_init, docker_on_close, stop_frontend, start_frontend, docker_running, socket_init
 from src.lib import thread_wrapper, thread_socket_wrapper, thread_data_handler
 from src.lib.init import init
 from src.lib.logger import logger, get_logger
@@ -43,6 +43,7 @@ CONTAINER_PORT = 2024
 
 SOCKET_THREAD = thread_socket_wrapper(
     target=socket_func,
+    init=socket_init,
     address=(ADDRESS, PORT),
     target_address=("localhost", 2024),
     terminate_signal=thread_terminate_event,

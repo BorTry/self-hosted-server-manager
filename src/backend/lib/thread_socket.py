@@ -5,6 +5,7 @@ from src.db.db import SessionLocal
 
 from sqlalchemy import select
 from datetime import datetime, timedelta
+from json import dumps
 
 TARGET_ADDRESS = None
 MAX_ATTEMPTS = 3
@@ -43,11 +44,13 @@ def socket_func(thread:thread_socket_wrapper):
 
         case Server_codes.ADD_CONTAINER:
             code = Server_codes.OK
-            return_data = f"Recieved data for new container {data['server_name']}"
+            return_data = dumps({"name": data['server_name'], "server_id":str(thread["current_server_id"])})
+            data_packet.data["server_id"] = str(thread["current_server_id"])
             incoming_data = data_packet
             from_address = None
+
+            thread["current_server_id"] += 1
             # quickly verify the data, add to db, and pass on to docker thread
-            #code = Server_codes.CONTAINER_FAILED
 
         case Server_codes.CHANGE_CONTAINER:
             pass
@@ -77,6 +80,9 @@ def socket_func(thread:thread_socket_wrapper):
                 thread.send(packet)
 
             data["responses"] = []
+
+def socket_init(thread:thread_socket_wrapper):
+    thread["current_server_id"] = 0
 
 def verify_login(data):
     if data["username"] != CONSTANTS.CREDENTIALS["username"] or data["password"] != CONSTANTS.CREDENTIALS["password"]: return Server_codes.BAD

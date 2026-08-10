@@ -12,12 +12,13 @@ body {
     height: auto;
     margin: 2vh;
     grid-template-columns: 1fr;
-    background: var(--main);
+    gap: 3vh;
 }
 
 #server-forms {
-    display: grid;
+    display: grid;    
     grid-template-columns: 1fr;
+    background: var(--main);
 }
 
 #dropdown-titles {
@@ -56,6 +57,47 @@ body {
 .dropdown > form {
     display: grid;
     gap: 2vh;
+}
+
+
+#job-queue-container {
+    background: var(--main);
+    display: grid;
+    grid-template-columns: 1fr;
+    justify-items: center;
+}
+
+#job-queue-list {
+    padding: 5vh 2.5vw;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    justify-items: center;
+    gap: 1vh 0;
+    width: 90%;
+}
+
+#job-queue-list:not(:has(> :nth-child(4))) {
+    grid-template-columns: 1fr;
+}
+
+.job-queue-item {
+    min-height: 10vh;
+    background-color: var(--body);
+    width: 95%;
+    transition: 0.5s ease-in-out;
+    display: grid;
+    align-items: center;
+    justify-items: center;
+    grid-template-columns: repeat(3, 1fr);
+}
+
+.job-queue-item:hover {
+    transform: scale(1.01, 1.01);
+}
+
+.error-container {
+    display: none;
+    grid-column: span 3;
 }
 
 form {

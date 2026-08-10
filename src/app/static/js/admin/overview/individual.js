@@ -25,7 +25,6 @@ SERVER_STREAM.addEventListener("batch", (event) => {
 })
 
 SERVER_STREAM.addEventListener("end", (event) => {
-    console.log("LIGMA")
     const parsed_data = STREAM_BATCH.join("")
     clean_and_add_log(parsed_data)
 

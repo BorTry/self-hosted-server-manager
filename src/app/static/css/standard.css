@@ -59,7 +59,7 @@ body {
 }
 
 .transparent-background {
-    background-color: transparent !important;
+    background: transparent !important;
     border: transparent !important;
 }
 
@@ -99,6 +99,7 @@ body {
 
 .inline-text-container {
     display: flex;
+    gap: 0.5vw 1vh;
     flex-wrap: nowrap;
     width: fit-content;
 }
