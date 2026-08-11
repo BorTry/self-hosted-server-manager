@@ -7,31 +7,31 @@
                         <label for="server_name">Server Name:</label>
                         <input id="server_name" name="server_name" type="text" required>
                     </div>
-                    <div>
-                        <label for="ports">Ports:</label>
-                        <input id="ports" name="ports" type="text" required>
-                    </div>
-                </div>
+                    <div id="port-list"></div>
+                    <button type="button" class="circle-button add" id="port-add-button">
+                        <p>+</p>
+                    </button>
+                </div>  
             </div>
         <div class="divider"></div>
         </div>
         <div>
             <div class="inner-form-container check-list">
-                <label for="restrict_ports">Restrict ports:</label>
-                <input id="restrict_ports" name="restrict_ports" type="checkbox">
-                <label for="port_type">Port type:</label>
-                <select id="port_type" name="port_type" disabled>
-                    <option>TCP</option>
-                    <option>UDP</option>
-                </select>
                 <label for="strict_ports">Strict ports:</label>
                 <input id="strict_ports" name="strict_ports" type="checkbox">
+                <span title="The server will try allocate a free port on the host maching if the given port is in use">ⓘ</span>
+
                 <label for="forward_ports">Try to port forwards:</label>
                 <input id="forward_ports" name="forwards_ports" type="checkbox" checked>
+                <span title="If the server will attempt portforwarding with your router">ⓘ</span>
+
                 <label for="steam_server">Steam server:</label>
                 <input id="steam_server" name="steam_server" type="checkbox">
+                <span title="Is the server a steam server">ⓘ</span>
+
                 <label for="steam_id">Steam id:</label>
                 <input id="steam_id" name="steam_id" type="text" disabled>
+                <span title="Steam Id for the game server">ⓘ</span>
             </div>
         </div>
         <div>

@@ -126,6 +126,13 @@ class admin_individual_overview(MethodView):
         html = render_template("admin/overview/individual.html", server_name=site, types=ALL_GRAPH_TYPES, ports=ports)
         return make_response(html, 200)
 
+@blp.route("/admin/help")
+class help_site(MethodView):
+    @blp.response(200)
+    def get(self):
+        html = render_template("admin/setup_help.html")
+        return make_response(html, 200)
+    
 def confirm_api_login():
     if (not ("username" in session) or not ("password" in session)): return False
 

@@ -137,8 +137,8 @@ form > div > .divider {
 .check-list {
     display: grid;
     align-items: center;
-    grid-template-columns: repeat(2, 1fr);
-    grid-template-rows: repeat(6, 1fr);
+    grid-template-columns: repeat(2, 1fr) 0.1fr;
+    justify-items: center;
 }
 
 .inner-form-container > input {
@@ -148,6 +148,7 @@ form > div > .divider {
 .text-container {
     display: grid;
     grid-template-columns: 1fr;
+    justify-items: center;
     gap: 2vh;
 }
 
@@ -173,3 +174,55 @@ form > div > .divider {
     width: 100%;
     margin: 0 1vw;
 }
+
+#port-list {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1vh;
+    justify-items: center;
+}
+
+.port-list-item {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr) 0.5fr 0.1fr 0.1fr;
+    gap: 1vw;
+    background-color: var(--secondary);
+    padding: 0 0.5vw;
+    align-items: center;
+}
+
+.circle-button {
+    width: 33px;
+    height: 33px;
+    border: none;
+    border-radius: 50%;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    font-size: 30px;
+    cursor: pointer;
+    color: whitesmoke;
+}
+
+.add {
+    background-color: var(--online);
+}
+
+.remove {
+    background-color: var(--offline);
+}
+
+.remove > p {
+    padding-bottom: 4px;
+}
+
+#form-footer {
+    display: flex;
+    padding: 2vh 2vw;
+    justify-content: center;
+    align-items: center;
+    font-size: 1.5rem;
+}
+

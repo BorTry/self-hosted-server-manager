@@ -1,6 +1,12 @@
 const ADD_SERVER_FORM = document.getElementById("add_server_form")
 const SERVER_STREAM = new EventSource("/api/admin/add_container")
 
+const PORT_ADD_BUTTON = document.getElementById("port-add-button")
+const PORT_LIST = document.getElementById("port-list")
+
+const parent_element = document.getElementById("dropdown-menus")
+const form_container = document.getElementById("add_server_dropdown")
+
 const job_queue = document.getElementById("job-queue-list")
 
 SERVER_STREAM.addEventListener("update", (event) => {
@@ -37,12 +43,46 @@ SERVER_STREAM.addEventListener("close", (event) => {
 ADD_SERVER_FORM.addEventListener("submit", (e) => {
     e.preventDefault();
         
-    let formData = new FormData(e.target);
+    const form_data = new FormData(e.target);
 
-    fetch("/api/admin/add_container", {
+    const h_ports = form_data.getAll("host_port") 
+    const s_ports = form_data.getAll("server_port") 
+    const port_types = form_data.getAll("port_type")
+
+    const len = h_ports.length
+
+    const port_mapping = []   
+
+    for (let index = 0; index < len; index++) {
+        port_mapping.push({
+            host_port: h_ports[index],
+            server_port: s_ports[index],
+            port_type: port_types[index]
+        })
+    } 
+
+    form_data.set("port_mapping", port_mapping)
+
+    form_data.delete("host_port")
+    form_data.delete("server_port")
+    form_data.delete("port_type")
+
+    for (let [key, value] of form_data.entries()) {
+        if (key === "image") continue
+        console.log(`${key}: ${value}`);
+    }
+
+    /*fetch("/api/admin/add_container", {
         method: "POST",
         body: formData
-    })
+    })*/
+})
+
+PORT_ADD_BUTTON.addEventListener("click", (event) => {
+    PORT_LIST.appendChild(create_port_item())
+    // change the size of the "drop down window" to fit
+    form_container.style.height = "auto"
+    form_container.style.height = parent_element.style.height = `${form_container.scrollHeight}px`
 })
 
 function create_job_element(data) {
@@ -90,6 +130,42 @@ function create_inline_text(msg1, msg2, id="") {
 
     return inline_div_container
 }
+
+function create_port_item() {
+    const item = document.createElement("div")
+    item.className = "port-list-item round-border"
+    item.innerHTML = `
+    <div class="inline-text-container">
+        <p title="The port to be used on the physical machine">Host port:</p>
+        <input name="host_port" type="number" title="The port to be used on the physical machine" required>
+    </div>
+    <div class="inline-text-container">
+        <p title="The port that the server uses">Server port:</p>
+        <input name="server_port" type="number" title="The port that the server uses" required>
+    </div>
+    <div class="inline-text-container">
+        <p>Port type:</p>
+        <select name="port_type" title="The port type, leave it as TCP if you're not sure">
+            <option>TCP</option>
+            <option>UDP</option>
+        </select>
+    </div>`
+
+    const item_button = document.createElement("button")
+    item_button.className = "circle-button remove"
+    item_button.innerHTML = "<p>-</p>"
+    item_button.type = "button"
+
+    item_button.addEventListener("click", (event) => {
+        item.remove()
+        form_container.style.height = "auto"
+        form_container.style.height = parent_element.style.height = `${form_container.scrollHeight}px`
+    })
+
+    item.appendChild(item_button)
+
+    return item
+} 
 
 function update_timestamps() {
     const timestamp = Date.now()
@@ -139,7 +215,10 @@ function calculate_slider_position(slider) {
     return (slider.value - slider.min) / (slider.max - slider.min) * 100
 }
 
-toggle_input("restrict_ports", ["port_type"])
+PORT_LIST.appendChild(create_port_item())
+form_container.style.height = "auto"
+form_container.style.height = parent_element.style.height = `${form_container.scrollHeight}px`
+
 toggle_input("steam_server", ["steam_id", "launch_opt", "install_opt"])
 
 update_slider_output("cpu_limit", " Cores")

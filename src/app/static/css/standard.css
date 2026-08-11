@@ -102,6 +102,7 @@ body {
     gap: 0.5vw 1vh;
     flex-wrap: nowrap;
     width: fit-content;
+    align-items: center;
 }
 
 /* =============== Main bodies =============== */

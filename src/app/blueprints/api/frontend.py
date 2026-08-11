@@ -19,7 +19,8 @@ class Container(MethodView):
     @blp.response(204)
     def get(self, name:str):
         servers = get_running_servers()
-        if servers:
+
+        if servers and name in servers:
             return jsonify(message=servers[name])
         else:
             return jsonify(message=None)

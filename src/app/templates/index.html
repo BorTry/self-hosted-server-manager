@@ -16,7 +16,9 @@
         <script type="module" src="{{ url_for('static', filename='js/frontpage/index.js') }}" defer></script>
     </head>
     <body>
-        <div id="header" class="main-body shadow round-border"></div>
+        <div id="header" class="main-body shadow round-border">
+
+        </div>
         <div id="body" class="main-body transparent-background">
             <div id="server-list">
                 {% for server_name in server_names %}
@@ -49,6 +51,10 @@
                 {% endfor %}
             </div>
         </div>
-        <div id="footer" class="main-body shadow round-border"></div>
+        <div id="footer" class="main-body shadow round-border">
+            <div>
+                
+            </div>
+        </div>
     </body>
 </html>
