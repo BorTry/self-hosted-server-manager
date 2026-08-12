@@ -12,8 +12,11 @@ const job_queue = document.getElementById("job-queue-list")
 SERVER_STREAM.addEventListener("update", (event) => {
     const data = JSON.parse(event.data)
 
+    console.log(event.data)
+
     const status_element = document.getElementById("status_" + data.server_id)
 
+    // Create the element if it doesnt already exist
     if (!status_element) {
         const job_container = create_job_element(data)
 
@@ -21,18 +24,24 @@ SERVER_STREAM.addEventListener("update", (event) => {
     } else {
         const element_container = document.getElementById("server_" + data.server_id)
 
-        status_element.innerText = data.success ? "Success" : "Failed"
-        status_element.style.color = data.success ? "var(--online)" : "var(--offline)"
+        if (Object.hasOwn(data, "success")) {
+            status_element.innerText = data.success ? "Success" : "Failed"
+            status_element.style.color = data.success ? "var(--online)" : "var(--offline)"
 
-        element_container.dataset.done = true
+            element_container.dataset.done = true
 
-        if (data.success) return
+            if (!data.success) {
+                const error_box = document.getElementById("error_" + data.server_id)
+                const parent = error_box.parentElement
+        
+                error_box.innerText = data.msg
+                parent.style.display = "block"
+            }
+        }
 
-        const error_box = document.getElementById("error_" + data.server_id)
-        const parent = error_box.parentElement
-
-        error_box.innerText = data.msg
-        parent.style.display = "block"
+        if (Object.hasOwn(data, "status")) {
+            status_element.innerText = data.status
+        }
     }
 })
 
@@ -78,11 +87,23 @@ function create_job_element(data) {
     const div_container = document.createElement("div")
     div_container.className = "job-queue-item round-border shadow"
     div_container.id = "server_" + data.server_id
-    
-    div_container.appendChild(create_inline_text("Name: ", data.name))
-    div_container.appendChild(create_inline_text("Status: ", "Working...", "status_" + data.server_id))
-    div_container.appendChild(create_inline_text("Started: ", "0s", "start_" + data.server_id))
-    div_container.appendChild(create_error_box(data.server_id))
+
+    div_container.innerHTML = `
+        <div class="inline-text-container">
+            <p>Name: </p>
+            <p>${data.name}</p>
+        </div>
+        <div class="inline-text-container">
+            <p>Status: </p>
+            <p id="status_${data.server_id}" style="color: var(--waiting);">Working...</p>
+        </div>
+        <div class="inline-text-container">
+            <p>Started: </p>
+            <p id="start_${data.server_id}">0s</p>
+        </div>
+        <div class="error-container round-border shadow">
+            <p id="error_${data.server_id}"></p>
+        </div>`
 
     div_container.dataset.timestamp = Date.now()
     div_container.dataset.server_id = data.server_id

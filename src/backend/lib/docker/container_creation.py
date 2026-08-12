@@ -1,9 +1,10 @@
-from src.lib import thread_wrapper, compose_file, service, Server_codes
+from src.lib import thread_wrapper, compose_file, service, Server_codes, response
 
 from python_on_whales import DockerClient, DockerException, docker as base_docker
 from re import sub, DOTALL
-from time import sleep
 from pathlib import Path
+from time import sleep
+from json import dumps
 
 TEMP_COMPOSE_PATH = "./resources/compose_files/docker-temp-compose.yaml"
 MAIN_COMPOSE_PATH = "./resources/compose_files/docker-game-compose.yaml"
@@ -18,7 +19,10 @@ SERVER_DATA_FILE_PATH = Path(Path(__file__).resolve().parents[5], "server_data")
 if (not SERVER_DATA_FILE_PATH.is_dir()):
     SERVER_DATA_FILE_PATH.mkdir()
 
-def try_to_add_container(thread:thread_wrapper, compose_args) -> bool:
+def try_to_add_container(thread:thread_wrapper, server_packet) -> bool:
+    compose_args = server_packet.data
+
+    thread.print(compose_args)
     server_name = compose_args["server_name"]
 
     new_container = service(
@@ -44,17 +48,20 @@ def try_to_add_container(thread:thread_wrapper, compose_args) -> bool:
     TEMP_COMPOSE_FILE.add_service(new_container)
     TEMP_COMPOSE_FILE.write_to_file()
 
-    return_message = _test_new_container(thread, new_container)
+    return_message = _test_new_container(thread, new_container,server_packet)
 
     TEMP_COMPOSE_FILE.remove_service(new_container.name)
     TEMP_COMPOSE_FILE.write_to_file()
 
     return return_message
 
-def _test_new_container(thread:thread_wrapper, new_container:service):
+def _test_new_container(thread:thread_wrapper, new_container:service, server_packet):
     docker = DockerClient(compose_files=(TEMP_COMPOSE_PATH))
 
     # check to see if the container builds
+    with thread.data_handler as data:
+        data["responses"].append(response(server_packet.id, **_generate_current_status_msg("Building...", server_packet)))
+
     try:
         docker.compose.build(services=(new_container.name), quiet=True)
     except DockerException as e:
@@ -62,6 +69,9 @@ def _test_new_container(thread:thread_wrapper, new_container:service):
 
     # check the install/seed script
     if (not _has_been_initialized(new_container.name)):
+        with thread.data_handler as data:
+            data["responses"].append(response(server_packet.id, **_generate_current_status_msg("Installing...", server_packet)))
+
         try:
             docker.compose.up(services=(new_container.name), quiet=True, detach=False)
         except DockerException as e:
@@ -76,10 +86,14 @@ def _test_new_container(thread:thread_wrapper, new_container:service):
     else:
         thread.print(f"Skipping initialization step for server '{new_container.name}'")
 
-    # check to see if the actual launch function runs
+    # check to see if the actual launch function runs'
+    with thread.data_handler as data:
+        data["responses"].append(response(server_packet.id, **_generate_current_status_msg("Running...", server_packet)))
+
     docker.compose.up(services=(new_container.name), quiet=True, detach=True)
 
-    sleep(10)
+    sleep(10) # far to crude
+    docker.wait(new_container.name)
 
     docker.stop(new_container.name+"_server", time=30)
 
@@ -95,6 +109,13 @@ def _test_new_container(thread:thread_wrapper, new_container:service):
     #MAIN_COMPOSE_FILE.write_to_file()
 
     return _generate_return_msg(False)
+
+def _generate_current_status_msg(status:str, server_packet):
+    return {
+        "code": Server_codes.CONTAINER_WORKING,
+        "data": dumps({"status":status, "name":server_packet.data["server_name"], "server_id":server_packet.data["server_id"]})
+    } 
+
 
 def _generate_return_msg(failure:bool, message:str=None):
     return {

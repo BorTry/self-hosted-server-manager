@@ -11,6 +11,12 @@ TARGET_ADDRESS = None
 MAX_ATTEMPTS = 3
 ATTEMPT_TIME_DELTA = 10 # minutes
 
+THREAD_MAPPING = {
+    "handler": {Server_codes.START_SERVER, Server_codes.STOP_SERVER, Server_codes.RESTART_SERVER},
+    "supervisor": {Server_codes.LOG_CONTAINER, Server_codes.STOP_LOG_CONTAINER},
+    "creator": {Server_codes.ADD_CONTAINER, Server_codes.CHANGE_CONTAINER},
+}
+
 def socket_func(thread:thread_socket_wrapper):
     data_packet, from_address = thread.recv()
 
@@ -27,18 +33,18 @@ def socket_func(thread:thread_socket_wrapper):
 
     match(data_packet.code):
         case Server_codes.SERVER_COUNT:
-            return_data = len(server_data[Server_codes.RUNNING_SERVERS]) # Send how many server are currently running
+            return_data = len(server_data["running_servers"]) # Send how many server are currently running
         case Server_codes.RUNNING_SERVERS:
-            return_data = server_data[Server_codes.RUNNING_SERVERS] # Send a list of all running servers
+            return_data = server_data["running_servers"] # Send a list of all running servers
         case Server_codes.ALL_SERVERS:
-            return_data = server_data[Server_codes.ALL_SERVERS] # Send a list of all available server
+            return_data = server_data["all_defined_servers"] # Send a list of all available server
 
-        case Server_codes.START_SERVER|Server_codes.STOP_SERVER:
+        case Server_codes.START_SERVER|Server_codes.STOP_SERVER|Server_codes.RESTART_SERVER:
             incoming_data = data_packet
 
         case Server_codes.CHECK_CREDENTIALS|Server_codes.CHECK_REPEATED_CREDENTIALS:
             return_data = True
-            code = verify_login(data)
+            code = _verify_login(data)
 
             if data_packet.code == Server_codes.CHECK_CREDENTIALS: thread.print(f'User "{data["username"]}" with password "{data["password"]}" is trying to log in.')
 
@@ -68,32 +74,40 @@ def socket_func(thread:thread_socket_wrapper):
         thread.send(response(id, return_data, code), target=from_address)
 
     if (incoming_data):
-        thread.print("appending request ->", f'{incoming_data}')
+        thread_name_space = _get_thread_from_mapping(data_packet.code)
+        thread.print(f"appending request -> {thread_name_space} -> {incoming_data!r}")
         
         with thread.data_handler as data:
-            data["requests"].append(incoming_data)
+            data[thread_name_space]["requests"].append(incoming_data)
 
+    # send out all the
     with thread.data_handler as data:
-        if len(data["responses"]) > 0:
-            for packet in data["responses"]:
+        for name_space in data:
+            if name_space == "data": continue
+
+            name_space_data = data[name_space]["responses"]
+
+            if len(name_space_data) <= 0: continue
+
+            for packet in name_space_data:
                 thread.print(f"Sending packet: {packet!r}")
                 thread.send(packet)
 
-            data["responses"] = []
+            name_space_data.clear()
 
 def socket_init(thread:thread_socket_wrapper):
     thread["current_server_id"] = 0
 
-def verify_login(data):
+def _verify_login(data):
     if data["username"] != CONSTANTS.CREDENTIALS["username"] or data["password"] != CONSTANTS.CREDENTIALS["password"]: return Server_codes.BAD
 
     with SessionLocal() as session:
-        connection_entry = get_ip_entry(session, data["ip"])
+        connection_entry = _get_ip_entry(session, data["ip"])
 
         if (connection_entry.blacklisted):
             return Server_codes.BAD
 
-        attempts = get_login_attemps(connection_entry, session)
+        attempts = _get_login_attemps(connection_entry, session)
 
         if (len(attempts) >= MAX_ATTEMPTS):
             connection_entry.blacklisted = True
@@ -111,7 +125,7 @@ def verify_login(data):
 
         return Server_codes.CREDENTIALS_OK
 
-def get_ip_entry(session, ip):
+def _get_ip_entry(session, ip):
     ip_query = select(connections).where(connections.ip == ip)
 
     connection_entry = session.scalars(ip_query).first()
@@ -124,7 +138,7 @@ def get_ip_entry(session, ip):
 
     return connection_entry
 
-def get_login_attemps(entry, session):
+def _get_login_attemps(entry, session):
     cutoff = datetime.now() - timedelta(minutes=ATTEMPT_TIME_DELTA)
 
     # check the amount of recent login attempts that failed
@@ -134,3 +148,7 @@ def get_login_attemps(entry, session):
         login_attempts.time >= cutoff
     )
     return session.scalars(login_attempts_query).all()
+
+def _get_thread_from_mapping(code:int):
+    for mapping in THREAD_MAPPING:
+        if (code in THREAD_MAPPING[mapping]): return mapping

@@ -1,7 +1,8 @@
 from threading import Event
 from time import sleep
 
-from src.backend.lib import socket_func, docker_func, docker_init, docker_on_close, stop_frontend, start_frontend, docker_running, socket_init
+from src.backend.lib import *
+
 from src.lib import thread_wrapper, thread_socket_wrapper, thread_data_handler
 from src.lib.init import init
 from src.lib.logger import logger, get_logger
@@ -11,14 +12,27 @@ init()
 LOGGER = get_logger("main_thread")
 
 DATA = thread_data_handler({
-        "data":[None for _ in range(10)],
+    "data":{
+        "running_servers": [],
+        "all_defined_servers": {}
+    },
+    "supervisor": {
         "requests": [],
         "responses": []
-    })
+    },
+    "creator": {
+        "requests": [],
+        "responses": []
+    },
+    "handler": {
+        "requests": [],
+        "responses": []
+    },
+})
 
 thread_terminate_event = Event()
 
-#TUI = TextualApp(data_handler=DATA)
+# =================== LOGGER ===================
 
 LOGGER_THREAD = thread_wrapper(
     target=logger.print_all, 
@@ -27,15 +41,37 @@ LOGGER_THREAD = thread_wrapper(
     sleep_time=.5
 )
 
-DOCKER_THREAD = thread_wrapper(
-    target=docker_func,
-    init=docker_init,
-    on_close=docker_on_close,
+# =================== DOCKER THREADS ===================
+
+DOCKER_SUPERVISOR_THREAD = thread_wrapper(
+    target=docker_supervisor_func,
+    init=docker_supervisor_init,
+    on_close=docker_supervisor_on_close,
     terminate_signal=thread_terminate_event,
-    name="docker_thread",
+    name="docker_supervisor_thread",
     data_handler=DATA,
     sleep_time=0.5
-) # Talks to the docker engine
+)
+
+DOCKER_CREATOR_THREAD = thread_wrapper(
+    target=docker_creator_func,
+    init=docker_creator_init,
+    terminate_signal=thread_terminate_event,
+    name="docker_creator_thread",
+    data_handler=DATA.get_subsection("creator"),
+    sleep_time=0.5
+)
+
+DOCKER_THREAD_HANDLER = thread_wrapper(
+    target=docker_handler_func,
+    init=docker_handler_init,
+    terminate_signal=thread_terminate_event,
+    name="docker_handler_thread",
+    data_handler=DATA.get_subsection("handler"),
+    sleep_time=0.5
+)
+
+# =================== SOCKET THREAD ===================
 
 PORT = 3024
 ADDRESS = "0.0.0.0"
@@ -50,41 +86,41 @@ SOCKET_THREAD = thread_socket_wrapper(
     data_handler=DATA,
     name="main_socket_thread",
     sleep_time=0.1
-) # Talks to the frontend
+)
+
+ALL_THREADS = [
+    DOCKER_THREAD_HANDLER,
+    DOCKER_CREATOR_THREAD,
+    DOCKER_SUPERVISOR_THREAD,
+    SOCKET_THREAD,
+    LOGGER_THREAD,
+]
+
 
 def start_servers():
     print("\n============== Starting servers ==============\n\n")
 
-    start_frontend()
+    for thread_instance in ALL_THREADS:
+        thread_instance.run()
     
-    DOCKER_THREAD.run()
-    SOCKET_THREAD.run()
-    LOGGER_THREAD.run()
+    start_frontend()
 
 def stop_servers():
     print("\n============== Stopping servers ==============\n\n")
 
-    thread_terminate_event.set()
-
-    DOCKER_THREAD.terminate()
-    SOCKET_THREAD.terminate()
-    sleep(1)
-    LOGGER_THREAD.terminate()
+    for thread_instance in ALL_THREADS:
+        thread_instance.terminate()
 
     stop_frontend()
 
 def restart_servers():
-    global DOCKER_THREAD, SOCKET_THREAD, LOGGER_THREAD, thread_terminate_event
-
     stop_servers()
 
     if thread_terminate_event.is_set():
         thread_terminate_event.clear()
 
-    # Get new instances of each thread
-    LOGGER_THREAD = LOGGER_THREAD.get_new_instance()
-    DOCKER_THREAD = DOCKER_THREAD.get_new_instance()
-    SOCKET_THREAD = SOCKET_THREAD.get_new_instance()
+    for index in range(len(ALL_THREADS)):
+        ALL_THREADS[index] = ALL_THREADS[index].get_new_instance()
 
     start_servers()
 

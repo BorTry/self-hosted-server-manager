@@ -1,101 +1,89 @@
-from .docker import *
-from .thread_container_logger import logger_generator, add_session_id, remove_session_id
+from ..docker import *
+from src.lib import thread_wrapper, Server_codes, CONSTANTS
 
-from src.lib import thread_wrapper, Server_codes, CONSTANTS, response
+from .thread_container_logger import logger_generator, add_session_id, remove_session_id
 from src.db.mappings import metric_timestamp, traffic_metric, performance_metric, container, port_type, ports, ports_mapping
 from src.db.db import SessionLocal
+
 from sqlalchemy import select
-
-
-from json import dumps
+from copy import deepcopy
 from datetime import timedelta, datetime
 
-CONTAINERS = [None] * 10
-
-def docker_func(thread:thread_wrapper):
-    # get all running servers
-    running_containers = get_all_containers()
-
-    CONTAINERS[Server_codes.RUNNING_SERVERS] = running_containers
-    requests = []
-    responses = []
+def docker_supervisor_func(thread:thread_wrapper):    
+    thread["containers"]["running_servers"] = get_all_containers()
     now = datetime.now()
 
-    if len(running_containers) and (not thread["last_save"] or (now - thread["last_save"]).seconds > thread["save_interval"].seconds):
-        add_resources_to_db(running_containers)
+    if len(thread["containers"]["running_servers"]) and (not thread["last_save"] or (now - thread["last_save"]).seconds > thread["save_interval"].seconds):
+        add_resources_to_db(thread["containers"]["running_servers"])
         thread["last_save"] = now
 
     with thread.data_handler as data:
-        data["data"] = CONTAINERS
-        requests = data["requests"]
-        responses = data["responses"]
+        data["data"] = deepcopy(thread["containers"])
+
+    supervisor_data = thread.data_handler.get_copy("supervisor")
+
+    requests = supervisor_data["requests"]
+    responses = supervisor_data["responses"]
 
     if (not len(requests)): return
-    # use the data to try to start or stop a server
-    thread.print(*requests)
 
     for data_packet in requests:
         match (data_packet.code):
-            case Server_codes.START_SERVER:
-                start_server(data_packet.data["name"])
-
-            case Server_codes.STOP_SERVER:
-                stop_server(data_packet.data["name"])
-
-            case Server_codes.RESTART_SERVER:
-                restart_server(data_packet.data["name"])
-
-            case Server_codes.ADD_CONTAINER:
-                response_data = try_to_add_container(thread, data_packet.data)
-                response_data["data"]['name'] = data_packet.data["server_name"]
-                response_data["data"]['server_id'] = data_packet.data["server_id"]
-
-                response_data["data"] = dumps(response_data["data"])
-
-                responses.append(response(data_packet.id, **response_data))
-
             case Server_codes.LOG_CONTAINER:
                 server_name = data_packet.data["server_name"]
                 container_name = convert_server_name(server_name)
 
                 generate_new_log_thread(thread, container_name)
 
-                print(thread["logger_threads"][container_name])
-
                 add_session_id(thread["logger_threads"][container_name], data_packet.id)
 
             case Server_codes.STOP_LOG_CONTAINER:
-                thread.print(data_packet.data["id"], data_packet.data)
                 thread.print("Removing id from loggers")
                 remove_session_id(thread, data_packet.data["id"])
 
-            case Server_codes.CHANGE_CONTAINER:
-                pass
-
     with thread.data_handler as data:
-        data["requests"] = []
-        data["responses"] = responses
+        data["supervisor"]["requests"] = []
+        data["supervisor"]["responses"] = responses
 
-# send over data to the com thread
-def docker_init(thread:thread_wrapper):
-    CONTAINERS[Server_codes.ALL_SERVERS] = {
-        "servers": SERVER_JSON["server_names"],
-        "launch_options": SERVER_JSON["launch_alternatives"]
+def docker_supervisor_init(thread:thread_wrapper):
+    thread["containers"] = {
+        "all_defined_servers": {
+            "servers": SERVER_JSON["server_names"],
+            "launch_options": SERVER_JSON["launch_alternatives"]
+        },
+        "running_servers": []
     }
+
+    add_containers_to_db(thread, thread["containers"]["all_defined_servers"]["servers"], get_resource_limit_containers())
 
     thread["logger_threads"] = {}
     thread["save_interval"] = timedelta(seconds=CONSTANTS.METRICS_INTERVAL)
     thread["last_save"] = datetime.now()
 
-    add_containers_to_db(thread, CONTAINERS[Server_codes.ALL_SERVERS]["servers"], get_resource_limit_containers())
-
-    with thread.data_handler as data:
-        data["data"] = CONTAINERS
-
-def docker_on_close(thread:thread_wrapper):
+def docker_supervisor_on_close(thread:thread_wrapper):
     if (len(thread["logger_threads"]) > 0):
         for logger_name in thread["logger_threads"]:
             thread["logger_threads"][logger_name].terminate()
+
+def generate_new_log_thread(thread:thread_wrapper, container_name:str):
+    if not (container_name in thread["logger_threads"]):
+        thread.print(f'Generating new thread for server: {container_name}')
+
+        try:
+            log_thread = logger_generator(container_name)
+        except Exception as e:
+            thread.print(f'got an error while setting up new log thread for server: {container_name}\n{e!r}')
+            return
+
+        thread["logger_threads"][container_name] = log_thread
+    else:
+        # container references might exist, but not run currently
+        log_thread = thread["logger_threads"][container_name]
+
+        if (log_thread.is_alive()): return
+
+        thread["logger_threads"][container_name] = log_thread.get_new_instance()
+        thread["logger_threads"][container_name].run()
 
 def add_containers_to_db(thread:thread_wrapper, containers, limits):  
     with SessionLocal() as session:
@@ -160,23 +148,3 @@ def add_resources_to_db(resources):
             session.add(traffic_metric(container_id=entry.id, time_id=stamp.id, upload=container_entry["upload"], download=container_entry["download"]))
 
         session.commit()
-
-def generate_new_log_thread(thread:thread_wrapper, container_name:str):
-    if not (container_name in thread["logger_threads"]):
-        thread.print(f'Generating new thread for server: {container_name}')
-
-        try:
-            log_thread = logger_generator(container_name)
-        except Exception as e:
-            thread.print(f'got an error while setting up new log thread for server: {container_name}\n{e!r}')
-            return
-
-        thread["logger_threads"][container_name] = log_thread
-    else:
-        # container references might exist, but not run currently
-        log_thread = thread["logger_threads"][container_name]
-
-        if (log_thread.is_alive()): return
-
-        thread["logger_threads"][container_name] = log_thread.get_new_instance()
-        thread["logger_threads"][container_name].run()
