@@ -54,28 +54,17 @@ ADD_SERVER_FORM.addEventListener("submit", (e) => {
     const port_mapping = []   
 
     for (let index = 0; index < len; index++) {
-        port_mapping.push({
-            host_port: h_ports[index],
-            server_port: s_ports[index],
-            port_type: port_types[index]
-        })
+        form_data.append("port_mapping", `${h_ports[index]}:${s_ports[index]}/${port_types[index]}`)
     } 
-
-    form_data.set("port_mapping", port_mapping)
 
     form_data.delete("host_port")
     form_data.delete("server_port")
     form_data.delete("port_type")
 
-    for (let [key, value] of form_data.entries()) {
-        if (key === "image") continue
-        console.log(`${key}: ${value}`);
-    }
-
-    /*fetch("/api/admin/add_container", {
+    fetch("/api/admin/add_container", {
         method: "POST",
-        body: formData
-    })*/
+        body: form_data
+    })
 })
 
 PORT_ADD_BUTTON.addEventListener("click", (event) => {

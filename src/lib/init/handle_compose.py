@@ -1,8 +1,10 @@
 from hashlib import sha256
 from functools import partial
-from python_on_whales import DockerClient, DockerException
+from python_on_whales import DockerClient, DockerException, docker as base_docker
 
 from .. import compose_file
+
+from shutil import copy
 
 CHUNK_SIZE = 4096
 
@@ -53,8 +55,21 @@ def _docker_compose_file(mapping_name:str) -> bool:
     try:
         print(COMPOSE_MSG[mapping_name])
 
+        if (mapping_name == "frontend"):
+            print("copying over .env variables")
+            copy("./.env", "./resources/compose_files/.env")
+
+
         docker = DockerClient(compose_files=(MAPPING[mapping_name]))
         docker.compose.up(build=True, detach=True)
+
+        if (mapping_name != "base"): return True
+        containers = docker.compose.ps()
+
+        for container in containers:
+            docker.wait(container)
+
+        docker.compose.down()
         
         return True
     

@@ -101,8 +101,8 @@ body {
     grid-column: span 3;
     padding: 1vh 0.5vw;
     background-color: var(--secondary);
-    width: 95%;
-    margin-bottom: 2vh;
+    width: 80%;
+    margin: 2vh;
 }
 
 .error-container > p {

@@ -4,16 +4,14 @@ from flask_smorest.fields import Upload
 ALLOWED_EXTENSIONS = {"jpg", "png"}
 
 class ContainerResponseSchema(Schema):
-    containers=                 fields.List(fields.Dict())
+    containers =                fields.List(fields.Dict())
 
 class ContainerStartSchema(Schema):
-    launch_opts=                fields.Dict(keys=fields.Str(), values=fields.Str())
+    launch_opts =               fields.Dict(keys=fields.Str(), values=fields.Str())
 
 class ContainerAddSchema(Schema):
     server_name =               fields.String(required=True)
-    ports =                     fields.String(required=True)
-    restrict_ports =            fields.Bool(allow_none=True, load_default=False)
-    port_type =                 fields.Bool(allow_none=True, load_default="")
+    port_mapping =              fields.List(fields.String(), required=True)
     strict_ports =              fields.Bool(load_default=False)
     forwards_ports =            fields.Bool(load_default=False)
     steam_server =              fields.Bool(load_default=False)

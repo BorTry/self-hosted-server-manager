@@ -17,7 +17,6 @@ def fill_config():
     json_obj["os"] = system()
 
     CONSTANTS.METRICS_INTERVAL = json_obj["metric_save_interval"]
-    CONSTANTS.START_IN_TUI = json_obj["start_in_tui"]
     CONSTANTS.OS = json_obj["os"]
 
     CONSTANTS.CREDENTIALS["username"] = json_obj["admin_username"]
