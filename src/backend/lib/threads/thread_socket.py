@@ -80,7 +80,7 @@ def socket_func(thread:thread_socket_wrapper):
         with thread.data_handler as data:
             data[thread_name_space]["requests"].append(incoming_data)
 
-    # send out all the
+    # send out all the responses
     with thread.data_handler as data:
         for name_space in data:
             if name_space == "data": continue

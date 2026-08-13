@@ -1,4 +1,5 @@
 from src.lib import thread_wrapper, compose_file, service, Server_codes, response
+from .detect_steady_state import check_run_command
 
 from python_on_whales import DockerClient, DockerException, docker as base_docker
 from re import sub, DOTALL
@@ -92,15 +93,11 @@ def _test_new_container(thread:thread_wrapper, new_container:service, server_pac
 
     docker.compose.up(services=(new_container.name), quiet=True, detach=True)
 
-    sleep(10) # far to crude
-    docker.wait(new_container.name)
+    run_command_worked = check_run_command(thread, new_container.name)
 
-    docker.stop(new_container.name+"_server", time=30)
+    docker.stop(new_container.name+"_server")
 
-    container = docker.container.inspect(new_container.name+"_server")
-    exit_code = container.state.exit_code
-
-    if exit_code != 0:
+    if not run_command_worked:
         return _generate_return_msg(True, f"Container failed to run -> Check your launch command\nLast 10 log lines were:\n{docker.logs(new_container.name+"_server", tail=10)}")
 
     docker.compose.down(services=(new_container.name), quiet=True)
