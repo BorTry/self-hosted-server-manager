@@ -11,7 +11,8 @@ class ContainerStartSchema(Schema):
 
 class ContainerAddSchema(Schema):
     server_name =               fields.String(required=True)
-    port_mapping =              fields.List(fields.String(), required=True)
+    port_mapping =              fields.List(fields.String(), allow_none=True)
+    variable_mapping =          fields.String(allow_none=True, load_default="")
     strict_ports =              fields.Bool(load_default=False)
     forwards_ports =            fields.Bool(load_default=False)
     steam_server =              fields.Bool(load_default=False)

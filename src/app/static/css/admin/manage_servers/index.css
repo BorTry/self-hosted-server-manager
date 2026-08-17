@@ -163,7 +163,7 @@ form > div > .divider {
 }
 
 .text-container > textarea {
-    width: 30vw;
+    width: 25vw;
     height: 10vh;
     overflow-y: auto;
     resize: none;
@@ -175,21 +175,51 @@ form > div > .divider {
     margin: 0 1vw;
 }
 
-#port-list {
+.form-list {
     display: grid;
-    grid-template-columns: 1fr;
-    gap: 1vh;
+    grid-template-columns: 1fr !important;
+    gap: 1vh 1vw;
     justify-items: center;
 }
 
-.port-list-item {
+.form-list-item {
     display: grid;
-    grid-template-columns: repeat(2, 1fr) 0.5fr 0.1fr 0.1fr;
-    gap: 1vw;
+    grid-template-columns: repeat(2, 1fr) 0.1fr;
+    gap: 0vh 1vw;
     background-color: var(--secondary);
-    padding: 0 0.5vw;
     align-items: center;
+    min-height: 5vh;
+    padding: 0 0.5vw;
 }
+
+.port-item {
+    grid-template-columns: repeat(2, 1fr) 0.5fr 0.1fr 0.1fr;
+}
+
+.variable-item {
+    grid-template-columns: 1fr repeat(2, 0.5fr) repeat(2, .1fr);
+}
+
+.sub-item {
+    width: 80%;
+}
+
+.sub-list {
+    grid-column: span 3;
+}
+
+.form-input {
+    min-height: 2vh;
+}
+
+.file-path-input {
+    grid-column: span 4;
+}
+
+.dir-input {
+    grid-column: span 2;
+}
+
 
 .circle-button {
     width: 33px;
@@ -219,10 +249,10 @@ form > div > .divider {
 }
 
 #form-footer {
-    display: flex;
+    display: grid;
     padding: 2vh 2vw;
-    justify-content: center;
-    align-items: center;
+    justify-items: center;
     font-size: 1.5rem;
+    gap: 2vh;
 }
 

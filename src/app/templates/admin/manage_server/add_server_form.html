@@ -7,7 +7,7 @@
                         <label for="server_name">Server Name:</label>
                         <input id="server_name" name="server_name" type="text" required>
                     </div>
-                    <div id="port-list"></div>
+                    <div id="port-list" class="form-list"></div>
                     <button type="button" class="circle-button add" id="port-add-button">
                         <p>+</p>
                     </button>
@@ -52,6 +52,10 @@
         <div>
             <div class="inner-form-container">
                 <div class="text-container">
+                    <div id="variable-list" class="form-list"></div>
+                    <button type="button" class="circle-button add" id="variable-add-button">
+                        <p>+</p>
+                    </button>
                     <label for="launch_opt">Launch command:</label>
                     <textarea type="text" id="launch_opt" name="launch_opt" type="text" class="text_input"></textarea>
                     <label for="install_opt">Install command:</label>

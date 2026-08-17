@@ -3,6 +3,8 @@ const SERVER_STREAM = new EventSource("/api/admin/add_container")
 
 const PORT_ADD_BUTTON = document.getElementById("port-add-button")
 const PORT_LIST = document.getElementById("port-list")
+const VARIABLE_ADD_BUTTON = document.getElementById("variable-add-button")
+const VARIABLE_LIST = document.getElementById("variable-list")
 
 const parent_element = document.getElementById("dropdown-menus")
 const form_container = document.getElementById("add_server_dropdown")
@@ -62,6 +64,7 @@ ADD_SERVER_FORM.addEventListener("submit", (e) => {
 
     const port_mapping = []   
 
+    // get the port data
     for (let index = 0; index < len; index++) {
         form_data.append("port_mapping", `${h_ports[index]}:${s_ports[index]}/${port_types[index]}`)
     } 
@@ -69,6 +72,55 @@ ADD_SERVER_FORM.addEventListener("submit", (e) => {
     form_data.delete("host_port")
     form_data.delete("server_port")
     form_data.delete("port_type")
+
+    const variable_mapping = {}
+
+    // get the defined variable data
+    for (const variable_item of VARIABLE_LIST.children) {
+        const source_state = variable_item.dataset.source_state
+        const value_state = variable_item.dataset.value_state
+
+        const v_name = variable_item.children[0].children[1].value
+
+        variable_mapping[v_name] = {"mapping": [], "file_path": {}, "source_state": source_state, "value_state": value_state}
+
+        if (value_state === "true") {
+            const file_element = variable_item.children[5]
+            variable_mapping[v_name].file_path = {
+                "path": file_element.children[1].value,
+                "change_var": file_element.children[3].value
+            }
+        }
+
+        const sub_list = variable_item.children[6]
+
+        for (const sub_item of sub_list.children) {
+            const mapping = {"name": "", "value": "", "path": ""}
+
+            // get the values from the active inputs
+            for (const sub_input of sub_item.children) {
+                if (sub_input.dataset.active_state !== source_state) continue
+
+                if (source_state === "true") {
+                    mapping.path = sub_input.children[1].value
+                } else {
+                    mapping.name = mapping.name === "" ? sub_input.children[1].value : mapping.name
+                    mapping.value = mapping.name !== "" ? sub_input.children[1].value : mapping.value
+                }
+            }
+            variable_mapping[v_name].mapping.push(mapping)
+        }
+    }
+
+    if (Object.keys(variable_mapping).length) {
+        form_data.append("variable_mapping", JSON.stringify(variable_mapping))
+    }
+
+    form_data.delete("value_type")
+    form_data.delete("directory_path")
+    form_data.delete("defined_variable_value")
+    form_data.delete("defined_variable_name")
+    form_data.delete("file_path")
 
     fetch("/api/admin/add_container", {
         method: "POST",
@@ -79,9 +131,15 @@ ADD_SERVER_FORM.addEventListener("submit", (e) => {
 PORT_ADD_BUTTON.addEventListener("click", (event) => {
     PORT_LIST.appendChild(create_port_item())
     // change the size of the "drop down window" to fit
-    form_container.style.height = "auto"
-    form_container.style.height = parent_element.style.height = `${form_container.scrollHeight}px`
+    update_form_container()
 })
+
+VARIABLE_ADD_BUTTON.addEventListener("click", (event) => {
+    VARIABLE_LIST.appendChild(create_variable_item())
+    // change the size of the "drop down window" to fit
+    update_form_container()
+})
+
 
 function create_job_element(data) {
     const div_container = document.createElement("div")
@@ -141,21 +199,168 @@ function create_inline_text(msg1, msg2, id="") {
     return inline_div_container
 }
 
+function create_variable_sub_list(main_div) {
+    const list = document.createElement("div")
+    list.className = "form-list sub-list"
+    list.appendChild(create_variable_sub_item(main_div.dataset.source_state))
+
+    const add_button = document.createElement("button")
+    add_button.type = "button"
+    add_button.className = "circle-button add"
+    add_button.innerText = "+"
+
+    add_button.addEventListener("click", (event) => {
+        list.appendChild(create_variable_sub_item(main_div.dataset.source_state))
+        // change the size of the "drop down window" to fit
+        update_form_container()
+    })
+
+    main_div.appendChild(add_button)
+    main_div.appendChild(list)
+
+    return list
+}
+
+function create_variable_sub_item(parent_state) {
+    const item = document.createElement("div")
+    item.className = "form-list-item round-border sub-item"
+    item.innerHTML = `
+    <div class="inline-text-container${(parent_state === "true") ? " disabled" : ""}" data-active_state="false">
+        <p title="The name shown on the main page">Variable name:</p>
+        <input name="defined_variable_name" type="text" class="form-input" title="The name shown on the main page when choosing a value" ${(parent_state === "true") ? "" : "required"}>
+    </div>
+    <div class="inline-text-container${(parent_state === "true") ? " disabled" : ""}" data-active_state="false">
+        <p title="The value to switch/inject before launching the server">Value:</p>
+        <input name="defined_variable_value" type="text" class="form-input" title="The value to switch/inject before launching the server" ${(parent_state === "true") ? "" : "required"}>
+    </div>
+    <div class="inline-text-container dir-input${(parent_state === "false") ? " disabled" : ""}" data-active_state="true">
+        <p title="The value to switch/inject before launching the server">Directory path:</p>
+        <input name="directory_path" type="text" class="form-input full-size" title="The value to switch/inject before launching the server" ${(parent_state === "false") ? "" : "required"}>
+    </div>`
+
+    const item_button = document.createElement("button")
+    item_button.className = "circle-button remove"
+    item_button.innerHTML = "<p>-</p>"
+    item_button.type = "button"
+
+    item_button.addEventListener("click", (event) => {
+        item.remove()
+        update_form_container()
+    })
+
+    item.appendChild(item_button)
+
+    return item
+}
+
+
+function create_variable_item() {
+    const item = document.createElement("div")
+    item.className = "form-list-item round-border variable-item"
+    item.innerHTML = `
+    <div class="inline-text-container">
+        <p title="The name shown on the main page">Variable name:</p>
+        <input name="variable_name" type="text" class="form-input" title="The name shown on the main page" required>
+    </div>
+    <div class="inline-text-container">
+        <p title="The value type">Value:</p>
+        <select name="value_type" class="form-input" title="How the server handles the variable">
+            <option>Injection</option>
+            <option>File change</option>
+        </select>
+    </div>
+    <div class="inline-text-container">
+        <p title="The value type">Variable source:</p>
+        <select name="variable_source" class="form-input" title="How the server handles the variable">
+            <option>Defined</option>
+            <option>Directory</option>
+        </select>
+    </div>`
+
+    item.dataset.source_state = "false"
+    item.dataset.value_state = "false"
+
+    const item_button = document.createElement("button")
+    item_button.className = "circle-button remove"
+    item_button.innerHTML = "<p>-</p>"
+    item_button.type = "button"
+
+    item_button.addEventListener("click", (event) => {
+        item.remove()
+        update_form_container()
+    })    
+
+    item.appendChild(item_button)
+    const list = create_variable_sub_list(item)
+
+    const file_path_div = document.createElement("div")
+    file_path_div.className = "inline-text-container file-path-input disabled"
+    file_path_div.innerHTML = ` 
+        <p title="The value type">File path:</p>
+        <input name="file_path" class="form-input full-size" type="text " title="How the server handles the variable"></input>
+        <p title="The variable name in the file">Variable name:</p>
+        <input name="file_path" class="form-input full-size" type="text " title="How the server handles the variable"></input>`
+
+    file_path_div.dataset.active_state = true
+
+    item.insertBefore(file_path_div, list) 
+    
+    const PARENT_ELEMENT = item
+
+    // variable switch
+    item.children[2].children[1].addEventListener("change", (event) => {
+        const container_element = PARENT_ELEMENT.children[6]
+
+        PARENT_ELEMENT.dataset.source_state = !(PARENT_ELEMENT.dataset.source_state === "true")
+
+        const current_state = PARENT_ELEMENT.dataset.source_state
+        console.log(current_state)
+
+        for (const sub_item of container_element.children) {
+            for (const sub_input of sub_item.children) {
+                if (sub_input.tagName != "DIV") continue
+                
+                const curr_class = sub_input.className
+
+                sub_input.required = sub_input.dataset.active_state === current_state
+                sub_input.className = sub_input.dataset.active_state === current_state ? curr_class.replace(" disabled", "") : curr_class + " disabled"
+            }
+        }
+    })
+
+    // method switch?
+    item.children[1].children[1].addEventListener("change", (event) => {
+        const container_element = PARENT_ELEMENT.children[5]
+
+        PARENT_ELEMENT.dataset.value_state = !(PARENT_ELEMENT.dataset.value_state === "true")
+        const current_state = PARENT_ELEMENT.dataset.value_state 
+
+        container_element.className = container_element.dataset.active_state === current_state ? container_element.className.replace(" disabled", "") : container_element.className + " disabled"
+
+        container_element.children[1].required = current_state === "true"
+        container_element.children[3].required = current_state === "true"
+
+        update_form_container()
+    })
+
+    return item
+}
+
 function create_port_item() {
     const item = document.createElement("div")
-    item.className = "port-list-item round-border"
+    item.className = "form-list-item round-border port-item"
     item.innerHTML = `
     <div class="inline-text-container">
         <p title="The port to be used on the physical machine">Host port:</p>
-        <input name="host_port" type="number" title="The port to be used on the physical machine" required>
+        <input name="host_port" type="number" class="form-input" title="The port to be used on the physical machine" required>
     </div>
     <div class="inline-text-container">
         <p title="The port that the server uses">Server port:</p>
-        <input name="server_port" type="number" title="The port that the server uses" required>
+        <input name="server_port" type="number" class="form-input" title="The port that the server uses" required>
     </div>
     <div class="inline-text-container">
         <p>Port type:</p>
-        <select name="port_type" title="The port type, leave it as TCP if you're not sure">
+        <select name="port_type" class="form-input" title="The port type, leave it as TCP if you're not sure">
             <option>TCP</option>
             <option>UDP</option>
         </select>
@@ -168,8 +373,7 @@ function create_port_item() {
 
     item_button.addEventListener("click", (event) => {
         item.remove()
-        form_container.style.height = "auto"
-        form_container.style.height = parent_element.style.height = `${form_container.scrollHeight}px`
+        update_form_container()
     })
 
     item.appendChild(item_button)
@@ -225,9 +429,15 @@ function calculate_slider_position(slider) {
     return (slider.value - slider.min) / (slider.max - slider.min) * 100
 }
 
+function update_form_container() {
+    form_container.style.height = "auto"
+    form_container.style.height = parent_element.style.height = `${form_container.scrollHeight}px`
+}
+
 PORT_LIST.appendChild(create_port_item())
-form_container.style.height = "auto"
-form_container.style.height = parent_element.style.height = `${form_container.scrollHeight}px`
+VARIABLE_LIST.appendChild(create_variable_item())
+
+update_form_container()
 
 toggle_input("steam_server", ["steam_id", "launch_opt", "install_opt"])
 
