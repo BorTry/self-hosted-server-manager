@@ -121,6 +121,12 @@ ADD_SERVER_FORM.addEventListener("submit", (e) => {
     form_data.delete("defined_variable_value")
     form_data.delete("defined_variable_name")
     form_data.delete("file_path")
+    form_data.delete("variable_source")
+    form_data.delete("variable_name")
+
+    for (const [key, val] of form_data.entries()) {
+        console.log("key:", key, "value:", val)
+    }
 
     fetch("/api/admin/add_container", {
         method: "POST",

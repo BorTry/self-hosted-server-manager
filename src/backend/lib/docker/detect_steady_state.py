@@ -7,7 +7,7 @@ from time import sleep
 
 from json import dumps
 
-DELTA_TIME = timedelta(seconds=5) # measured in seconds
+DELTA_TIME = timedelta(seconds=5)
 SERVER_DATA_FILE_PATH = Path(Path(__file__).resolve().parents[5], "server_data")
 
 LIMITS = {
@@ -23,6 +23,8 @@ def check_run_command(thread:thread_wrapper, container_name:str):
     prev_state = None
     last_check = None
     iterations = 0
+
+    thread.print(f"Starting testing of {container_name}")
 
     while MAX_ITERATIONS >= iterations and not thread.terminate_signal.is_set():
         container = docker.container.inspect(_convert_name(container_name))
@@ -47,14 +49,10 @@ def check_run_command(thread:thread_wrapper, container_name:str):
 
             value = ((1 - (min_val / max_val)) * 100)
 
-            thread.print(metric, ":", value, "allowed: ", current_allowed, ", done, ", value <= current_allowed)
-
             if (value <= current_allowed): continue
 
             container_done = False
             break
-
-        thread.print("container is done", container_done, "\nprev_state: \n", dumps(prev_state), "\ncurrent_state: \n", dumps(current_state))
 
         if (container_done): return True
 

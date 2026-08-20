@@ -1,11 +1,16 @@
 from src.lib import thread_wrapper, compose_file, service, Server_codes, response
 from .detect_steady_state import check_run_command
 
+from src.db.mappings import metric_timestamp, traffic_metric, performance_metric, container, port_type, ports, ports_mapping, launch_opts_mapping, launch_opts
+from src.db.db import SessionLocal
+
+from sqlalchemy import select
+
 from python_on_whales import DockerClient, DockerException, docker as base_docker
 from re import sub, DOTALL
 from pathlib import Path
-from time import sleep
-from json import dumps
+
+from json import dumps, loads
 
 TEMP_COMPOSE_PATH = "./resources/compose_files/docker-temp-compose.yaml"
 MAIN_COMPOSE_PATH = "./resources/compose_files/docker-game-compose.yaml"
@@ -42,10 +47,7 @@ def try_to_add_container(thread:thread_wrapper, server_packet) -> bool:
     new_container["entrypoint"] = ["/entrypoint.sh"]
     new_container["environment"] = {"SEED_SCRIPT": compose_args["install_opt"]}
 
-    if (False):
-        # create a docker buildfile if the image needs any extra dependencies
-        new_container["build"] = {"context": "../buildfiles", "dockerfile": f"Dockerfile.{server_name}"}
-
+    _add_container_to_server(compose_args)
     TEMP_COMPOSE_FILE.add_service(new_container)
     TEMP_COMPOSE_FILE.write_to_file()
 
@@ -122,3 +124,80 @@ def _generate_return_msg(failure:bool, message:str=None):
 
 def _has_been_initialized(server_name):
     return Path(SERVER_DATA_FILE_PATH, server_name).is_dir() and Path(SERVER_DATA_FILE_PATH, server_name, ".initialized").is_file()
+
+
+def _add_container_to_server(server_args):
+    with SessionLocal() as session:
+        container_name_exists = session.scalar(select(container).where(container.name == server_args["server_name"]))
+
+        if (container_name_exists is not None):
+            return
+
+        port_types_rows = session.execute(select(port_type)).mappings().all()
+        port_type_mapping = {}
+
+        for port in port_types_rows:
+            port_type_mapping[port["port_type"].type] = port["port_type"].id
+
+        entry = container(
+            name = server_args["server_name"],
+            ram_limit = server_args["cpu_limit"],
+            cpu_limit = server_args["ram_limit"], 
+        )
+
+        session.add(entry)
+        session.flush()
+
+        if (len(server_args["port_mapping"])):
+
+            mapping_db_entry = ports_mapping(server_id=entry.id)
+
+            session.add(mapping_db_entry)
+            session.flush()
+
+            for port_str in server_args["port_mapping"]:
+                current_port = _get_ports_from_str(port_str)
+                
+                if (server_args["strict_ports"]):
+                    return
+
+                session.add(ports(
+                    mapping_id=mapping_db_entry.id,
+                    container_port=current_port["server"],
+                    host_port=current_port["host"], 
+                    type_id=port_type_mapping[current_port["type"]]
+                ))
+
+        if (len(server_args["variable_mapping"])):
+            loaded_var_map = loads(server_args["variable_mapping"])
+
+            for key, value in loaded_var_map.items():
+                mapping_has_path = len(value["file_path"].values()) > 0
+
+                launch_mapping = launch_opts_mapping(
+                    name = key,
+                    path = value["file_path"]["path"] if mapping_has_path else "",
+                    change_var = value["file_path"]["change_var"] if mapping_has_path else "",
+                    container_id = entry.id,
+                    handling = 0 if value["value_state"] == "false" else 1,
+                    source = 0 if value["source_state"] == "false" else 1
+                )
+
+                session.add(launch_mapping)
+                session.flush()
+
+                for variable_mapping in value["mapping"]:
+                    session.add(launch_opts(
+                        mapping_id = launch_mapping.id,
+                        name = variable_mapping["name"],
+                        value = variable_mapping["value"],
+                        path = variable_mapping["path"]
+                    ))
+
+        #session.commit()
+
+def _get_ports_from_str(port_str):
+    split_ports = port_str.split(":")
+    port_type = split_ports[1].split("/")
+
+    return {"host":split_ports[0], "server":port_type[0], "type":port_type[1].lower()}
