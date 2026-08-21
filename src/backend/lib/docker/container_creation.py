@@ -47,7 +47,6 @@ def try_to_add_container(thread:thread_wrapper, server_packet) -> bool:
     new_container["entrypoint"] = ["/entrypoint.sh"]
     new_container["environment"] = {"SEED_SCRIPT": compose_args["install_opt"]}
 
-    _add_container_to_server(compose_args)
     TEMP_COMPOSE_FILE.add_service(new_container)
     TEMP_COMPOSE_FILE.write_to_file()
 
@@ -55,6 +54,9 @@ def try_to_add_container(thread:thread_wrapper, server_packet) -> bool:
 
     TEMP_COMPOSE_FILE.remove_service(new_container.name)
     TEMP_COMPOSE_FILE.write_to_file()
+
+    if (return_message["code"] == Server_codes.CONTAINER_SUCCESS):
+        _add_container_to_server(compose_args)
 
     return return_message
 
@@ -104,8 +106,8 @@ def _test_new_container(thread:thread_wrapper, new_container:service, server_pac
 
     docker.compose.down(services=(new_container.name), quiet=True)
 
-    #MAIN_COMPOSE_FILE.add_service(new_container)
-    #MAIN_COMPOSE_FILE.write_to_file()
+    MAIN_COMPOSE_FILE.add_service(new_container)
+    MAIN_COMPOSE_FILE.write_to_file()
 
     return _generate_return_msg(False)
 
@@ -149,7 +151,6 @@ def _add_container_to_server(server_args):
         session.flush()
 
         if (len(server_args["port_mapping"])):
-
             mapping_db_entry = ports_mapping(server_id=entry.id)
 
             session.add(mapping_db_entry)
@@ -157,7 +158,7 @@ def _add_container_to_server(server_args):
 
             for port_str in server_args["port_mapping"]:
                 current_port = _get_ports_from_str(port_str)
-                
+
                 if (server_args["strict_ports"]):
                     return
 
@@ -194,7 +195,7 @@ def _add_container_to_server(server_args):
                         path = variable_mapping["path"]
                     ))
 
-        #session.commit()
+        session.commit()
 
 def _get_ports_from_str(port_str):
     split_ports = port_str.split(":")

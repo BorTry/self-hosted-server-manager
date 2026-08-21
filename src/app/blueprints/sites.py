@@ -7,7 +7,7 @@ from src.app.lib import SEND_SOCKET_THREAD, get_next_id
 from src.lib import Server_codes, request
 from ..lib import limiter, get_user_ip
 
-from src.db.mappings import servers_view
+from src.db.mappings import servers_view, container, launch_opts_view
 from src.db.db import SessionLocal
 from sqlalchemy import select
 
@@ -34,8 +34,29 @@ class front_page(MethodView):
 
         if session.get("session_id", None) == None:
             session["session_id"] = get_next_id()
-        
-        html = render_template("index.html", server_names=SEND_SOCKET_THREAD["all_servers"])
+
+        all_servers = []
+        launch_opts = {}
+
+        with SessionLocal() as db_session:
+            rows = db_session.execute(select(container.name)).mappings().all()
+
+            all_servers = [row["name"] for row in rows]
+
+            rows = db_session.execute(select(launch_opts_view)).mappings().all()
+
+            for row_thing in rows:
+                row = row_thing["launch_opts_view"]
+
+                if not (row.s_name in launch_opts):
+                    launch_opts[row.s_name] = {}
+
+                if not (row.lom_name in launch_opts[row.s_name]):
+                    launch_opts[row.s_name][row.lom_name] = []
+
+                launch_opts[row.s_name][row.lom_name].append(row.lo_name)
+
+        html = render_template("index.html", server_names=all_servers, launch_opts=launch_opts)
         return make_response(html, 200)
 
 @blp.route("/admin")

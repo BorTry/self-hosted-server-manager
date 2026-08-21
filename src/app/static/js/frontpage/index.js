@@ -12,26 +12,14 @@ setInterval(async function() {
 
 // find out which servers can be ran
 async function build_server_list() {
-    let data = await fetch("/api/container/all", {
-        method: "GET"
-    })
-    .then( response => {
-        if (!response.ok) {
-            throw new Error("SERVER NOT OK:(")
-        }
-        return response.json()
-    })
+    let servers = document.getElementsByClassName("server-container")
 
-    let servers = extract_data(data.message)
-
-    ALL_SERVERS = servers.all_servers
-
-    if (!servers) {
-        return
+    for (const server_element of servers) {
+        ALL_SERVERS.push(server_element.id)
     }
 
-    for (let server_name of servers.all_servers) {
-        build_request_form(server_name, servers.launch_opts)
+    for (let server_name of ALL_SERVERS) {
+        build_request_form(server_name)
     }
 }
 
@@ -47,7 +35,7 @@ async function change_live_servers() {
         return response.json()
     })
 
-    let server_stats = extract_data(data.message)
+    let server_stats = data.message
 
     for (let server_name of ALL_SERVERS) {
         let is_online = Object.hasOwn(server_stats, server_name)
@@ -66,10 +54,6 @@ async function change_live_servers() {
 function change_server_status(name, online=true) {
     let image_con = document.getElementById(name)
     image_con.style.borderColor = online ? "var(--online)" : "var(--offline)"
-}
-
-function extract_data(response) {
-    return response
 }
 
 async function main() {
