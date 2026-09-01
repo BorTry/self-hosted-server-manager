@@ -4,6 +4,7 @@ CREATE TABLE servers.launch_opts_mapping (
     id              INTEGER         GENERATED ALWAYS AS IDENTITY 
                                     PRIMARY KEY,
     name            VARCHAR(127)    NOT NULL,
+    var_flag        VARCHAR(127)    DEFAULT '',
     path            VARCHAR(127)    NOT NULL
                                     DEFAULT '',
     change_var      VARCHAR(127)    NOT NULL

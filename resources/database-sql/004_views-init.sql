@@ -40,7 +40,7 @@ BEGIN;
 DROP VIEW IF EXISTS launch_opts;
 
 CREATE VIEW launch_opts AS
-    SELECT lo.id, lo.value, lo.name as lo_name, lo.path, lom.handling, lom.source, lom.name as lom_name, s.name as s_name
+    SELECT lo.id, lo.value, lo.name as lo_name, lo.path, lom.handling, lom.source, lom.change_var, lom.path as file_path, lom.var_flag, lom.name as lom_name, s.name as s_name
     FROM servers.launch_opts AS lo
     LEFT JOIN servers.launch_opts_mapping AS lom
         ON lo.mapping_id = lom.id
