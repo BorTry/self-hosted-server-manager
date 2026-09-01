@@ -7,7 +7,7 @@ class ContainerResponseSchema(Schema):
     containers =                fields.List(fields.Dict())
 
 class ContainerStartSchema(Schema):
-    launch_opts =               fields.Dict(keys=fields.Str(), values=fields.Str())
+    launch_opts =               fields.Str(required=True)
 
 class ContainerAddSchema(Schema):
     server_name =               fields.String(required=True)

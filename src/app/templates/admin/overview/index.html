@@ -32,7 +32,7 @@
                     <a href="/admin/overview/{{ server_name }}" class="content-container shadow round-border" id="{{ server_name }}">
                         <div class="container-image">
                             <div class="image-gradient"></div>
-                            <img src="{{ url_for('static', filename='images/' ~ server_name ~ '.jpg') }}">
+                            <img src="/static/images/{{ server_name }}.{{ image_mapping[server_name] | default('jpg') }}">
                         </div>
                         {{ graph(types, server_name) }}
                     </a>

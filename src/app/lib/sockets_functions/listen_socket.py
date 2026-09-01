@@ -1,6 +1,9 @@
-from src.lib import thread_socket_wrapper
+from src.lib import thread_socket_wrapper, Server_codes
 
+from werkzeug.utils import secure_filename
 from math import ceil
+from json import loads
+from os import path, remove
 
 MAX_MESSAGE_SIZE = 4096
 
@@ -10,6 +13,17 @@ def listen_socket_func(thread:thread_socket_wrapper):
     if response is None or response.id is None: return
 
     data_size = len(f"{response.data!r}".encode("utf-8"))
+
+    if (response.code == Server_codes.CONTAINER_FAILED):
+        response_server_name = loads(response.data)["name"]
+        server_name = secure_filename(response_server_name.title().replace("_", " "))
+        save_path = "src/app/static/images/"+server_name
+
+        if (path.exists(save_path)):
+            remove(save_path)
+            thread.print(f"Removing image for container {server_name}")
+        else:
+            thread.print(f"Image for container {server_name} does not exist.")
 
     with thread.data_handler as data:
         subscribers = data["subscribers"]

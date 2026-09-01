@@ -5,8 +5,6 @@ from python_on_whales import docker
 from pathlib import Path
 from time import sleep
 
-from json import dumps
-
 DELTA_TIME = timedelta(seconds=5)
 SERVER_DATA_FILE_PATH = Path(Path(__file__).resolve().parents[5], "server_data")
 
@@ -17,7 +15,7 @@ LIMITS = {
     "logs": 0,
 } # percentage change allowed
 
-MAX_ITERATIONS = 10
+MAX_ITERATIONS = 40
 
 def check_run_command(thread:thread_wrapper, container_name:str):
     prev_state = None

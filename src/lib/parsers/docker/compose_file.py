@@ -75,3 +75,7 @@ class compose_file:
     def write_to_file(self):
         with open(self.file_path, "w") as file:
             file.write(f"{self!r}")        
+
+    def update(self):
+        self.top_level_entries = []
+        self._get_groups()

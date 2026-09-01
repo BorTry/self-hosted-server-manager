@@ -1,6 +1,6 @@
 from hashlib import sha256
 from functools import partial
-from python_on_whales import DockerClient, DockerException, docker as base_docker
+from python_on_whales import DockerClient, DockerException
 
 from .. import compose_file
 
@@ -61,7 +61,7 @@ def _docker_compose_file(mapping_name:str) -> bool:
 
 
         docker = DockerClient(compose_files=(MAPPING[mapping_name]))
-        docker.compose.up(build=True, detach=True)
+        docker.compose.up(start=mapping_name == "frontend", detach=True, build=True)
 
         if (mapping_name != "base"): return True
         containers = docker.compose.ps()

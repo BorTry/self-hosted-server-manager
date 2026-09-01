@@ -1,14 +1,14 @@
 from flask_smorest import Blueprint
 from flask.views import MethodView
-from flask import make_response, Response, session
+from flask import make_response, Response, session, jsonify
 
 from src.app.lib import SEND_SOCKET_THREAD, DATA_HANDLER, METRICS_INTERVAL, create_web_stream, add_request
 from ...lib.limiter import limiter
 from src.lib import Server_codes, request
 
 from src.db.db import SessionLocal
-from src.db.mappings import metrics_view
-from sqlalchemy import select, func
+from src.db.mappings import metrics_view, ports, container
+from sqlalchemy import select, func, exists
 
 from ..schemas import ContainerAddSchema, ContainerImage
 
@@ -18,7 +18,7 @@ from datetime import timedelta, datetime, timezone
 blp = Blueprint("Admin_api", __name__, url_prefix="/api/admin")
 
 @blp.route("/metrics")
-class AllContainerMetrics(MethodView):
+class All_Container_Metrics(MethodView):
     @blp.response(404)
     @blp.response(200)
     @limiter.exempt
@@ -48,17 +48,17 @@ class AllContainerMetrics(MethodView):
 
         ordered_rows = _order_rows(rows)
 
-        for name in SEND_SOCKET_THREAD["all_servers"]:
+        """for name in SEND_SOCKET_THREAD["all_servers"]:
             if name in ordered_rows: continue
 
-            _fill_empty_rows(ordered_rows, name)
+            _fill_empty_rows(ordered_rows, name)"""
 
         ordered_rows["time_between"] = METRICS_INTERVAL
 
         return ordered_rows
 
 @blp.route("/metrics/<string:server_name>")
-class AllContainerMetrics(MethodView):
+class All_Container_Metrics(MethodView):
     @limiter.exempt
     def get(self, server_name:str):
         last_2_hours = datetime.now(timezone.utc) - timedelta(hours=2)
@@ -86,7 +86,7 @@ class AllContainerMetrics(MethodView):
         return ordered_rows
 
 @blp.route("get_logs/<string:server_name>")
-class containerServerLog(MethodView):
+class Container_Server_Log(MethodView):
     @limiter.exempt
     def get(self, server_name):
         session_id = session.get("session_id", None)
@@ -102,7 +102,7 @@ class containerServerLog(MethodView):
         return Response(stream(), status=200, mimetype="text/event-stream")
 
 @blp.route("add_container")
-class addContainer(MethodView):
+class Add_Container(MethodView):
     @blp.arguments(ContainerAddSchema, location="form")
     @blp.arguments(ContainerImage, location="files")
     @limiter.exempt
@@ -111,23 +111,28 @@ class addContainer(MethodView):
 
         if (session_id is None):
             return make_response("No session ID", 403)
-    
+
         form_schema = ContainerAddSchema()
         image = files["image"]
 
         data = form_schema.dump(form_data)
         data["image_name"] = image.filename
 
+        is_container_valid = _validate_container(data)
+
+        if (is_container_valid is not None): return is_container_valid
+
         with DATA_HANDLER as thread_data:
             thread_data["pending_requests"].append(request(session["session_id"], data, Server_codes.ADD_CONTAINER))
 
         if image:
-            filename = secure_filename(image.filename)
-            save_path = "src/app/static/images/"+filename
+            extension = image.filename.split(".")[-1]
+            filename = secure_filename(data["server_name"].title().replace("_", " "))
+            save_path = f"src/app/static/images/{filename}.{extension}"
 
             image.save(save_path)
 
-        return make_response("", 200)
+        return _create_return_msg(f"Creating server", True, 200)
 
     @limiter.exempt
     def get(self):
@@ -179,3 +184,33 @@ def _order_rows(ordered_arr):
         ordered_dict[entry.name].append(entry_dict)
     
     return ordered_dict
+
+def _create_return_msg(msg:str, success:bool, code:int):
+    return make_response(jsonify(data=msg, success=success), code)
+
+def _validate_container(data:ContainerAddSchema):
+    # check to see if the name already appears in the database
+    with SessionLocal() as db_session: 
+        query = select(
+            exists().where(container.name == data["server_name"].title().replace("_", " "))
+        )
+
+        if (db_session.scalar(query)):
+            return _create_return_msg(f"Server name already used", False, 200)
+
+    if data["port_mapping"]:
+        # check to see if the ports are open
+        all_user_ports = []
+
+        for port in data["port_mapping"]:
+            all_user_ports.append(int(port.split(":")[0]))
+
+        with SessionLocal() as db_session: 
+            query = select(ports.host_port).where(ports.host_port.in_(all_user_ports))
+            used_ports = db_session.scalars(query).all()
+
+        if (len(used_ports)):
+            return _create_return_msg(f"Host ports already in use: {" ".join([str(port) for port in used_ports])}", False, 200)
+
+    return None
+    

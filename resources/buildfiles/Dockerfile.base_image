@@ -1,11 +1,11 @@
 from debian:stable-slim
 
 RUN apt-get update && \
-    apt-get install -y --no-install-recommends gosu && \
+    apt-get install -y --no-install-recommends gosu procps xz-utils wget ca-certificates && \
     rm -rf /var/lib/apt/lists/*
 
 RUN useradd -m server_user
 
 COPY ./entrypoint.sh /entrypoint.sh
 
-RUN chmod 655 ./entrypoint
+RUN chmod +x ./entrypoint.sh

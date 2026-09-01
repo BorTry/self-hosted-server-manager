@@ -12,8 +12,9 @@ class launch_opts_mapping(Base):
 
     id: Mapped[int] =                                   mapped_column(primary_key=True)
     name: Mapped[str] =                                 mapped_column(nullable=False)
-    path: Mapped[str] =                                 mapped_column(nullable=False)
-    change_var: Mapped[str] =                           mapped_column(nullable=False)
+    var_flag: Mapped[str] =                             mapped_column(nullable=False)
+    path: Mapped[str] =                                 mapped_column(nullable=False, default="")
+    change_var: Mapped[str] =                           mapped_column(nullable=False, default="")
     container_id: Mapped[int] =                         mapped_column(ForeignKey("servers.container.id"), nullable=False)
     handling: Mapped[int] =                             mapped_column(nullable=False)
     source: Mapped[int] =                               mapped_column(nullable=False)

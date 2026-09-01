@@ -51,7 +51,7 @@ SERVER_STREAM.addEventListener("close", (event) => {
     SERVER_STREAM.close()
 })
 
-ADD_SERVER_FORM.addEventListener("submit", (e) => {
+ADD_SERVER_FORM.addEventListener("submit", async (e) => {
     e.preventDefault();
         
     const form_data = new FormData(e.target);
@@ -61,8 +61,6 @@ ADD_SERVER_FORM.addEventListener("submit", (e) => {
     const port_types = form_data.getAll("port_type")
 
     const len = h_ports.length
-
-    const port_mapping = []   
 
     // get the port data
     for (let index = 0; index < len; index++) {
@@ -79,20 +77,22 @@ ADD_SERVER_FORM.addEventListener("submit", (e) => {
     for (const variable_item of VARIABLE_LIST.children) {
         const source_state = variable_item.dataset.source_state
         const value_state = variable_item.dataset.value_state
+        const var_flag = variable_item.children[1].children[1].value
 
         const v_name = variable_item.children[0].children[1].value
-
-        variable_mapping[v_name] = {"mapping": [], "file_path": {}, "source_state": source_state, "value_state": value_state}
+        
+        variable_mapping[v_name] = {"mapping": [], "file_path": {}, "var_flag": var_flag, "source_state": source_state, "value_state": value_state}
 
         if (value_state === "true") {
-            const file_element = variable_item.children[5]
+            const file_element = variable_item.children[6]
+
             variable_mapping[v_name].file_path = {
                 "path": file_element.children[1].value,
                 "change_var": file_element.children[3].value
             }
         }
 
-        const sub_list = variable_item.children[6]
+        const sub_list = variable_item.children[7]
 
         for (const sub_item of sub_list.children) {
             const mapping = {"name": "", "value": "", "path": ""}
@@ -123,15 +123,20 @@ ADD_SERVER_FORM.addEventListener("submit", (e) => {
     form_data.delete("file_path")
     form_data.delete("variable_source")
     form_data.delete("variable_name")
+    form_data.delete("var_flag")
 
-    for (const [key, val] of form_data.entries()) {
-        console.log("key:", key, "value:", val)
-    }
+    console.log(JSON.stringify(variable_mapping, undefined, 2))
 
-    fetch("/api/admin/add_container", {
+    const response = await fetch("/api/admin/add_container", {
         method: "POST",
         body: form_data
-    })
+    });
+
+    const data = await response.json();
+ 
+    if (!data.success) {
+        console.log("response", data)
+    }
 })
 
 PORT_ADD_BUTTON.addEventListener("click", (event) => {
@@ -269,6 +274,10 @@ function create_variable_item() {
         <input name="variable_name" type="text" class="form-input" title="The name shown on the main page" required>
     </div>
     <div class="inline-text-container">
+        <p title="The variable flag, or name of the variable set a file">Variable flag:</p>
+        <input name="var_flag" type="text" class="form-input" title="The variable flag, or name of the variable set a file">
+    </div>
+    <div class="inline-text-container">
         <p title="The value type">Value:</p>
         <select name="value_type" class="form-input" title="How the server handles the variable">
             <option>Injection</option>
@@ -314,13 +323,12 @@ function create_variable_item() {
     const PARENT_ELEMENT = item
 
     // variable switch
-    item.children[2].children[1].addEventListener("change", (event) => {
-        const container_element = PARENT_ELEMENT.children[6]
+    item.children[3].children[1].addEventListener("change", (event) => {
+        const container_element = PARENT_ELEMENT.children[7]
 
         PARENT_ELEMENT.dataset.source_state = !(PARENT_ELEMENT.dataset.source_state === "true")
 
         const current_state = PARENT_ELEMENT.dataset.source_state
-        console.log(current_state)
 
         for (const sub_item of container_element.children) {
             for (const sub_input of sub_item.children) {
@@ -328,15 +336,15 @@ function create_variable_item() {
                 
                 const curr_class = sub_input.className
 
-                sub_input.required = sub_input.dataset.active_state === current_state
+                sub_input.children[1].required = sub_input.dataset.active_state === current_state
                 sub_input.className = sub_input.dataset.active_state === current_state ? curr_class.replace(" disabled", "") : curr_class + " disabled"
             }
         }
     })
 
     // method switch?
-    item.children[1].children[1].addEventListener("change", (event) => {
-        const container_element = PARENT_ELEMENT.children[5]
+    item.children[2].children[1].addEventListener("change", (event) => {
+        const container_element = PARENT_ELEMENT.children[6]
 
         PARENT_ELEMENT.dataset.value_state = !(PARENT_ELEMENT.dataset.value_state === "true")
         const current_state = PARENT_ELEMENT.dataset.value_state 
@@ -422,17 +430,11 @@ function toggle_input(listen_id, toggle_ids) {
 function update_slider_output(slider_id, unit) {
     // updates the number on the slider while its being used
     let slider_element = document.getElementById(slider_id)
-    let bubble = document.getElementById("out_"+slider_id)
+    let bubble = document.getElementById("out_" + slider_id)
 
     slider_element.addEventListener("input", (e) => {
-        let percent_value = calculate_slider_position(slider_element)
-
-        bubble.textContent = slider_element.value+unit
+        bubble.textContent = slider_element.value + unit
     })
-}
-
-function calculate_slider_position(slider) {
-    return (slider.value - slider.min) / (slider.max - slider.min) * 100
 }
 
 function update_form_container() {

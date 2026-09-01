@@ -1,15 +1,13 @@
-from src.lib import thread_socket_wrapper
-from src.lib import Server_codes
-from src.lib import request
+from src.lib import thread_socket_wrapper, Server_codes, request
 
 from time import sleep
 
 def send_socket_func(thread:thread_socket_wrapper):
-    if (len(thread["all_servers"]) == 0):
+    """if (len(thread["files"]) == 0):
         sleep(1)
         thread.print("Trying to get defined servers again")
         send_socket_init(thread)
-        return
+        return"""
 
     # regular updates
     packet = thread.send_recv(request(None, "", Server_codes.RUNNING_SERVERS))
@@ -37,15 +35,14 @@ def send_socket_func(thread:thread_socket_wrapper):
         thread_data["pending_requests"] = []
 
 def send_socket_init(thread:thread_socket_wrapper):
-    thread["all_servers"] = []
-    thread["launch_options"] = []
+    thread["files"] = []
 
-    server_response = thread.send_recv(request(None, "", Server_codes.ALL_SERVERS))
+    server_response = thread.send_recv(request(None, "", Server_codes.SERVER_FILES))
 
     if (server_response is None or server_response.data is None): return
 
     try:
-        thread["all_servers"] = server_response.data["servers"]
-        thread["launch_options"] = server_response.data["launch_options"]
-    except Exception:
-        pass
+        with thread.data_handler as data:
+            data["files"] = server_response.data
+    except Exception as e:
+        thread.print(e)

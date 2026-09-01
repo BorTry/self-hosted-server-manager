@@ -1,13 +1,13 @@
 from src.lib import thread_wrapper, compose_file, service, Server_codes, response
 from .detect_steady_state import check_run_command
 
-from src.db.mappings import metric_timestamp, traffic_metric, performance_metric, container, port_type, ports, ports_mapping, launch_opts_mapping, launch_opts
+from src.db.mappings import container, port_type, ports, ports_mapping, launch_opts_mapping, launch_opts
 from src.db.db import SessionLocal
 
 from sqlalchemy import select
 
-from python_on_whales import DockerClient, DockerException, docker as base_docker
-from re import sub, DOTALL
+from python_on_whales import DockerClient, DockerException
+from re import sub, findall, DOTALL
 from pathlib import Path
 
 from json import dumps, loads
@@ -28,15 +28,15 @@ if (not SERVER_DATA_FILE_PATH.is_dir()):
 def try_to_add_container(thread:thread_wrapper, server_packet) -> bool:
     compose_args = server_packet.data
 
-    thread.print(compose_args)
     server_name = compose_args["server_name"]
+    launch_command = _remove_tmp_values(compose_args["launch_opt"])
 
     new_container = service(
         name=server_name,
         container_name=server_name+"_server",
         cpus=str(compose_args["cpu_limit"])+".0",
         mem_limit=compose_args["ram_limit"]+"GB",
-        command=compose_args["launch_opt"],
+        command=launch_command["tmp"],
         image="base_image",
         working_dir="/data",
     )
@@ -50,15 +50,27 @@ def try_to_add_container(thread:thread_wrapper, server_packet) -> bool:
     TEMP_COMPOSE_FILE.add_service(new_container)
     TEMP_COMPOSE_FILE.write_to_file()
 
-    return_message = _test_new_container(thread, new_container,server_packet)
+    return_message = _test_new_container(thread, new_container, server_packet)
 
     TEMP_COMPOSE_FILE.remove_service(new_container.name)
     TEMP_COMPOSE_FILE.write_to_file()
 
+    new_container["command"] = launch_command["final"]
+
     if (return_message["code"] == Server_codes.CONTAINER_SUCCESS):
-        _add_container_to_server(compose_args)
+        MAIN_COMPOSE_FILE.add_service(new_container)
+        MAIN_COMPOSE_FILE.write_to_file()
+
+        _add_container_to_database(compose_args)
+        _compose_server(compose_args["server_name"])
 
     return return_message
+
+def _remove_tmp_values(launch_command:str):
+    return {
+        "final": sub(r'%.*?%', '', launch_command),
+        "tmp": launch_command.replace("%", "")
+    }
 
 def _test_new_container(thread:thread_wrapper, new_container:service, server_packet):
     docker = DockerClient(compose_files=(TEMP_COMPOSE_PATH))
@@ -106,9 +118,6 @@ def _test_new_container(thread:thread_wrapper, new_container:service, server_pac
 
     docker.compose.down(services=(new_container.name), quiet=True)
 
-    MAIN_COMPOSE_FILE.add_service(new_container)
-    MAIN_COMPOSE_FILE.write_to_file()
-
     return _generate_return_msg(False)
 
 def _generate_current_status_msg(status:str, server_packet):
@@ -128,7 +137,7 @@ def _has_been_initialized(server_name):
     return Path(SERVER_DATA_FILE_PATH, server_name).is_dir() and Path(SERVER_DATA_FILE_PATH, server_name, ".initialized").is_file()
 
 
-def _add_container_to_server(server_args):
+def _add_container_to_database(server_args):
     with SessionLocal() as session:
         container_name_exists = session.scalar(select(container).where(container.name == server_args["server_name"]))
 
@@ -142,7 +151,7 @@ def _add_container_to_server(server_args):
             port_type_mapping[port["port_type"].type] = port["port_type"].id
 
         entry = container(
-            name = server_args["server_name"],
+            name = server_args["server_name"].lower().title(),
             ram_limit = server_args["cpu_limit"],
             cpu_limit = server_args["ram_limit"], 
         )
@@ -177,6 +186,7 @@ def _add_container_to_server(server_args):
 
                 launch_mapping = launch_opts_mapping(
                     name = key,
+                    var_flag = value["var_flag"],
                     path = value["file_path"]["path"] if mapping_has_path else "",
                     change_var = value["file_path"]["change_var"] if mapping_has_path else "",
                     container_id = entry.id,
@@ -202,3 +212,8 @@ def _get_ports_from_str(port_str):
     port_type = split_ports[1].split("/")
 
     return {"host":split_ports[0], "server":port_type[0], "type":port_type[1].lower()}
+
+def _compose_server(server_name):
+    docker = DockerClient(compose_files=MAIN_COMPOSE_PATH)
+
+    docker.compose.up(services=server_name, detach=True, start=False, quiet=True)

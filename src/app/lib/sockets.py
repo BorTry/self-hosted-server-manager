@@ -14,7 +14,8 @@ DATA_HANDLER = thread_data_handler({
     "subscribers": {},
     "running_servers": {},
     "pending_requests": [],
-    "current_id": 1
+    "current_id": 1,
+    "files": []
 })
 
 LOGGER_THREAD = thread_wrapper(

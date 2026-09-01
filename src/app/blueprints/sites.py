@@ -3,7 +3,7 @@ from flask.views import MethodView
 from flask import render_template, make_response, session, redirect
 from marshmallow import Schema, fields
 
-from src.app.lib import SEND_SOCKET_THREAD, get_next_id
+from src.app.lib import SEND_SOCKET_THREAD, get_next_id, DATA_HANDLER
 from src.lib import Server_codes, request
 from ..lib import limiter, get_user_ip
 
@@ -11,11 +11,14 @@ from src.db.mappings import servers_view, container, launch_opts_view
 from src.db.db import SessionLocal
 from sqlalchemy import select
 
+from pathlib import Path
+
 MAX_ATTEMPTS = 3
 ATTEMPT_TIME_DELTA = 10 # minutes
 
 OVERVIEW_TYPES = ["cpu", "ram"]
 ALL_GRAPH_TYPES = ["cpu", "ram", "upload", "download"]
+IMAGE_FOLDER_PATH = "/src/app/static/images/"
 
 blp = Blueprint("Sites", __name__)
 
@@ -27,7 +30,7 @@ class AdminRedirectSchema(Schema):
     site=fields.String(required=True)
 
 @blp.route("/")
-class front_page(MethodView):
+class Front_Page(MethodView):
     def get(self):
         session["username"] = None
         session["password"] = None
@@ -35,32 +38,19 @@ class front_page(MethodView):
         if session.get("session_id", None) == None:
             session["session_id"] = get_next_id()
 
-        all_servers = []
-        launch_opts = {}
+        all_servers = _get_all_servers()
+        launch_opts = _get_launch_opts()
 
-        with SessionLocal() as db_session:
-            rows = db_session.execute(select(container.name)).mappings().all()
+        files = DATA_HANDLER.get_copy("files")
+        print(launch_opts, flush=True)
+        for file in files:
+            launch_opts[file["s_name"]][file["lom_name"]] = file["files"]
 
-            all_servers = [row["name"] for row in rows]
-
-            rows = db_session.execute(select(launch_opts_view)).mappings().all()
-
-            for row_thing in rows:
-                row = row_thing["launch_opts_view"]
-
-                if not (row.s_name in launch_opts):
-                    launch_opts[row.s_name] = {}
-
-                if not (row.lom_name in launch_opts[row.s_name]):
-                    launch_opts[row.s_name][row.lom_name] = []
-
-                launch_opts[row.s_name][row.lom_name].append(row.lo_name)
-
-        html = render_template("index.html", server_names=all_servers, launch_opts=launch_opts)
+        html = render_template("index.html", server_names=all_servers, launch_opts=launch_opts, image_mapping=_get_image_extensions())
         return make_response(html, 200)
 
 @blp.route("/admin")
-class admin_login(MethodView):
+class Admin_Login(MethodView):
     def get(self):
         html = render_template("admin/login.html")
         return make_response(html, 200)
@@ -85,7 +75,7 @@ class admin_login(MethodView):
         return redirect("admin/overview")
 
 @blp.route("/admin/<string:site>")
-class admin_page(MethodView):
+class Admin_Page(MethodView):
     @blp.response(200)
     @blp.response(302)
     @blp.response(404)
@@ -114,7 +104,8 @@ class admin_page(MethodView):
                 return redirect("/")
             
             case "overview":
-                html = render_template(f'admin/{site}/index.html', server_names=SEND_SOCKET_THREAD["all_servers"], types=OVERVIEW_TYPES)
+                all_servers = _get_all_servers()
+                html = render_template(f'admin/overview/index.html', server_names=all_servers, types=OVERVIEW_TYPES, image_mapping=_get_image_extensions())
                 return make_response(html, 200)
             
             case _:
@@ -123,7 +114,7 @@ class admin_page(MethodView):
                 return make_response(html, 200)
         
 @blp.route("/admin/overview/<string:site>")
-class admin_individual_overview(MethodView):
+class Admin_Individual_Overview(MethodView):
     @blp.response(200)
     @blp.response(404)
     @blp.response(405)
@@ -144,11 +135,15 @@ class admin_individual_overview(MethodView):
         for row in rows:
             ports.append(row["host_port"])
 
-        html = render_template("admin/overview/individual.html", server_name=site, types=ALL_GRAPH_TYPES, ports=ports)
+        all_extensions = _get_image_extensions()
+
+        extension = all_extensions[site] if site in all_extensions else "jpg"
+
+        html = render_template("admin/overview/individual.html", server_name=site, types=ALL_GRAPH_TYPES, ports=ports, extension=extension)
         return make_response(html, 200)
 
 @blp.route("/admin/help")
-class help_site(MethodView):
+class Help_Site(MethodView):
     @blp.response(200)
     def get(self):
         html = render_template("admin/setup_help.html")
@@ -165,3 +160,41 @@ def confirm_api_login():
     if (not packet): return None
 
     return packet.code == Server_codes.CREDENTIALS_OK
+
+def _get_image_extensions():
+    image_mapping = {}
+    files = [f.name for f in Path(IMAGE_FOLDER_PATH).iterdir() if f.is_file()]
+
+    for file in files:
+        split_name = file.split(".")
+        image_mapping[split_name[0]] = split_name[1]
+
+    return image_mapping
+
+def _get_all_servers():
+    all_servers = []
+
+    with SessionLocal() as db_session:
+        rows = db_session.execute(select(container.name)).mappings().all()
+
+        all_servers = [row["name"] for row in rows]
+
+    return all_servers
+
+def _get_launch_opts():
+    launch_opts = {}
+
+    with SessionLocal() as db_session:
+
+        rows = db_session.execute(select(launch_opts_view.s_name, launch_opts_view.lom_name, launch_opts_view.lo_name)).mappings().all()
+        
+        for row in rows:
+            if not (row.s_name in launch_opts):
+                launch_opts[row.s_name] = {}
+
+            if not (row.lom_name in launch_opts[row.s_name]):
+                launch_opts[row.s_name][row.lom_name] = []
+
+            launch_opts[row.s_name][row.lom_name].append(row.lo_name)
+
+    return launch_opts

@@ -4,6 +4,7 @@ class Server_codes:
     SERVER_COUNT = 0
     RUNNING_SERVERS = 1
     ALL_SERVERS = 2
+    SERVER_FILES = 3
 
     START_SERVER = 10
     STOP_SERVER = 11

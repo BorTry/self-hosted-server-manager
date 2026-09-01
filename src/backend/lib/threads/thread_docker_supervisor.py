@@ -2,20 +2,27 @@ from ..docker import *
 from src.lib import thread_wrapper, Server_codes, CONSTANTS
 
 from .thread_container_logger import logger_generator, add_session_id, remove_session_id
-from src.db.mappings import metric_timestamp, traffic_metric, performance_metric, container, port_type, ports, ports_mapping
+from src.db.mappings import metric_timestamp, traffic_metric, performance_metric, container, port_type, ports, ports_mapping, launch_opts_view
 from src.db.db import SessionLocal
 
+from datetime import timedelta, datetime
 from sqlalchemy import select
 from copy import deepcopy
-from datetime import timedelta, datetime
+from pathlib import Path
 
 def docker_supervisor_func(thread:thread_wrapper):    
-    thread["containers"]["running_servers"] = get_all_containers()
+    thread["containers"]["running_servers"] = get_all_containers(thread["all_servers"])
     now = datetime.now()
 
     if len(thread["containers"]["running_servers"]) and (not thread["last_save"] or (now - thread["last_save"]).seconds > thread["save_interval"].seconds):
-        add_resources_to_db(thread["containers"]["running_servers"])
+        _add_resources_to_db(thread["containers"]["running_servers"])
+
         thread["last_save"] = now
+        thread["all_servers"] = get_all_servers() # keep the list updated
+
+    if (now - thread["last_file_check"]).seconds > thread["save_interval"].seconds:
+        thread["containers"]["files"] = _get_file_names(thread)
+        thread["last_file_check"] = now
 
     with thread.data_handler as data:
         data["data"] = deepcopy(thread["containers"])
@@ -31,9 +38,9 @@ def docker_supervisor_func(thread:thread_wrapper):
         match (data_packet.code):
             case Server_codes.LOG_CONTAINER:
                 server_name = data_packet.data["server_name"]
-                container_name = convert_server_name(server_name)
+                container_name = convert_db_name_docker(server_name)
 
-                generate_new_log_thread(thread, container_name)
+                _generate_new_log_thread(thread, container_name)
 
                 add_session_id(thread["logger_threads"][container_name], data_packet.id)
 
@@ -46,26 +53,35 @@ def docker_supervisor_func(thread:thread_wrapper):
         data["supervisor"]["responses"] = responses
 
 def docker_supervisor_init(thread:thread_wrapper):
+    db_servers = get_all_servers()
+    current_servers = []
+
+    if not len(db_servers):
+        for server_name in SERVER_JSON["server_names"]:
+            current_servers.append(convert_db_name_docker(server_name))
+    else:
+        current_servers = db_servers
+    
     thread["containers"] = {
-        "all_defined_servers": {
-            "servers": SERVER_JSON["server_names"],
-            "launch_options": SERVER_JSON["launch_alternatives"]
-        },
-        "running_servers": []
+        "running_servers": [],
+        "files": _get_file_names(thread)
     }
 
-    add_containers_to_db(thread, thread["containers"]["all_defined_servers"]["servers"], get_resource_limit_containers())
+    thread["all_servers"] = current_servers
+
+    _add_containers_to_db(thread, thread["all_servers"], get_resource_limit_containers(thread["all_servers"]))
 
     thread["logger_threads"] = {}
     thread["save_interval"] = timedelta(seconds=CONSTANTS.METRICS_INTERVAL)
     thread["last_save"] = datetime.now()
+    thread["last_file_check"] = datetime.now()
 
 def docker_supervisor_on_close(thread:thread_wrapper):
     if (len(thread["logger_threads"]) > 0):
         for logger_name in thread["logger_threads"]:
             thread["logger_threads"][logger_name].terminate()
 
-def generate_new_log_thread(thread:thread_wrapper, container_name:str):
+def _generate_new_log_thread(thread:thread_wrapper, container_name:str):
     if not (container_name in thread["logger_threads"]):
         thread.print(f'Generating new thread for server: {container_name}')
 
@@ -85,7 +101,7 @@ def generate_new_log_thread(thread:thread_wrapper, container_name:str):
         thread["logger_threads"][container_name] = log_thread.get_new_instance()
         thread["logger_threads"][container_name].run()
 
-def add_containers_to_db(thread:thread_wrapper, containers, limits):  
+def _add_containers_to_db(thread:thread_wrapper, containers, limits):  
     with SessionLocal() as session:
         port_types_rows = session.execute(select(port_type)).mappings().all()
         port_type_mapping = {}
@@ -93,21 +109,23 @@ def add_containers_to_db(thread:thread_wrapper, containers, limits):
         for port in port_types_rows:
             port_type_mapping[port["port_type"].type] = port["port_type"].id
 
-        for container_el in containers:
-            query = select(container).where(container.name == container_el)
+        for container_docker_name in containers:
+            container_db_name = convert_docker_name_db(container_docker_name)
+
+            query = select(container).where(container.name == container_db_name)
             entry = session.scalars(query).first()
 
             if (not entry): 
+                thread.print(f"Creating new entry for server {container_db_name}")
                 entry = container(
-                    name = container_el,
-                    ram_limit = limits[container_el]["ram_limit"],
-                    cpu_limit = limits[container_el]["cpu_limit"], 
+                    name = container_db_name,
+                    ram_limit = limits[container_db_name]["ram_limit"],
+                    cpu_limit = limits[container_db_name]["cpu_limit"], 
                 )
                 session.add(entry)
                 session.flush()
 
-
-            if len(limits[container_el]["ports"]):
+            if limits and container_db_name in limits and len(limits[container_db_name]["ports"]):
                 existing_ports_query = select(ports.host_port) \
                     .join(ports_mapping, ports_mapping.id == ports.mapping_id) \
                     .where(ports_mapping.server_id == entry.id)
@@ -115,9 +133,9 @@ def add_containers_to_db(thread:thread_wrapper, containers, limits):
                 rows = session.execute(existing_ports_query).mappings().all()
                 existing_ports = [row["host_port"] for row in rows]
 
-                for port in limits[container_el]["ports"]:
+                for port in limits[container_db_name]["ports"]:
                     if int(port["host_port"]) in existing_ports: 
-                        thread.print(f"post {port['host_port']} already exists for container {entry.name}. Skipping")
+                        thread.print(f"port {port['host_port']} already exists for container {entry.name}. Skipping")
                         continue
 
                     mapping_db_entry = ports_mapping(server_id=entry.id)
@@ -133,7 +151,7 @@ def add_containers_to_db(thread:thread_wrapper, containers, limits):
 
         session.commit()
 
-def add_resources_to_db(resources):
+def _add_resources_to_db(resources):
     with SessionLocal() as session:
         stamp = metric_timestamp()
 
@@ -148,3 +166,28 @@ def add_resources_to_db(resources):
             session.add(traffic_metric(container_id=entry.id, time_id=stamp.id, upload=container_entry["upload"], download=container_entry["download"]))
 
         session.commit()
+
+def _get_file_names(thread:thread_wrapper):
+    with SessionLocal() as session:
+        query = select(launch_opts_view.s_name, launch_opts_view.path, launch_opts_view.lom_name).where(launch_opts_view.source == 1)
+        rows = session.execute(query).mappings().all()
+
+    directories = []
+
+    for row in rows:
+        server_dir = Path(f"../server_data/{convert_container_name(convert_db_name_docker(row.s_name))}{row.path}")
+
+        files = []
+
+        for file in server_dir.iterdir():
+            file_name = file.name
+
+            if (file.is_dir()):
+                files.append(file.name)
+                continue
+
+            files.append(file_name.split(".")[0])
+
+        directories.append({"s_name":row.s_name, "lom_name":row.lom_name, "files":files})
+
+    return directories

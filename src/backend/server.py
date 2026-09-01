@@ -14,7 +14,7 @@ LOGGER = get_logger("main_thread")
 DATA = thread_data_handler({
     "data":{
         "running_servers": [],
-        "all_defined_servers": {}
+        "files": []
     },
     "supervisor": {
         "requests": [],

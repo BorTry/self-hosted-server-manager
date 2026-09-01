@@ -25,7 +25,7 @@
                     <div id="{{ server_name }}" class="dropdown-container shadow round-border server-container">
                         <div class="dropdown-title">
                             <div class="dropdown-image">
-                                <img id="{{ server_name }}-image" src="/static/images/{{ server_name }}.jpg">
+                                <img id="{{ server_name }}-image" src="/static/images/{{ server_name }}.{{ image_mapping[server_name] | default('jpg') }}">
                                 <div class="image-gradient"></div>
                             </div>
                         </div>

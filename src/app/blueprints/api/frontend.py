@@ -1,6 +1,7 @@
 from flask_smorest import Blueprint
 from flask.views import MethodView
 from flask import jsonify
+from json import loads
 
 from src.app.lib import DATA_HANDLER, SEND_SOCKET_THREAD, add_request
 from src.lib import Server_codes, request
@@ -29,12 +30,12 @@ class Container(MethodView):
 class Start_Containers(MethodView):
     @blp.response(204)
     @blp.response(404)
-    @blp.arguments(ContainerStartSchema)
+    @blp.arguments(ContainerStartSchema, location="form")
     @limiter.limit("5 per minute")
     def post(self, form:ContainerStartSchema, name:str):
         packet = {
             "name":name, 
-            "opt":form["launch_opts"] if "launch_opts" in form else "" 
+            "opt":loads(form["launch_opts"]) if "launch_opts" in form else "" 
         }
 
         add_request(request(None, packet, Server_codes.START_SERVER))
@@ -53,19 +54,8 @@ class Stop_Containers(MethodView):
 
         return "", 204
 
-@blp.route("container/all")
-class AllContainers(MethodView):
-    @blp.response(204, ContainerResponseSchema)
-    @blp.response(404)
-    @limiter.exempt
-    def get(self):
-        return jsonify(message={
-            "all_servers": SEND_SOCKET_THREAD["all_servers"],
-            "launch_opts": SEND_SOCKET_THREAD["launch_options"]
-        })
-
 @blp.route("container/all/running")
-class AllContainers(MethodView):
+class All_Containers(MethodView):
     @blp.response(204, ContainerResponseSchema)
     @blp.response(404)
     @limiter.exempt

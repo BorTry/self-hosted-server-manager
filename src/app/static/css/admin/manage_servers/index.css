@@ -197,7 +197,7 @@ form > div > .divider {
 }
 
 .variable-item {
-    grid-template-columns: 1fr repeat(2, 0.5fr) repeat(2, .1fr);
+    grid-template-columns: repeat(2, 1fr) repeat(2, 0.5fr) repeat(2, .1fr);
 }
 
 .sub-item {
